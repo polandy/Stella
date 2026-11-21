@@ -15,14 +15,17 @@
 	import { GIFT_WHEN_KINDS } from '#lib/gifts/idea-when.js';
 	import type { PartialDate } from '#lib/dates/partial-date.js';
 	import type { When } from '#lib/when/when.js';
+	import GiftGiverField from './GiftGiverField.svelte';
 	import GiftOccasionField from './GiftOccasionField.svelte';
+	import type { GiverChoices } from './types';
 	import { INPUT } from '../ui/inputs';
 
 	/*
 	 * Noting a gift, or rewriting one (docs/dev/02 §2.25). An idea asks only for what it is — the note
 	 * and the link fold away until asked for; a given or received gift asks for its day and its
 	 * occasion too. Saving needs only the title, and the day where there is one. A title that
-	 * looks like a gift already given to them says so underneath — a hint, never a block.
+	 * looks like a gift already given to them says so underneath — a hint, never a block. A new idea
+	 * may name who gives it under the fold, a given one whom it was *Von* (§2.25.12).
 	 */
 	interface Props {
 		/** What kind of gift this is, which decides whether it has a day. */
@@ -57,6 +60,8 @@
 		estimateHref?: string | null;
 		/** Where the form shows its own refusal, when the card does not. */
 		error?: string | null;
+		/** Whom a new idea or gift given may name as its giver; absent on a rewrite. */
+		givers?: GiverChoices | null;
 		/** Closes the form; a card's own add form is closed by the card's *Cancel*. */
 		onCancel?: () => void;
 	}
@@ -73,6 +78,7 @@
 		birth,
 		estimateHref = null,
 		error = null,
+		givers = null,
 		onCancel
 	}: Props = $props();
 
@@ -89,7 +95,26 @@
 	let visibility = $state<'shared' | 'private' | typeof SURPRISE>(
 		gift?.hiddenFromRecipient && recipient ? SURPRISE : (gift?.visibility ?? 'shared')
 	);
+	// A received gift came from its person; who gives an existing one is *Vergeben…*'s.
+	const asksGiver = $derived(givers !== null && !gift && kind !== 'received');
+	/* A gift somebody gives is a surprise: picking them keeps a shared one from its member (D4). */
+	function gave(next: string) {
+		if (next !== '' && recipient && visibility === 'shared') visibility = SURPRISE;
+	}
 </script>
+
+{#snippet giverField(label: string)}
+	{#if givers}
+		<GiftGiverField
+			{label}
+			ties={givers.ties}
+			household={givers.household}
+			people={givers.people}
+			recipientId={givers.recipientId}
+			onchange={gave}
+		/>
+	{/if}
+{/snippet}
 
 <form
 	method="POST"
@@ -144,6 +169,7 @@
 			/>
 		</div>
 		<GiftOccasionField occasion={gift?.occasion ?? null} />
+		{#if asksGiver}{@render giverField(t('gifts.form.from'))}{/if}
 	{:else}
 		<WhenPicker when={gift?.when ?? null} {birth} {today} {estimateHref} kinds={GIFT_WHEN_KINDS} />
 	{/if}
@@ -168,6 +194,7 @@
 				class="{INPUT} w-full"
 			/>
 		</label>
+		{#if asksGiver && kind === 'idea'}{@render giverField(t('gifts.giver.who'))}{/if}
 	{:else}
 		<button
 			type="button"

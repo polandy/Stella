@@ -64,3 +64,12 @@ export async function assignGift(
 	});
 	return { giftId: gift.id };
 }
+
+/** Which people are the household's members' own, for *Wer schenkt?* to suggest; no read of who sees them. */
+export async function membersOwnPeopleOf(
+	deps: Pick<GiftDeps, 'ownPeople'>,
+	actor: GiftActor
+): Promise<string[]> {
+	const owners = await deps.ownPeople.membersOwnPeople(actor.householdId);
+	return owners.map((owner) => owner.contactId);
+}

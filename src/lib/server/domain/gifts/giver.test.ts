@@ -3,8 +3,14 @@ import { fakeOwnPeople } from '../shared/idea-on-person.fixture';
 import { inEnglish } from '../../../i18n/phrase';
 import { markGiftBought } from './bought';
 import { fakeGifts } from './gifts.fixture';
-import { addGift, InvalidGiftError, markGiftGiven, type AddGiftInput, type GiftDeps } from './gifts';
-import { assignGift } from './giver';
+import {
+	addGift,
+	InvalidGiftError,
+	markGiftGiven,
+	type AddGiftInput,
+	type GiftDeps
+} from './gifts';
+import { assignGift, membersOwnPeopleOf } from './giver';
 
 /* Who gives a gift (docs/dev/02 §2.25.12), over an in-memory port. */
 
@@ -82,7 +88,10 @@ describe('addGift with a giver', () => {
 	it('notes an idea a person gives, or the household itself', async () => {
 		const sandras = await note({ giver: { contactId: 'sandra' } });
 		const ours = await note({ giver: { household: true } });
-		expect(gifts.rows.get(sandras)).toMatchObject({ giverContactId: 'sandra', giverName: 'Sandra' });
+		expect(gifts.rows.get(sandras)).toMatchObject({
+			giverContactId: 'sandra',
+			giverName: 'Sandra'
+		});
 		expect(gifts.rows.get(ours)).toMatchObject({ giverContactId: null, giverIsHousehold: true });
 	});
 
@@ -160,7 +169,9 @@ describe('assignGift', () => {
 		await assign(giftId, { when: { kind: 'christmas_at_age', age: 9 } });
 		expect(gifts.rows.get(giftId)?.when).toEqual({ kind: 'christmas_at_age', age: 9 });
 		expect(gifts.rows.get(giftId)?.whenCheckedOn).toBe('2026-11-21');
-		expect(await refusal(assign(giftId, { when: { kind: 'on_date', on: '2020-01-01' } }))).toBeTruthy();
+		expect(
+			await refusal(assign(giftId, { when: { kind: 'on_date', on: '2020-01-01' } }))
+		).toBeTruthy();
 	});
 
 	it('gives a bought gift too', async () => {
@@ -193,5 +204,13 @@ describe('assignGift', () => {
 			hiddenFromRecipient: true
 		});
 		expect(gifts.rows.get(giftId)?.hiddenFromRecipient).toBe(true);
+	});
+});
+
+describe('membersOwnPeopleOf', () => {
+	it('lists the people the members are, for the giver suggestions', async () => {
+		own.set('andy-self', 'andy');
+		own.set('julia-self', 'julia');
+		expect(await membersOwnPeopleOf(deps, JULIA)).toEqual(['andy-self', 'julia-self']);
 	});
 });

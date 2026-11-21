@@ -141,5 +141,23 @@ export const gifts: GiftsMessages = {
 	'gifts.group.changedOne': (p) => `Nur für ${p.name} geändert`,
 
 	'gifts.story.given': 'Geschenkt',
-	'gifts.story.received': 'Bekommen'
+	'gifts.story.received': 'Bekommen',
+	'gifts.giver.gives.person': (p) => `${p.name} schenkt`,
+	'gifts.giver.gives.household': 'Wir schenken',
+	'gifts.giver.gives.unseen': 'vergeben',
+	'gifts.giver.gave.person': (p) => `von ${p.name}`,
+	'gifts.giver.gave.household': 'von uns',
+	'gifts.giver.gave.unseen': 'von jemand anderem',
+	'gifts.giver.who': 'Wer schenkt?',
+	'gifts.giver.we': 'Wir',
+	'gifts.giver.search': 'Jemand anderes…',
+	'gifts.form.from': 'Von',
+	'gifts.assign.open': 'Vergeben…',
+	'gifts.assign.change': 'Schenker ändern',
+	'gifts.assign.title': (p) => `Wer schenkt „${p.title}“?`,
+	'gifts.assign.replaces': (p) => `Schon an ${p.name} vergeben – das ersetzt es.`,
+	'gifts.assign.occasion': 'Zu welchem Anlass?',
+	'gifts.assign.keep': (p) => `Vor ${p.name} geheim halten`,
+	'gifts.assign.free': 'Wieder frei',
+	'gifts.assign.save': 'Vergeben'
 };

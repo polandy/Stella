@@ -1,4 +1,5 @@
 import { faceLookup } from '#lib/story/subjects.js';
+import { householdGivers, livingAmong } from '#lib/gifts/giver-suggestions.js';
 import { error, redirect } from '@sveltejs/kit';
 import { requireRemover, requireUser, requireViewer } from '#lib/server/auth/guards.js';
 import { CONTACT_FIELD_KINDS } from '#lib/people/contact-fields.js';
@@ -168,6 +169,13 @@ export const load = (async ({ locals, params, url }) => {
 		gifts: read.gifts.map((gift) => giftView(gift, ctx)),
 		giftGroups: read.giftGroups.map((found) => giftGroupView(found, ctx)),
 		recipientIsMember: read.recipientIsMember,
+		// The household's givers in the visible graph, for *Wer schenkt?* (§2.25.12).
+		householdGivers: householdGivers(read.memberPeople, read.family.graph),
+		// The person's links who may give: the living ones (§2.25.12).
+		giverTieIds: livingAmong(
+			read.family.ties.map((tie) => tie.otherContactId),
+			read.family.graph
+		),
 		// Outing ideas (docs/dev/02 §2.27), open and done, already visibility-scoped.
 		plans: read.plans.map((plan) => planView(plan, ctx)),
 		// What is still to do for them (docs/dev/02 §2.26): open ones, those with a day first.

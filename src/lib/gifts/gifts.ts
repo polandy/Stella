@@ -73,3 +73,16 @@ export function visibilityFromForm(chosen: string | null): {
 	const { visibility, keptFromPerson } = surpriseFromForm(chosen);
 	return { visibility, hiddenFromRecipient: keptFromPerson };
 }
+
+/** Who gives a gift, as a form or a command asks for it: a person, or the household itself (§2.25.12). */
+export type GiverChoice = { contactId: string } | { household: true };
+
+/** What the giver field posts for the household itself; anything else non-empty is a person's id. */
+export const HOUSEHOLD_GIVER = 'household';
+
+/** The giver the form chose; empty is nobody, so *us*. */
+export function giverFromForm(posted: string | null): GiverChoice | null {
+	const value = (posted ?? '').trim();
+	if (value.length === 0) return null;
+	return value === HOUSEHOLD_GIVER ? { household: true } : { contactId: value };
+}

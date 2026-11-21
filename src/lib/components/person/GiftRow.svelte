@@ -4,7 +4,7 @@
 	import RemoveButton from '#lib/components/ui/RemoveButton.svelte';
 	import { dayLabel } from '#lib/dates/labels.js';
 	import type { PartialDate } from '#lib/dates/partial-date.js';
-	import { addedLabel, occasionLabel } from '#lib/gifts/labels.js';
+	import { addedLabel, giverLabel, occasionLabel } from '#lib/gifts/labels.js';
 	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import { reveal } from '#lib/motion/motion.svelte.js';
 	import { isOpenGift } from '#lib/gifts/gifts.js';
@@ -14,18 +14,19 @@
 	import { ideaState } from '#lib/gifts/idea-when.js';
 	import { asks } from '#lib/when/state.js';
 	import { tick } from 'svelte';
+	import GiftAssignForm from './GiftAssignForm.svelte';
 	import GiftForm from './GiftForm.svelte';
 	import GiftBoughtButton from './GiftBoughtButton.svelte';
 	import GiftGiveForm from './GiftGiveForm.svelte';
 	import GiftStateMark from './GiftStateMark.svelte';
 	import GiftWhenAsk from './GiftWhenAsk.svelte';
-	import type { GroupLink, PersonPageData } from './types';
+	import type { GiverChoices, GroupLink, PersonPageData } from './types';
 
 	/*
 	 * One gift on the Gifts card (docs/dev/02 §2.25): what it is, its note, when and why it was given,
 	 * who noted it — and what can be done with it. An idea offers *Bought* (§2.25.9) and *Mark as
 	 * given*, which asks only for the day and the occasion; a bought one *Mark as given* and *Not
-	 * bought yet*. Every gift can be rewritten in place and removed with the undo every removal
+	 * bought yet*; either one *Vergeben…* to whoever gives it (§2.25.12). Every gift can be rewritten in place and removed with the undo every removal
 	 * has (docs/dev/02 §2.23).
 	 */
 	interface Props {
@@ -48,6 +49,8 @@
 		recipientIsMember: boolean;
 		/** One idea several people get: who else, and how to open *Who has it?* (§2.25.11). */
 		group?: GroupLink | null;
+		/** Whom *Vergeben…* offers as the giver. */
+		givers: GiverChoices;
 	}
 	let {
 		gift,
@@ -59,7 +62,8 @@
 		onGiven,
 		name,
 		recipientIsMember,
-		group = null
+		group = null,
+		givers
 	}: Props = $props();
 
 	const i18n = useI18n();
@@ -70,12 +74,12 @@
 
 	// A refused save leaves its form open (`savedEnhance` closes only on success), so the
 	// reason stands in the form it is about.
-	let mode = $state<'view' | 'edit' | 'give'>('view');
+	let mode = $state<'view' | 'edit' | 'give' | 'assign'>('view');
 	let row = $state<HTMLElement>();
 	// Held by its toast, or on its way after *Bought* / *Not bought yet*.
 	let away = $state(false);
 
-	async function start(next: 'edit' | 'give') {
+	async function start(next: 'edit' | 'give' | 'assign') {
 		mode = next;
 		await tick();
 		row?.querySelector<HTMLElement>('input:not([type="hidden"]), textarea')?.focus();
@@ -99,6 +103,7 @@
 					.join(' · ')
 			: null
 	);
+	const giver = $derived(giverLabel(t, gift.giver, gift.state));
 	/** Where the idea stands against its when; a passed or yearly one asks whether it still stands. */
 	const whenState = $derived(gift.state === 'idea' ? ideaState(gift, birth, today) : null);
 
@@ -141,6 +146,7 @@
 				<div class="min-w-0 flex-1">
 					<p class="font-medium break-words text-fg">{gift.title}</p>
 					{#if when}<p class="text-sm text-fg-muted">{when}</p>{/if}
+					{#if giver}<p class="text-sm text-fg-muted" data-testid="gift-giver-line">{giver}</p>{/if}
 					{#if gift.when}<WhenChip when={gift.when} state={whenState} {today} />{/if}
 					{#if group && group.names.length}
 						<button
@@ -207,6 +213,15 @@
 							<Button variant="secondary" size="sm" type="button" onclick={() => start('give')}>
 								{t('gifts.markGiven.open')}
 							</Button>
+							<Button
+								variant="secondary"
+								size="sm"
+								type="button"
+								onclick={() => start('assign')}
+								data-testid="gift-assign-open"
+							>
+								{t(gift.giver.kind === 'none' ? 'gifts.assign.open' : 'gifts.assign.change')}
+							</Button>
 							{#if gift.state === 'bought'}
 								<GiftBoughtButton {gift} bought={false} onAway={(next) => (away = next)} />
 							{/if}
@@ -236,6 +251,18 @@
 
 			{#if mode === 'give'}
 				<GiftGiveForm {gift} {today} {error} submit={savedGiven} onCancel={close} />
+			{:else if mode === 'assign'}
+				<GiftAssignForm
+					{gift}
+					{givers}
+					recipient={recipientIsMember ? name : null}
+					{birth}
+					{today}
+					{estimateHref}
+					{error}
+					submit={savedEdit}
+					onCancel={close}
+				/>
 			{/if}
 		{/if}
 	</div>

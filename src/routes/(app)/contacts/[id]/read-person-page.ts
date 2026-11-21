@@ -20,6 +20,7 @@ import { listGiftsForContact } from '#lib/server/domain/gifts/gifts.js';
 import { listPlansForContact } from '#lib/server/domain/plans/plans.js';
 import { readGiftGroupsOf } from '#lib/server/domain/gifts/gift-group-follow-up.js';
 import { mayKeepFrom } from '#lib/server/domain/shared/idea-on-person.js';
+import { membersOwnPeopleOf } from '#lib/server/domain/gifts/giver.js';
 import { listOpenTodosForContact } from '#lib/server/domain/todos/todos.js';
 import { readFamilyOf } from '#lib/server/domain/relationships/family.js';
 import { listTagsForContact } from '#lib/server/domain/tags/tag-lists.js';
@@ -78,6 +79,11 @@ export function readPersonPage(
 		giftGroups: readGiftGroupsOf(gifts.giftGroupDeps, viewer, contactId),
 		// Whether a gift may be kept from them, they being another member (§2.25.10).
 		recipientIsMember: mayKeepFrom(gifts.giftDeps.ownPeople, viewer, contactId),
+		// The members' own people, whom *Wer schenkt?* suggests with their children (§2.25.12).
+		memberPeople: membersOwnPeopleOf(gifts.giftDeps, {
+			userId: viewer.id,
+			householdId: viewer.householdId
+		}),
 		// Outing ideas, open and done (§2.27); kept from them the way a gift is.
 		plans: listPlansForContact(plans.planDeps, viewer, contactId),
 		todos: listOpenTodosForContact(todos.todoDeps, viewer, contactId),

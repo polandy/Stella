@@ -6,6 +6,8 @@ import {
 	isGiftState,
 	isOpenGift,
 	occasionFromForm,
+	giverFromForm,
+	HOUSEHOLD_GIVER,
 	OTHER_OCCASION,
 	visibilityFromForm
 } from './gifts';
@@ -92,5 +94,14 @@ describe('visibilityFromForm', () => {
 			visibility: 'shared',
 			hiddenFromRecipient: false
 		});
+	});
+});
+
+describe('giverFromForm (§2.25.12)', () => {
+	it('reads nobody, the household, or a person', () => {
+		expect(giverFromForm(null)).toBeNull();
+		expect(giverFromForm('  ')).toBeNull();
+		expect(giverFromForm(HOUSEHOLD_GIVER)).toEqual({ household: true });
+		expect(giverFromForm('sandra')).toEqual({ contactId: 'sandra' });
 	});
 });

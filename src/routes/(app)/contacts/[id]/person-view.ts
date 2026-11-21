@@ -13,6 +13,7 @@ import {
 } from '#lib/server/domain/dates/important-dates.js';
 import type { GraphModel } from '#lib/graph/model/types.js';
 import type { Gift } from '#lib/server/domain/gifts/gifts.js';
+import { giverViewOf } from '#lib/gifts/giver.js';
 import type { Plan } from '#lib/server/domain/plans/plans.js';
 import type { Todo } from '#lib/server/domain/todos/todos.js';
 import type { MentionedIn } from '#lib/server/domain/mentions/mentioned-in.js';
@@ -115,6 +116,8 @@ export function giftView(gift: Gift, ctx: PersonViewContext) {
 		visibility: gift.visibility,
 		mine,
 		notedBy: mine ? null : authorLabel(false, ctx.nameOfAuthor(gift.createdBy)),
+		/** Who gives it (§2.25.12); an unseen giver comes without their id. */
+		giver: giverViewOf(gift),
 		/** When it was noted, shown on an idea; given and received gifts show their day. */
 		createdAt: gift.createdAt
 	};

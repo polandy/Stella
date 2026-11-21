@@ -101,6 +101,7 @@ function fakes(handler: () => Promise<CapturedMoment> = async () => captured) {
 			'gift.edit': async () => ({ giftId: 'g' }),
 			'gift.markGiven': async () => ({ giftId: 'g' }),
 			'gift.markBought': async () => ({ giftId: 'g' }),
+			'gift.assign': async () => ({ giftId: 'g' }),
 			'gift.answerWhen': async () => ({ giftId: 'g' }),
 			'gift.remove': async () => ({ giftId: 'g' }),
 			'giftGroup.add': async () => ({ groupId: 'gg', giftIds: [], skipped: [] }),

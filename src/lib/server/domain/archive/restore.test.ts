@@ -185,6 +185,9 @@ function fullHousehold(): HouseholdSnapshot {
 					when_age: 18,
 					when_checked_on: '2026-03-01',
 					hidden_from_recipient: 0,
+					giver_contact_id: null,
+					giver_is_household: 0,
+					giver_left_name: 'Ruth',
 					created_at: EXPORTED
 				},
 				{
@@ -203,6 +206,9 @@ function fullHousehold(): HouseholdSnapshot {
 					when_on: '2026-12-24',
 					when_age: null,
 					when_checked_on: null,
+					giver_contact_id: 'c-rosa',
+					giver_is_household: 0,
+					giver_left_name: null,
 					created_at: EXPORTED
 				},
 				{
@@ -217,6 +223,9 @@ function fullHousehold(): HouseholdSnapshot {
 					url: null,
 					given_on: '2024-12-24',
 					occasion: 'christmas',
+					giver_contact_id: null,
+					giver_is_household: 1,
+					giver_left_name: null,
 					created_at: EXPORTED
 				}
 			],
@@ -603,6 +612,9 @@ describe('the round trip', () => {
 			'when_age',
 			'when_checked_on',
 			'hidden_from_recipient',
+			'giver_contact_id',
+			'giver_is_household',
+			'giver_left_name',
 			'created_at'
 		],
 		todo: [
@@ -1181,6 +1193,62 @@ describe('an archive that does not add up', () => {
 			target()
 		);
 		expect(rowsOf(plan, 'gift').find((g) => g.id === 'g-bought')?.hidden_from_recipient).toBe(0);
+	});
+
+	it('restores a gift from an archive written before givers as given by nobody', () => {
+		const plan = planRestore(
+			deps(),
+			archived(
+				bent((s) => {
+					for (const gift of s.tables.gift) {
+						delete gift.giver_contact_id;
+						delete gift.giver_is_household;
+						delete gift.giver_left_name;
+					}
+				})
+			),
+			target()
+		);
+		for (const gift of rowsOf(plan, 'gift')) {
+			expect(gift).toMatchObject({
+				giver_contact_id: null,
+				giver_is_household: 0,
+				giver_left_name: null
+			});
+		}
+	});
+
+	it('keeps a giver the archive did not bring along by no one, and never the person it is for', () => {
+		const plan = planRestore(
+			deps(),
+			archived(
+				bent((s) => {
+					s.tables.gift[0]!.giver_contact_id = 'c-gone';
+					s.tables.gift[2]!.giver_contact_id = 'c-hans';
+				})
+			),
+			target()
+		);
+		const byId = new Map(rowsOf(plan, 'gift').map((g) => [g.id, g]));
+		expect(byId.get('g-idea')?.giver_contact_id).toBeNull();
+		expect(byId.get('g-given')?.giver_contact_id).toBeNull();
+		expect(byId.get('g-given')?.giver_is_household).toBe(1);
+	});
+
+	it('names nobody as the giver of a gift received', () => {
+		const plan = planRestore(
+			deps(),
+			archived(
+				bent((s) => {
+					s.tables.gift[2]!.state = 'received';
+				})
+			),
+			target()
+		);
+		expect(rowsOf(plan, 'gift').find((g) => g.id === 'g-given')).toMatchObject({
+			giver_contact_id: null,
+			giver_is_household: 0
+		});
 	});
 
 	it('keeps the last answer beside the when of an idea, and nowhere else', () => {

@@ -393,6 +393,18 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 - The Shared/Private radios gain *Everyone but Hilde* (eye-off icon) when Hilde is another
   member's own record (docs/dev/02 §2.25.10); such a row says *hidden from Hilde* with the eye-off
   icon in its subtle line, where *private* would stand.
+- A giver (docs/dev/02 §2.25.12) reads under the title, `text-sm`, `--fg-muted`: *Sandra is
+  giving it* (German *Sandra schenkt*), *We are giving it*, *taken* (*vergeben*) on an open gift;
+  *from Sandra*, *from us* on a given one. Beside *Mark as given…* an outlined *Assign…*
+  (*Vergeben…*; *Change giver* once one is set) opens a sunken box like *Mark as given…*: *Who is
+  giving “Puzzle”?*, the giver chips — the person's links with what they are (*Sandra · Aunt*),
+  *Us*, the household — in the occasion chips' look, the person search with *+ New person* below
+  them, *Already with Sandra – this replaces it.* when the choice moves it, *For which occasion?*
+  (`WhenPicker`), for its author on a member's gift *Keep it from Hilde* with its tick at the
+  right, then a ghost *Free again* (once given to someone), *Cancel* and the filled *Assign*,
+  disabled until a chip is chosen. *+ Idea* has the same chips as *Who is giving it?* under
+  *Note or link*, *+ Given* as *From*. Designed in the owner-approved gifts study (§9–15); its
+  sheet is built as this inline box.
 
 #### To-dos card
 

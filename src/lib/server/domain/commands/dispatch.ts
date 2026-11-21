@@ -52,6 +52,7 @@ export interface CommandResults {
 	'gift.edit': { giftId: string };
 	'gift.markGiven': { giftId: string };
 	'gift.markBought': { giftId: string };
+	'gift.assign': { giftId: string };
 	'gift.answerWhen': { giftId: string };
 	'gift.remove': { giftId: string };
 	/** Who got an idea, and who was left out and why (§2.25.11). */
@@ -248,6 +249,8 @@ function apply(
 		case 'gift.markGiven':
 			return handlers[command.type](actor, command.payload);
 		case 'gift.markBought':
+			return handlers[command.type](actor, command.payload);
+		case 'gift.assign':
 			return handlers[command.type](actor, command.payload);
 		case 'gift.answerWhen':
 			return handlers[command.type](actor, command.payload);

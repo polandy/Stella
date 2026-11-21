@@ -314,6 +314,10 @@ export function buildArchiveDocument(
 					visibility: text(g, 'visibility'),
 					// Kept from the person it is for (§2.25.10).
 					hidden_from_recipient: flag(g, 'hidden_from_recipient'),
+					// Who gives or gave it (§2.25.12).
+					giver: text(g, 'giver_contact_id'),
+					giver_is_household: flag(g, 'giver_is_household'),
+					giver_left_name: text(g, 'giver_left_name'),
 					group: text(g, 'group_id'),
 					author: text(g, 'created_by'),
 					created_at: moment(g, 'created_at')

@@ -1,7 +1,7 @@
 import { TranslatableError } from '../../../i18n/translatable';
 import { phrase, type Phrase } from '../../../i18n/phrase';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
-import { hasGiftDay, type GiftState } from '../../../gifts/gifts';
+import { hasGiftDay, type GiftState, type GiverChoice } from '../../../gifts/gifts';
 import type { PartialDate } from '../../../dates/partial-date';
 import { todayFor } from '../../../dates/today';
 import { ideaState, ideaWaits as waitsOn } from '../../../gifts/idea-when';
@@ -84,8 +84,7 @@ export interface Gift extends GiftRecord, StoredGiver {
 	giverName: string | null;
 }
 
-/** Who gives a gift, as a form or a command asks for it: a person, or the household itself. */
-export type GiverChoice = { contactId: string } | { household: true };
+export type { GiverChoice };
 
 /** No giver named: the household gives it, as every gift did before givers. */
 export const NO_GIVER = {

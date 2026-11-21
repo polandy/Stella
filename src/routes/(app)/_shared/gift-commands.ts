@@ -1,5 +1,5 @@
 import type { CommandType } from '#lib/commands/commands.js';
-import { occasionFromForm, visibilityFromForm } from '#lib/gifts/gifts.js';
+import { giverFromForm, occasionFromForm, visibilityFromForm } from '#lib/gifts/gifts.js';
 import { whenFromForm } from '#lib/when/form.js';
 import { GiftGoneError } from '#lib/server/domain/gifts/gifts.js';
 import { fail, type RequestEvent } from '@sveltejs/kit';
@@ -33,6 +33,16 @@ export const visibilityOf = (form: FormData) => visibilityFromForm(textOf(form, 
 
 /** When the idea is for, as the picker posted it; undefined where the form has no picker. */
 export const whenOf = (form: FormData) => whenFromForm((key) => textOf(form, key));
+
+/** Who gives it, as the giver field posted it (§2.25.12); left out or empty, or *Wieder frei*, nobody. */
+export const giverOf = (form: FormData) =>
+	textOf(form, 'free') ? null : giverFromForm(textOf(form, 'giver'));
+
+/** The surprise a giver's form asks for (§2.25.12, D4); undefined where the form has no such box. */
+export function surpriseOf(form: FormData): boolean | undefined {
+	const asked = textOf(form, 'surprise');
+	return asked === null ? undefined : asked === 'kept';
+}
 
 /** Which field names which mistake; a gift group's form answers the same way. */
 const GIFT_FORM: CommandFormEdge = {

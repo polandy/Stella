@@ -50,11 +50,13 @@ describe('the command vocabulary', () => {
 		expect(kindOf('gift.remove')).toBe('remove');
 		expect(kindOf('gift.answerWhen')).toBe('change');
 		expect(kindOf('gift.markBought')).toBe('change');
+		expect(kindOf('gift.assign')).toBe('change');
 		expect(kindOf('giftGroup.removeOpen')).toBe('remove');
 		for (const type of [
 			'gift.edit',
 			'gift.markGiven',
 			'gift.markBought',
+			'gift.assign',
 			'gift.answerWhen',
 			'gift.remove',
 			'giftGroup.addRecipients',

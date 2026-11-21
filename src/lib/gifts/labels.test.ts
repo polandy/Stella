@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { INTL_LOCALES } from '../i18n/locales';
 import { createTranslator } from '../i18n/translate';
-import { addedLabel, nextOccasionLabel, occasionLabel, stateLabel } from './labels';
+import { addedLabel, giverLabel, nextOccasionLabel, occasionLabel, stateLabel } from './labels';
 
 /*
  * An occasion as the reader reads it (docs/dev/02 §2.25): a preset in their language, whoever
@@ -77,5 +77,31 @@ describe('nextOccasionLabel', () => {
 		expect(nextOccasionLabel(de, { kind: 'christmas', date: '2026-12-24', daysUntil: 1 })).toBe(
 			'Weihnachten morgen · 24. Dez.'
 		);
+	});
+});
+
+describe('giverLabel', () => {
+	const en = createTranslator('en');
+	const de = createTranslator('de');
+
+	it('says who is giving an open gift', () => {
+		const sandra = { kind: 'person', contactId: 's', name: 'Sandra' } as const;
+		expect(giverLabel(de, sandra, 'idea')).toBe('Sandra schenkt');
+		expect(giverLabel(en, sandra, 'bought')).toBe('Sandra is giving it');
+		expect(giverLabel(de, { kind: 'household' }, 'idea')).toBe('Wir schenken');
+		expect(giverLabel(de, { kind: 'unseen' }, 'idea')).toBe('vergeben');
+		expect(giverLabel(de, { kind: 'left', name: 'Ruth' }, 'idea')).toBe('Ruth schenkt');
+	});
+
+	it('says who gave a gift given', () => {
+		const sandra = { kind: 'person', contactId: 's', name: 'Sandra' } as const;
+		expect(giverLabel(de, sandra, 'given')).toBe('von Sandra');
+		expect(giverLabel(en, { kind: 'household' }, 'given')).toBe('from us');
+		expect(giverLabel(de, { kind: 'unseen' }, 'given')).toBe('von jemand anderem');
+	});
+
+	it('says nothing when nobody is named, or on a gift received', () => {
+		expect(giverLabel(de, { kind: 'none' }, 'idea')).toBeNull();
+		expect(giverLabel(de, { kind: 'household' }, 'received')).toBeNull();
 	});
 });

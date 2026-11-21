@@ -663,6 +663,14 @@ and a good idea is still there on the birthday it was meant for.
   it, marked *hidden from Mama*; Mama never does — not on her page, not in any count, on Home,
   in *All gift ideas*, in search, in her calendar or, once given, under *Activity*. Only the
   person who noted it can change that choice.
+- **Who gives it.** **Assign…** under an idea says who gives it — Grandma, an aunt, one of the
+  children, or **Us** for the household — and for which occasion. Stella suggests the person's
+  family and friends first, then your household; **Someone else…** finds anyone else, or adds
+  someone new. The idea then reads *Grandma is giving it*, so nobody buys it twice; choosing
+  again moves it on, **Free again** clears it. *+ Idea* can say who gives it right away (under
+  *Note or link*), and *+ Given* asks **From** — whom it was from. When the idea is for someone
+  in the household, picking a giver makes it a surprise for them. If you cannot see the giver's
+  person, the idea just says *taken*.
 - Given and received gifts also appear under **Activity** on their day. Ideas never do.
 - An idea can be noted from anywhere: `⌘K` / `Ctrl-K`, **Gift idea for …**, then the person's
   name and `Enter`. Their Gifts card opens with the idea form ready.

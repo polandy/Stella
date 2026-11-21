@@ -61,6 +61,26 @@ function whenOfRestored(row: Row, state: GiftState) {
 const isRealDay = (day: string | null): day is string =>
 	day !== null && FULL_DATE_SHAPE.test(day) && isRealCalendarDay(day);
 
+/** Who gives a restored gift (§2.25.12): someone the archive brought along, never its own person. */
+function giverOfRestored(
+	row: Row,
+	state: GiftState,
+	recipientId: string,
+	knownPeople: ReadonlySet<string>
+) {
+	// What was received came from its person.
+	if (state === 'received') {
+		return { giver_contact_id: null, giver_is_household: 0, giver_left_name: null };
+	}
+	const giver = str(row, 'giver');
+	const kept = giver !== null && giver !== recipientId && knownPeople.has(giver) ? giver : null;
+	return {
+		giver_contact_id: kept,
+		giver_is_household: kept === null && bool(row, 'giver_is_household') ? 1 : 0,
+		giver_left_name: kept === null ? str(row, 'giver_left_name') : null
+	};
+}
+
 export function planPersonRecords(
 	people: readonly Row[],
 	knownPeople: ReadonlySet<string>,
@@ -251,6 +271,7 @@ export function planPersonRecords(
 				given_on: hasGiftDay(state) ? givenOn : null,
 				occasion: str(giftRow, 'occasion'),
 				...whenOfRestored(giftRow, state),
+				...giverOfRestored(giftRow, state, contactId, knownPeople),
 				// Checked against the archive's groups by `planGiftGroups`.
 				group_id: str(giftRow, 'group'),
 				...stamps(giftRow)

@@ -136,8 +136,21 @@ describe('giftView', () => {
 			visibility: 'shared',
 			mine: false,
 			notedBy: 'Hans',
+			giver: { kind: 'none' },
 			createdAt: 1
 		});
+	});
+
+	it('names who gives it, and never the id of a giver the viewer may not see (§2.25.12)', () => {
+		const seen = gift({ giverContactId: 'c-sandra', giverName: 'Sandra' });
+		expect(giftView(seen, context()).giver).toEqual({
+			kind: 'person',
+			contactId: 'c-sandra',
+			name: 'Sandra'
+		});
+		const unseen = giftView(gift({ giverContactId: 'c-secret' }), context());
+		expect(unseen.giver).toEqual({ kind: 'unseen' });
+		expect(JSON.stringify(unseen)).not.toContain('c-secret');
 	});
 
 	it('marks the viewer’s own gift, which only they may make private', () => {

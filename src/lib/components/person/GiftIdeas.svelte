@@ -3,7 +3,7 @@
 	import type { PartialDate } from '#lib/dates/partial-date.js';
 	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import GiftRow from './GiftRow.svelte';
-	import type { GroupLink, PersonPageData } from './types';
+	import type { GiverChoices, GroupLink, PersonPageData } from './types';
 
 	// The *Ideas* tab: open ideas, the waiting ones folded under *Later* (docs/dev/02 §2.25.8), and
 	// the bought ones under *Ready to give* (§2.25.9).
@@ -20,6 +20,7 @@
 		onGiven: () => void;
 		recipientIsMember: boolean;
 		groupOf: (gift: PersonPageData['gifts'][number]) => GroupLink | null;
+		givers: GiverChoices;
 	}
 	let {
 		open,
@@ -33,7 +34,8 @@
 		rowError,
 		onGiven,
 		recipientIsMember,
-		groupOf
+		groupOf,
+		givers
 	}: Props = $props();
 
 	const t = useI18n().t;
@@ -54,6 +56,7 @@
 				{name}
 				{recipientIsMember}
 				group={groupOf(gift)}
+				{givers}
 			/>
 		{/each}
 	</ul>

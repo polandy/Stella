@@ -4,6 +4,7 @@ import { INTERACTION_KINDS } from '../story/interaction-kinds';
 import type { CommandType } from './commands';
 import {
 	GiftAddSchema,
+	GiftAssignSchema,
 	GiftAnswerWhenSchema,
 	GiftEditSchema,
 	GiftGroupAddRecipientsSchema,
@@ -178,6 +179,7 @@ export const COMMAND_PAYLOAD_SCHEMAS = {
 	'gift.edit': GiftEditSchema,
 	'gift.markGiven': GiftMarkGivenSchema,
 	'gift.markBought': GiftMarkBoughtSchema,
+	'gift.assign': GiftAssignSchema,
 	'gift.answerWhen': GiftAnswerWhenSchema,
 	'gift.remove': GiftRemoveSchema,
 	'giftGroup.add': GiftGroupAddSchema,

@@ -1,5 +1,7 @@
 import type { CardPhoto } from '#lib/people/photo-card.js';
 import type { GlimpsePhoto } from '#lib/immich/strip.js';
+import type { GiverSuggestion } from '#lib/gifts/giver-suggestions.js';
+import type { SelectablePerson } from '#lib/people/select.js';
 import type { RelationshipCategory } from '#lib/relationships/categories.js';
 import type { ANY_PARENT_KIND, Exclusion } from '#lib/relationships/exclusions.js';
 import type { ParentKind } from '#lib/relationships/parent-kinds.js';
@@ -45,4 +47,14 @@ export type CardEntry = CardPhoto<PersonPageData['gallery'][number], GlimpsePhot
 export interface GroupLink {
 	names: string[];
 	open: () => void;
+}
+
+/** Whom the Gifts card offers as a giver (docs/dev/02 §2.25.12), worked out once per card. */
+export interface GiverChoices {
+	ties: GiverSuggestion[];
+	household: GiverSuggestion[];
+	/** Everyone a search may find. */
+	people: SelectablePerson[];
+	/** The person the gifts are for, never their own giver. */
+	recipientId: string;
 }
