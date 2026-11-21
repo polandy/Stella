@@ -263,6 +263,12 @@ guess. Each user-facing change follows:
 Don't write the e2e in step 1: an unverified e2e can encode a wrong expectation and pass, giving
 false confidence. Steps 1–2 are never skipped; step 3 waits for sign-off.
 
+**Feature citation report.** `scripts/spec-coverage.sh` lists numbered feature headings with no
+exact `§2.…` citation in the first block comment of an e2e spec. If unit tests are sufficient
+for a heading, append `<!-- coverage: unit -->` to that heading in `docs/dev/features/`. The
+marker applies only to that heading, not its children. The report checks citations, not what
+the tests assert, and gaps do not make it fail.
+
 ### 8.4.2 Determinism: a test may only fail for the behaviour
 
 A test that can fail while the code is right is worse than no test: it teaches the team to
