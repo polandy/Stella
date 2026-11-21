@@ -211,6 +211,8 @@ export const contact: ContactMessages = {
 	'contact.relationships.howConnectOptional': 'Wie sie zusammenhängen (optional)',
 	'contact.relationships.howConnectPlaceholder': 'über Peter im Skikurs kennengelernt',
 	'contact.relationships.sinceLabel': 'Seit',
+	'contact.relationships.until': (p) => `bis ${p.day}`,
+	'contact.relationships.untilLabel': 'Bis',
 	'contact.relationships.status': 'Status',
 	'contact.relationships.is': (p) => `${p.name} ist…`,
 	'contact.relationships.typeLabel': 'Beziehung',

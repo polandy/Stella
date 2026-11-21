@@ -32,6 +32,7 @@ export interface AddRelationshipInput {
 	typeChoice: string;
 	description: string | null;
 	sinceDate: string | null;
+	untilDate: string | null;
 	status: string | null;
 }
 
@@ -56,6 +57,7 @@ export async function addRelationshipChecked(
 		perspectiveContactId: input.contactId,
 		description: input.description,
 		sinceDate: input.sinceDate,
+		untilDate: input.untilDate,
 		status: input.status
 	});
 	return { relationshipId };

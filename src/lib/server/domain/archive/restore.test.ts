@@ -682,6 +682,7 @@ describe('the round trip', () => {
 			'type_id',
 			'note',
 			'since_date',
+			'until_date',
 			'status',
 			'created_at'
 		],

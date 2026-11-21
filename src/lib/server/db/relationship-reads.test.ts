@@ -79,6 +79,7 @@ describe('listForContactVisibleTo', () => {
 			typeId: 'parent_child',
 			description: null,
 			sinceDate: null,
+			untilDate: null,
 			status: CURRENT_RELATIONSHIP_STATUS,
 			createdBy: U1,
 			createdAt: 0,
@@ -107,6 +108,7 @@ describe('listForContactVisibleTo', () => {
 			typeId: 'partner',
 			description: 'met at the ski course',
 			sinceDate: '2019-06-01',
+			untilDate: null,
 			status: 'former',
 			createdBy: U1,
 			createdAt: 0,
@@ -123,6 +125,7 @@ describe('listForContactVisibleTo', () => {
 			expect(view).toMatchObject({
 				description: 'met at the ski course',
 				sinceDate: '2019-06-01',
+				untilDate: null,
 				status: 'former'
 			});
 		}
@@ -156,6 +159,7 @@ describe('listForContactVisibleTo', () => {
 			typeId: 'friend',
 			description: null,
 			sinceDate: null,
+			untilDate: null,
 			status: CURRENT_RELATIONSHIP_STATUS,
 			createdBy: U1,
 			createdAt: 0,
@@ -191,6 +195,7 @@ describe('loadKinshipGraphVisibleTo (docs/dev/02 §2.4.1)', () => {
 				typeId,
 				description: null,
 				sinceDate: null,
+				untilDate: null,
 				status: CURRENT_RELATIONSHIP_STATUS,
 				createdBy: U1,
 				createdAt: 1,

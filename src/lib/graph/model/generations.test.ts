@@ -195,6 +195,8 @@ describe('isFamilyLink', () => {
 	it('leaves out a friendship, a household’s own type and a membership', () => {
 		expect(isFamilyLink(stored('anna', 'eva', 'friend'))).toBe(false);
 		expect(isFamilyLink(stored('anna', 'eva', 'godparent_of'))).toBe(false);
+		// A childminder cares for a child without belonging to the family (docs/dev/02 §2.4).
+		expect(isFamilyLink(stored('anna', 'eva', 'cares_for'))).toBe(false);
 		expect(isFamilyLink({ id: 'm', source: 'ski', target: 'anna', kind: 'membership' })).toBe(
 			false
 		);

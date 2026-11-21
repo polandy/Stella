@@ -115,6 +115,7 @@
 						typeChoice: encodeRelationshipChoice(typeId, batch.side),
 						status: CURRENT_RELATIONSHIP_STATUS,
 						description: null,
+						untilDate: null,
 						links: batch.targetIds.map((targetId) => ({ targetId, sinceDate: null }))
 					},
 					issuedAt: Date.now()

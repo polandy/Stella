@@ -36,6 +36,7 @@ export function addRelationshipCommand(
 				typeChoice,
 				description: text(fields.get('description')),
 				sinceDate: text(fields.get('sinceDate')),
+				untilDate: text(fields.get('untilDate')),
 				status: text(fields.get('status'))
 			},
 			issuedAt
@@ -53,6 +54,7 @@ export function addRelationshipCommand(
 			typeChoice,
 			status: status ?? CURRENT_RELATIONSHIP_STATUS,
 			description: text(fields.get('description')),
+			untilDate: text(fields.get('untilDate')),
 			links: targetIds.map((targetId, index) => ({
 				targetId,
 				sinceDate: text(sinceDates.length === 1 ? sinceDates[0] : sinceDates[index])

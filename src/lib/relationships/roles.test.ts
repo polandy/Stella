@@ -93,6 +93,16 @@ describe('relationshipRoleLabel', () => {
 	});
 });
 
+describe('cares_for', () => {
+	it('names the carer and the one looked after, in both languages', () => {
+		const carer = { typeKey: 'cares_for', side: 'forward' as const, label: 'stored' };
+		const cared = { typeKey: 'cares_for', side: 'reverse' as const, label: 'stored' };
+		expect(relationshipRoleLabel(de, cared, 'female')).toBe('Tagesmutter');
+		expect(relationshipRoleLabel(de, cared, 'male')).toBe('Tagesvater');
+		expect(relationshipRoleLabel(en, carer, 'neutral')).toBe('Looked after');
+	});
+});
+
 describe('roleTermLabel', () => {
 	it('says a role on its own, in the kinship engine’s words where it shares them', () => {
 		expect(roleTermLabel(en, 'parent', 'male')).toBe('Father');

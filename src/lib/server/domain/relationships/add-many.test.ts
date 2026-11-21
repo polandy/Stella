@@ -109,6 +109,7 @@ function household(rows: StoredRow[] = [], hidden: string[] = []) {
 							category: seen.category,
 							description: null,
 							sinceDate: null,
+							untilDate: null,
 							status: CURRENT_RELATIONSHIP_STATUS
 						};
 					})
@@ -146,6 +147,7 @@ function batch(
 		typeChoice: encodeRelationshipChoice(typeId, side),
 		status: CURRENT_RELATIONSHIP_STATUS,
 		description: null,
+		untilDate: null,
 		links: links.map((link) =>
 			typeof link === 'string' ? { targetId: link, sinceDate: null } : link
 		),
@@ -183,6 +185,7 @@ describe('addRelationships', () => {
 				toContactId: 'lio',
 				typeId: 'parent_child',
 				sinceDate: '2015-04-12',
+				untilDate: null,
 				createdBy: 'u1',
 				householdId: 'h1'
 			},

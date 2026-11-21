@@ -185,6 +185,7 @@ export function planRelationships(
 			typeId: type.id,
 			description: null,
 			sinceDate: null,
+			untilDate: null,
 			status: CURRENT_RELATIONSHIP_STATUS,
 			createdBy: context.actorId,
 			createdAt: context.now,

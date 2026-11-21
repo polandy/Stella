@@ -45,6 +45,7 @@ export function createDrizzleRelationshipTieReads(
 					id: relationship.id,
 					description: relationship.note,
 					sinceDate: relationship.sinceDate,
+					untilDate: relationship.untilDate,
 					status: relationship.status,
 					fromContactId: relationship.fromContactId,
 					toContactId: relationship.toContactId,
@@ -91,6 +92,7 @@ export function createDrizzleRelationshipTieReads(
 				return {
 					id: row.id,
 					sinceDate: row.sinceDate,
+					untilDate: row.untilDate,
 					status: toStatus(row.status),
 					otherContactId: description.otherContactId,
 					otherDisplayName,

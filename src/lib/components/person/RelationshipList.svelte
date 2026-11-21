@@ -14,6 +14,7 @@
 		relationshipTypeLabel
 	} from '#lib/relationships/labels.js';
 	import { foldPeople, groupPeople } from '#lib/relationships/people-groups.js';
+	import { yearSpan } from '#lib/relationships/period.js';
 	import { groupByExclusion } from '#lib/relationships/picker-groups.js';
 	import { otherEndRole, relationshipRoleLabel } from '#lib/relationships/roles.js';
 	import { FORMER_RELATIONSHIP_STATUS, RELATIONSHIP_STATUSES } from '#lib/relationships/status.js';
@@ -138,15 +139,24 @@
 		return t('immich.together.rowLabelPair', { first: own, second: other });
 	}
 
+	/** Years when the link has both ends, else the one end it has, said in words. */
+	function spanLabel(rel: (typeof rows)[number]): string | null {
+		const years = yearSpan(rel.sinceDate, rel.untilDate);
+		if (years) return years;
+		if (rel.sinceDate)
+			return t('contact.relationships.since', { day: dayLabel(i18n, rel.sinceDate) });
+		if (rel.untilDate)
+			return t('contact.relationships.until', { day: dayLabel(i18n, rel.untilDate) });
+		return null;
+	}
+
 	/** What the line under a name says: the role first, then what else the link carries. */
 	const detailsOf = (rel: (typeof rows)[number]): string =>
 		[
 			rel.roleLabel,
 			rel.status === FORMER_RELATIONSHIP_STATUS ? relationshipStatusLabel(t, rel.status) : null,
 			rel.description,
-			rel.sinceDate
-				? t('contact.relationships.since', { day: dayLabel(i18n, rel.sinceDate) })
-				: null
+			spanLabel(rel)
 		]
 			.filter(Boolean)
 			.join(' · ');
@@ -301,6 +311,16 @@
 											name="sinceDate"
 											value={rel.sinceDate ?? ''}
 											label={t('contact.relationships.sinceLabel')}
+										/>
+									</label>
+									<label class="flex flex-col gap-1">
+										<span class="text-xs text-fg-muted"
+											>{t('contact.relationships.untilLabel')}</span
+										>
+										<DateField
+											name="untilDate"
+											value={rel.untilDate ?? ''}
+											label={t('contact.relationships.untilLabel')}
 										/>
 									</label>
 									<label class="flex flex-col gap-1">

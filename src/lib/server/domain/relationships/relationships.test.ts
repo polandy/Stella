@@ -225,6 +225,22 @@ describe('createRelationship', () => {
 		});
 	});
 
+	it('stores a link that ended before today as former, with its end day', async () => {
+		const f = fakeRepo({ type: parentChild });
+		await createRelationship(
+			{ ...f.deps, ids: idGen('rel-1'), clock },
+			{ id: 'user-1', householdId: 'household-1' },
+			{
+				fromContactId: 'hans',
+				toContactId: 'bettina',
+				typeId: 'parent_child',
+				status: 'current',
+				untilDate: '2000-01-01'
+			}
+		);
+		expect(f.inserted).toMatchObject({ untilDate: '2000-01-01', status: 'former' });
+	});
+
 	it('stores symmetric relationships in canonical order', async () => {
 		const f = fakeRepo({ type: sibling });
 		await createRelationship(
@@ -530,23 +546,30 @@ describe('readKinship', () => {
  * an optional since-day and whether the link still holds. Pure — no deps, no clock.
  */
 describe('parseRelationshipDetails', () => {
+	const TODAY = '2026-11-21';
+	const parse = (input: Parameters<typeof parseRelationshipDetails>[0]) =>
+		parseRelationshipDetails(input, TODAY);
+
 	it('keeps the text as written, trimmed', () => {
-		expect(parseRelationshipDetails({ description: '  met at the ski course ' })).toEqual({
+		expect(parse({ description: '  met at the ski course ' })).toEqual({
 			description: 'met at the ski course',
 			sinceDate: null,
+			untilDate: null,
 			status: 'current'
 		});
 	});
 
 	it('reads nothing given, and nothing but blanks, as nothing said for the free fields', () => {
-		expect(parseRelationshipDetails({})).toEqual({
+		expect(parse({})).toEqual({
 			description: null,
 			sinceDate: null,
+			untilDate: null,
 			status: 'current'
 		});
-		expect(parseRelationshipDetails({ description: '   ', sinceDate: '', status: '' })).toEqual({
+		expect(parse({ description: '   ', sinceDate: '', status: '' })).toEqual({
 			description: null,
 			sinceDate: null,
+			untilDate: null,
 			status: 'current'
 		});
 	});
@@ -554,31 +577,56 @@ describe('parseRelationshipDetails', () => {
 	// A link that exists holds until someone ends it, so there is no third answer to store
 	// (docs/dev/02 §2.4): a form that says nothing about the status says `current`.
 	it('reads a status left unsaid as current, never as unset', () => {
-		expect(parseRelationshipDetails({}).status).toBe('current');
-		expect(parseRelationshipDetails({ status: null }).status).toBe('current');
-		expect(parseRelationshipDetails({ status: '  ' }).status).toBe('current');
+		expect(parse({}).status).toBe('current');
+		expect(parse({ status: null }).status).toBe('current');
+		expect(parse({ status: '  ' }).status).toBe('current');
 	});
 
 	it('takes a real day and refuses one that never happened', () => {
-		expect(parseRelationshipDetails({ sinceDate: '2019-06-01' }).sinceDate).toBe('2019-06-01');
-		expect(() => parseRelationshipDetails({ sinceDate: '2019-02-30' })).toThrow(
-			InvalidRelationshipDetailsError
-		);
+		expect(parse({ sinceDate: '2019-06-01' }).sinceDate).toBe('2019-06-01');
+		expect(() => parse({ sinceDate: '2019-02-30' })).toThrow(InvalidRelationshipDetailsError);
 	});
 
 	it('wants the whole day, not a recurring one', () => {
 		// `--06-01` is legal for a birthday (docs/dev/03), but "since" names a point in time.
-		expect(() => parseRelationshipDetails({ sinceDate: '--06-01' })).toThrow(
-			InvalidRelationshipDetailsError
-		);
+		expect(() => parse({ sinceDate: '--06-01' })).toThrow(InvalidRelationshipDetailsError);
 	});
 
 	it('accepts only the two statuses the model knows', () => {
-		expect(parseRelationshipDetails({ status: 'current' }).status).toBe('current');
-		expect(parseRelationshipDetails({ status: 'former' }).status).toBe('former');
-		expect(() => parseRelationshipDetails({ status: 'complicated' })).toThrow(
+		expect(parse({ status: 'current' }).status).toBe('current');
+		expect(parse({ status: 'former' }).status).toBe('former');
+		expect(() => parse({ status: 'complicated' })).toThrow(InvalidRelationshipDetailsError);
+	});
+
+	it('reads an until day like a since day: whole and real', () => {
+		expect(parse({ untilDate: '2018-06-30' }).untilDate).toBe('2018-06-30');
+		expect(parse({ untilDate: ' ' }).untilDate).toBeNull();
+		expect(() => parse({ untilDate: '2019-02-30' })).toThrow(InvalidRelationshipDetailsError);
+		expect(() => parse({ untilDate: '--06-01' })).toThrow(InvalidRelationshipDetailsError);
+	});
+
+	it('refuses a link that ends before it began', () => {
+		expect(() => parse({ sinceDate: '2018-06-30', untilDate: '2015-01-01' })).toThrow(
 			InvalidRelationshipDetailsError
 		);
+		expect(parse({ sinceDate: '2018-06-30', untilDate: '2018-06-30' }).untilDate).toBe(
+			'2018-06-30'
+		);
+	});
+
+	it('makes a link whose until day is past a former one, whatever status came with it', () => {
+		expect(parse({ untilDate: '2018-06-30' }).status).toBe('former');
+		expect(parse({ untilDate: '2026-11-20', status: 'current' }).status).toBe('former');
+	});
+
+	it('leaves the status alone while the until day is today or ahead', () => {
+		expect(parse({ untilDate: TODAY }).status).toBe('current');
+		expect(parse({ untilDate: '2030-01-01' }).status).toBe('current');
+		expect(parse({ untilDate: '2030-01-01', status: 'former' }).status).toBe('former');
+	});
+
+	it('keeps a former link former without an until day', () => {
+		expect(parse({ status: 'former' })).toMatchObject({ untilDate: null, status: 'former' });
 	});
 });
 
@@ -606,6 +654,7 @@ describe('createRelationship with details', () => {
 				typeId: 'partner',
 				description: 'met at the ski course',
 				sinceDate: '2019-06-01',
+				untilDate: null,
 				status: 'former'
 			}
 		);
@@ -613,6 +662,7 @@ describe('createRelationship with details', () => {
 		expect(f.inserted).toMatchObject({
 			description: 'met at the ski course',
 			sinceDate: '2019-06-01',
+			untilDate: null,
 			status: 'former'
 		});
 	});
@@ -648,6 +698,7 @@ describe('editRelationship', () => {
 			perspectiveContactId: 'a',
 			description: '  they met skiing ',
 			sinceDate: '2019-06-01',
+			untilDate: null,
 			status: 'former'
 		});
 
@@ -658,6 +709,7 @@ describe('editRelationship', () => {
 				update: {
 					description: 'they met skiing',
 					sinceDate: '2019-06-01',
+					untilDate: null,
 					status: 'former',
 					retype: null
 				},

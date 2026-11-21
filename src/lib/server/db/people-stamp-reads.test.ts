@@ -198,6 +198,7 @@ describe('the people stamp', () => {
 					typeId: 'friend',
 					description: null,
 					sinceDate: null,
+					untilDate: null,
 					status: 'current',
 					createdBy: U1,
 					createdAt: tick(),
@@ -210,7 +211,7 @@ describe('the people stamp', () => {
 				createDrizzleRelationshipRepository(db).updateVisibleTo(
 					andy,
 					'r-ab',
-					{ description: null, sinceDate: null, status: 'former', retype: null },
+					{ description: null, sinceDate: null, untilDate: null, status: 'former', retype: null },
 					tick()
 				)
 		],

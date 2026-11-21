@@ -114,6 +114,7 @@ export function stageRelationships(
 							category: seen.category,
 							description: link.description,
 							sinceDate: link.sinceDate,
+							untilDate: link.untilDate,
 							status: link.status
 						};
 					})

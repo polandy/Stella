@@ -178,6 +178,7 @@ function fullHousehold(): HouseholdSnapshot {
 					type_id: 'rt-1',
 					note: 'married in Thun',
 					since_date: '1980-06-01',
+					until_date: '1985-01-01',
 					status: 'current',
 					created_by: 'u-1',
 					created_at: NOW
@@ -361,6 +362,7 @@ describe('the household around them', () => {
 				type: 'rt-1',
 				description: 'married in Thun',
 				since: '1980-06-01',
+				until: '1985-01-01',
 				status: 'current',
 				author: 'u-1',
 				created_at: '2026-09-07T09:30:00.000Z'

@@ -98,6 +98,12 @@ export const relationships = {
 	'relationships.role.knows.male': 'Acquainted',
 	'relationships.role.knows.female': 'Acquainted',
 	'relationships.role.knows.neutral': 'Acquainted',
+	'relationships.role.carer.male': 'Childminder',
+	'relationships.role.carer.female': 'Childminder',
+	'relationships.role.carer.neutral': 'Carer',
+	'relationships.role.cared-for.male': 'Looked after',
+	'relationships.role.cared-for.female': 'Looked after',
+	'relationships.role.cared-for.neutral': 'Looked after',
 	'relationships.role.connected.male': 'Connected',
 	'relationships.role.connected.female': 'Connected',
 	'relationships.role.connected.neutral': 'Connected',
@@ -136,6 +142,8 @@ export const relationships = {
 	'relationships.type.acquaintance.reverse': 'Acquaintance of',
 	'relationships.type.knows.forward': 'Knows',
 	'relationships.type.knows.reverse': 'Knows',
+	'relationships.type.cares_for.forward': 'Looks after',
+	'relationships.type.cares_for.reverse': 'Looked after by',
 	'relationships.type.other.forward': 'Connected to',
 	'relationships.type.other.reverse': 'Connected to',
 	// The same link when its other end is the viewer's own person (docs/dev/02 §2.2.3).
@@ -173,6 +181,8 @@ export const relationships = {
 	'relationships.towardsYou.acquaintance.reverse': 'An acquaintance of yours',
 	'relationships.towardsYou.knows.forward': 'Knows you',
 	'relationships.towardsYou.knows.reverse': 'Knows you',
+	'relationships.towardsYou.cares_for.forward': 'Your carer',
+	'relationships.towardsYou.cares_for.reverse': 'Someone you look after',
 	'relationships.towardsYou.other.forward': 'Connected to you',
 	'relationships.towardsYou.other.reverse': 'Connected to you'
 };

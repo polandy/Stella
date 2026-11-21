@@ -38,6 +38,7 @@ export const relationship = sqliteTable(
 			.references(() => relationshipType.id),
 		note: text('note'),
 		sinceDate: text('since_date'),
+		untilDate: text('until_date'),
 		// A link that is on record holds until someone ends it, so there is no unset status:
 		// a row that says nothing says `current` (docs/dev/03 §relationship).
 		status: text('status').notNull().default(CURRENT_RELATIONSHIP_STATUS),

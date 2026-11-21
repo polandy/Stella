@@ -29,6 +29,7 @@ import type { Actions } from '../$types';
 const RelationshipDetailsSchema = {
 	description: v.optional(v.pipe(v.string(), v.trim())),
 	sinceDate: v.optional(v.pipe(v.string(), v.trim())),
+	untilDate: v.optional(v.pipe(v.string(), v.trim())),
 	status: v.optional(v.pipe(v.string(), v.trim()))
 };
 
@@ -156,6 +157,7 @@ export const relationshipActions = {
 			typeChoice: form.get('typeChoice') || undefined,
 			description: form.get('description') || undefined,
 			sinceDate: form.get('sinceDate') || undefined,
+			untilDate: form.get('untilDate') || undefined,
 			status: form.get('status') || undefined
 		});
 		if (!parsed.success)
@@ -176,6 +178,7 @@ export const relationshipActions = {
 				typeChoice: choice,
 				description: parsed.output.description ?? null,
 				sinceDate: parsed.output.sinceDate ?? null,
+				untilDate: parsed.output.untilDate ?? null,
 				status: parsed.output.status ?? null
 			});
 			if (!saved) return fail(404, { error: say(locals, 'errors.relationship.notFound') });

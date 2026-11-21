@@ -50,9 +50,25 @@ describe('addRelationshipCommand', () => {
 				typeChoice: '1:forward',
 				description: null,
 				sinceDate: '2001-05-01',
+				untilDate: null,
 				status: 'former'
 			},
 			issuedAt: AT
+		});
+	});
+
+	it('carries the end day of a single link', () => {
+		const command = build(
+			fields([
+				['targetId', 'c-bert'],
+				['typeChoice', '1:forward'],
+				['sinceDate', '2015-01-01'],
+				['untilDate', '2018-06-30']
+			])
+		);
+		expect(command).toMatchObject({
+			type: 'relationship.add',
+			payload: { sinceDate: '2015-01-01', untilDate: '2018-06-30' }
 		});
 	});
 
@@ -74,6 +90,7 @@ describe('addRelationshipCommand', () => {
 				typeChoice: '1:reverse',
 				status: 'current',
 				description: 'Twins',
+				untilDate: null,
 				links: [
 					{ targetId: 'c-bert', sinceDate: '2010-01-01' },
 					{ targetId: 'c-cleo', sinceDate: '2010-01-01' }

@@ -31,6 +31,7 @@ export function someTie(
 		category: 'social',
 		description: null,
 		sinceDate: null,
+		untilDate: null,
 		status: 'current',
 		...fields
 	};

@@ -30,6 +30,7 @@ const link = (from: string, typeId: string, to: string): NewRelationship => ({
 	updatedAt: 1,
 	description: null,
 	sinceDate: null,
+	untilDate: null,
 	status: 'current'
 });
 
@@ -143,6 +144,7 @@ describe('stageRelationships', () => {
 			category: 'family',
 			description: null,
 			sinceDate: null,
+			untilDate: null,
 			status: 'current'
 		});
 	});

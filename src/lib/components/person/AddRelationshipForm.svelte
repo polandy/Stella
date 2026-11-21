@@ -37,6 +37,7 @@
 		type RelationshipStatus
 	} from '#lib/relationships/status.js';
 	import { usePending } from '#lib/sync/context.svelte.js';
+	import DateField from '#lib/components/ui/DateField.svelte';
 	import { trackPending } from '#lib/sync/pending.js';
 	import { useRemovals } from '#lib/undo/context.svelte.js';
 	import { savedEnhance } from '#lib/undo/saved.js';
@@ -416,6 +417,10 @@
 			/>
 		</label>
 		<SinceDates pairs={sincePairs} {oneSince} {several} {sameSince} {nameOfPicked} />
+		<div class="flex flex-col gap-1 text-sm">
+			<span class="text-fg-muted">{t('contact.relationships.untilLabel')}</span>
+			<DateField name="untilDate" label={t('contact.relationships.untilLabel')} />
+		</div>
 		<label class="flex flex-col gap-1 text-sm">
 			<span class="text-fg-muted">{t('contact.relationships.status')}</span>
 			<!-- A link being entered is one that holds, so `current` is preselected and

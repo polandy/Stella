@@ -68,6 +68,7 @@ export function planRelationships(
 			// Monica records neither of these, so there is nothing to carry over. A link it did
 			// record is one that holds, which is what `current` says (docs/dev/02 §2.4).
 			sinceDate: null,
+			untilDate: null,
 			status: CURRENT_RELATIONSHIP_STATUS,
 			createdBy: opts.userId,
 			createdAt: opts.now,

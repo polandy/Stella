@@ -97,6 +97,7 @@ export function planRelationships(
 			type_id: type,
 			note: str(link, 'description'),
 			since_date: str(link, 'since'),
+			until_date: str(link, 'until'),
 			// An archive from before the status meant anything carries none; a link that is on
 			// record holds until someone ends it (docs/dev/02 §2.4).
 			status: str(link, 'status') ?? CURRENT_RELATIONSHIP_STATUS,

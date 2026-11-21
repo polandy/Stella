@@ -1,0 +1,1 @@
+ALTER TABLE `relationship` ADD `until_date` text;
