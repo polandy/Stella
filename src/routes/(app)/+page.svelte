@@ -23,6 +23,7 @@
 	import { nextPagesHref } from '#lib/stream/pages.js';
 	import { outbox } from '#lib/pwa/outbox.svelte.js';
 	import { isKept, type KeptOf } from '#lib/pwa/outbox.js';
+	import DeviceUnlockHint from '#lib/components/privacy/DeviceUnlockHint.svelte';
 	import WelcomeCard from '#lib/components/stream/WelcomeCard.svelte';
 	import { ImmichMemories } from '#lib/components/memories/immich-memories.svelte.js';
 	import { todoBand } from '#lib/todos/household.js';
@@ -190,6 +191,7 @@
 
 	<div class="flex min-w-0 flex-col gap-6 max-lg:order-3 lg:col-start-1 lg:row-start-3">
 		{#if data.welcome}<WelcomeCard steps={data.welcome} />{/if}
+		<DeviceUnlockHint userId={data.user.id} hasPrivateEntry={data.hasPrivateEntry} />
 		{#if data.linkSuggestion && !hintDismissed}
 			<div
 				transition:reveal

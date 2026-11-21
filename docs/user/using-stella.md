@@ -173,6 +173,9 @@ until you ask for them. What kind of entry it is, its day and its *Private* mark
 computer: showing private entries then asks for your fingerprint, face or PIN first, and shows
 them all for five minutes. It is a passkey kept on that device; *Forget on this device…* undoes
 it there. A browser that can't use a passkey (or Stella opened over plain http) uses the tap.
+Once you have a private entry, Home offers it on each device: **Set up device unlock** does it
+there and then, **Later** asks again in a week, **Not on this device** stops asking on that
+device. Settings still has it either way.
 
 Don't want the blur at all? Turn off *Blur my private entries* in **Settings → Privacy**.
 

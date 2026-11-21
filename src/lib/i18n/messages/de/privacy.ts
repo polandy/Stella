@@ -49,5 +49,22 @@ export const privacy: PrivacyMessages = {
 	'privacy.unlock.forgetOthers': 'Deine anderen Geräte behalten ihren.',
 	'privacy.unlock.forgetConfirm': 'Vergessen',
 	'privacy.unlock.keep': 'Behalten',
-	'privacy.unlock.forgotten': 'Auf diesem Gerät vergessen'
+	'privacy.unlock.forgotten': 'Auf diesem Gerät vergessen',
+
+	'privacy.hint.label': 'Privatsphäre',
+	'privacy.hint.title': 'Private Einträge mit Fingerabdruck, Gesicht oder PIN zeigen',
+	'privacy.hint.body':
+		'Deine privaten Einträge sind verschwommen, gegen den Blick über die Schulter. Richte die Geräte-Entsperrung ein, dann zeigt eine Bestätigung alle für fünf Minuten. Dafür nutzt Stella einen Passkey in deinem Passwortmanager.',
+	'privacy.hint.waiting': 'Warte auf dein Gerät …',
+	'privacy.hint.later': 'Später',
+	'privacy.hint.never': 'Nicht auf diesem Gerät',
+	'privacy.hint.done':
+		'Die Geräte-Entsperrung ist auf diesem Gerät eingerichtet. Tippe auf einen verschwommenen Eintrag oder das Schloss oben, um sie zu nutzen.',
+	'privacy.hint.doneButton': 'Fertig',
+	'privacy.hint.failed':
+		'Die Geräte-Entsperrung wurde nicht eingerichtet. Versuch es noch einmal oder später unter Einstellungen · Privatsphäre.',
+	'privacy.hint.snoozed':
+		'Wir fragen in einer Woche wieder. Unter Einstellungen · Privatsphäre geht es jederzeit.',
+	'privacy.hint.dismissed':
+		'Auf diesem Gerät fragen wir nicht mehr. Unter Einstellungen · Privatsphäre geht es weiterhin.'
 };

@@ -52,7 +52,22 @@ export const privacy = {
 	'privacy.unlock.forgetOthers': 'Your other devices keep theirs.',
 	'privacy.unlock.forgetConfirm': 'Forget',
 	'privacy.unlock.keep': 'Keep it',
-	'privacy.unlock.forgotten': 'Forgotten on this device'
+	'privacy.unlock.forgotten': 'Forgotten on this device',
+
+	/* Home's card offering device unlock, once per member and device (docs/dev/02 §2.10.1). */
+	'privacy.hint.label': 'Privacy',
+	'privacy.hint.title': 'Show private entries with your fingerprint, face or PIN',
+	'privacy.hint.body':
+		'Your private entries are blurred against a glance over your shoulder. Set up device unlock, and one check shows them all for five minutes. It uses a passkey in your password manager.',
+	'privacy.hint.waiting': 'Waiting for your device…',
+	'privacy.hint.later': 'Later',
+	'privacy.hint.never': 'Not on this device',
+	'privacy.hint.done':
+		'Device unlock is set up on this device. Tap a blurred entry or the lock in the top bar to use it.',
+	'privacy.hint.doneButton': 'Done',
+	'privacy.hint.failed': 'Device unlock wasn’t set up. Try again, or later in Settings · Privacy.',
+	'privacy.hint.snoozed': 'We’ll ask again in a week. Settings · Privacy has it any time.',
+	'privacy.hint.dismissed': 'We won’t ask on this device. Settings · Privacy still has it.'
 };
 
 /** The key set every translation of this area has to provide. */
