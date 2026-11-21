@@ -147,7 +147,7 @@ export async function guardExclusions(
 	endpoints: Endpoints,
 	type: RelationshipType,
 	perspectiveContactId: string,
-	exceptId?: string
+	claim: { exceptId?: string; former?: boolean } = {}
 ): Promise<void> {
 	const fromPerspective = perspectiveContactId === endpoints.fromContactId;
 	const targetId = fromPerspective ? endpoints.toContactId : endpoints.fromContactId;
@@ -157,7 +157,8 @@ export async function guardExclusions(
 		targetId,
 		type: { key: type.key, category: type.category },
 		side: fromPerspective ? 'forward' : 'reverse',
-		exceptId
+		exceptId: claim.exceptId,
+		former: claim.former
 	});
 	if (exclusion) {
 		throw new RelationshipExcludedError(exclusion, nameOf);

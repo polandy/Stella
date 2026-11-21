@@ -259,7 +259,7 @@
 										<!-- Both sides again, so a partner who became a spouse — or a generation
 										     entered the wrong way round — is one pick, not a re-entry (docs/dev/02 §2.4). -->
 										<select name="typeChoice" class={INPUT}>
-											{#each groupByExclusion( relationshipChoices, (option) => exclusionOf(option, rel.otherContactId, rel.id) ) as choices (choices.options[0].value)}
+											{#each groupByExclusion( relationshipChoices, (option) => exclusionOf(option, rel.otherContactId, rel.id, rel.status === FORMER_RELATIONSHIP_STATUS) ) as choices (choices.options[0].value)}
 												{#if choices.exclusion}
 													<optgroup
 														label={t('relationships.blocked.group', {
