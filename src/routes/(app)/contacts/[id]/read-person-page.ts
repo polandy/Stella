@@ -78,9 +78,9 @@ export function readPersonPage(
 		gifts: listGiftsForContact(gifts.giftDeps, viewer, contactId),
 		// The ideas they share with others, each with all of it the viewer sees (§2.25.11).
 		giftGroups: readGiftGroupsOf(gifts.giftGroupDeps, viewer, contactId),
-		// Whether a gift may be kept from them, they being another member (§2.25.10).
 		// Where bought gifts already wait, offered on *Besorgt…* (§2.25.9).
 		giftPlaces: giftPlaces(gifts.giftDeps, viewer),
+		// Whether a gift may be kept from them, they being another member (§2.25.10).
 		recipientIsMember: mayKeepFrom(gifts.giftDeps.ownPeople, viewer, contactId),
 		// The members' own people, whom *Wer schenkt?* suggests with their children (§2.25.12).
 		memberPeople: membersOwnPeopleOf(gifts.giftDeps, {
