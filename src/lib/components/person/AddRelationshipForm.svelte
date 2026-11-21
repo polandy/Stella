@@ -216,12 +216,12 @@
 		exclusionForEveryone(picked, (targetId) => exclusionOf(option, targetId, null, former, kind));
 	/*
 	 * The entry the form would post: the one that was picked, or — since the select is read
-	 * rather than bound — the first one that *can* be picked, which is where an untouched
-	 * control stands, disabled entries skipped.
+	 * rather than bound — the first one that *can* be posted as the form stands, which is where
+	 * an untouched control is put.
 	 */
 	const chosen = $derived(
 		relationshipChoices.find((option) => option.value === relationshipChoice) ??
-			firstPickable(relationshipChoices, forEveryone) ??
+			firstPickable(relationshipChoices, (option) => forEveryone(option, parentKind)) ??
 			relationshipChoices[0] ??
 			null
 	);
@@ -356,7 +356,7 @@
 			</span>
 			<RelationshipTypeSelect
 				choices={relationshipChoices}
-				chosen={relationshipChoice}
+				chosen={chosen?.value ?? ''}
 				{forEveryone}
 				{nameOfContact}
 				onchoose={(value) => (relationshipChoice = value)}
@@ -417,7 +417,14 @@
 			{/if}
 		</div>
 		{#if isParentChoice}
-			<ParentKindField value={parentKind} onchange={(kind) => (parentKind = kind)} />
+			<ParentKindField
+				value={parentKind}
+				onchange={(kind) => {
+					// Picking a kind settles the type too, so a full kind refuses rather than retypes.
+					relationshipChoice = chosen?.value ?? relationshipChoice;
+					parentKind = kind;
+				}}
+			/>
 		{/if}
 		<label class="flex w-full flex-col gap-1 text-sm">
 			<span class="text-fg-muted">
