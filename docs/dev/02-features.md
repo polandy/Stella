@@ -14,6 +14,11 @@ Each feature lives in its own file under `docs/dev/features/`, one per `## 2.x` 
 (numbering and headings are unchanged by the split — a reference like "docs/dev/02 §2.14"
 resolves by opening the matching file below).
 
+An e2e spec cites the numbered subsections it covers in its opening comment. A subsection whose
+behaviour is deliberately pinned by unit/integration tests instead carries the **[unit]** tag in
+its heading, like the milestone tags above. `scripts/spec-coverage.sh` reports the numbered
+subsections that neither an e2e header cites nor carry that tag.
+
 - [2.1 Accounts, household & authentication](features/2.1-accounts-household-auth.md) **[M1]**
 - [2.2 Contacts (people)](features/2.2-contacts.md) **[M1]**
 - [2.3 Contact fields](features/2.3-contact-fields.md) **[M1]**
