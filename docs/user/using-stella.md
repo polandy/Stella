@@ -1431,14 +1431,18 @@ and under a circle who on the map belongs to it (*Lena, Noah +2*).
 Each family stands together, the father's side on the left and the mother's on the right.
 Two parents of the same children stand side by side, both lines running into one line over
 the children even when no partnership is entered, and someone who married into the family
-stands at the end of their partner's brothers and sisters. The Filter menu only hides lines in
+stands at the end of their partner's brothers and sisters. Cousins or in-laws entered without
+the people in between — a cousin with no aunt or uncle on record — stand together at the end
+of their row, on the side of the parent they are related through when Stella can tell, and
+their dotted line shows only when you tap one of them. The Filter menu only hides lines in
 the tree: everybody stays where they are.
 Where a parent is missing above the person in the middle, their parents or their
 grandparents, a small dashed **+** appears just above that person when you tap them (and above
 the person in the middle when the map opens); switch on *Show gaps* in the Filter menu to see
 every one at once. Tap the **+** (or reach it with the arrow keys and press
 Enter) and that person's page opens with *Add relationship* ready on *Child of*: pick or create
-the parent and save.
+the parent and save. Over cousins with no aunt or uncle on record, *Show gaps* (or tapping one
+of them) shows a dashed **+ Aunt/uncle?**: tap it to add that cousin's parent.
 To change who stands where in the tree, drag a person left or right along their row and let
 go: they snap into place with their partner, and the tree rearranges itself around the new
 order. Stella remembers that order on this device for the tree around the same person.

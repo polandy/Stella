@@ -46,7 +46,7 @@ export function deriveKinshipEdges(graph: KinshipGraph): GraphEdge[] {
 				source: kin.personId,
 				target: subjectId,
 				kind: 'kinship',
-				kin: { term: kin.term, variant: kin.variant },
+				kin: { term: kin.term, variant: kin.variant, via: kin.viaIds },
 				derived: true,
 				directed: !SYMMETRIC_TERMS.has(kin.term)
 			});

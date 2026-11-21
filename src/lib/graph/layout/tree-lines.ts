@@ -1,4 +1,5 @@
 import { PARENT_CHILD_TYPE_KEY } from '../../relationships/type-keys';
+import { isLooseLine } from '../model/loose-relatives';
 import type { GraphEdge } from '../model/types';
 import { familyStructure, isPartnerLine, SAME_ROW } from './family-structure';
 import { LINE_CLEARANCE, type Point, type Route, type SizeOf } from './geometry';
@@ -47,7 +48,8 @@ interface Plan {
 /**
  * Where every family line between two members of the family bends, keyed by the line's id. A
  * partner bar between two people standing side by side is left out: it is drawn straight. Lines
- * to anybody outside the family are left out too; they keep the arrangement's bows.
+ * to anybody outside the family are left out too; they keep the arrangement's bows, and so does
+ * a cousin's or an in-law's along the row, which over the row would read as a siblings' bar.
  */
 export function treeRoutes(
 	edges: readonly GraphEdge[],
@@ -99,6 +101,7 @@ export function treeRoutes(
 	for (const edge of familyLines) {
 		const [s, t] = [at(edge.source), at(edge.target)];
 		if (sameRow(s, t)) {
+			if (isLooseLine(edge)) continue;
 			if (isPartnerLine(edge) && !standsBetween(s.y, s.x, t.x, [edge.source, edge.target])) {
 				continue;
 			}

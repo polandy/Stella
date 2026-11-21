@@ -3,6 +3,7 @@ import cytoscape from 'cytoscape';
 import { bendLines, CAPTION_ID, CAPTION_RULE_ID, writeCaption } from './tree-canvas';
 import {
 	BOWED_CLASS,
+	DOTTED_CLASS,
 	CAPTION_CLASS,
 	CAPTION_RULE_CLASS,
 	ROUTE_FIELDS,
@@ -51,6 +52,19 @@ describe('bendLines', () => {
 
 		expect(cy.$id('a-b').hasClass(ROUTED_CLASS)).toBe(false);
 		expect(cy.$id('a-c').hasClass(BOWED_CLASS)).toBe(false);
+	});
+
+	it('dots exactly the lines it is told to, and undots them on the next arrangement', () => {
+		const cy = core();
+
+		bendLines(cy, { bows: new Map(), dottedLines: new Set(['a-c']) }, (n) => n.position());
+
+		expect(cy.$id('a-c').hasClass(DOTTED_CLASS)).toBe(true);
+		expect(cy.$id('a-b').hasClass(DOTTED_CLASS)).toBe(false);
+
+		bendLines(cy, { bows: new Map() }, (n) => n.position());
+
+		expect(cy.$id('a-c').hasClass(DOTTED_CLASS)).toBe(false);
 	});
 });
 

@@ -1,5 +1,6 @@
 import { PARENT_CHILD_TYPE_KEY } from '../../relationships/type-keys';
 import type { Point } from '../layout/geometry';
+import { isCousinLine, looseAnchor, looseRelatives, looseVia } from './loose-relatives';
 import type { GraphEdge, GraphModel } from './types';
 
 /*
@@ -11,12 +12,16 @@ import type { GraphEdge, GraphModel } from './types';
  * a gap in what the viewer may see (`graph`), not in what the map has opened so far: a parent
  * still behind a "+N" is no gap. Nobody on record, or one parent, gives one slot; it takes no
  * room in the tree but stands just over the child, and shows only on demand.
+ *
+ * Cousins entered straight onto somebody stand loose at the row end; the aunt or uncle between
+ * them is one gap, offered once over the group as their parent.
  */
 
 /** How many generations up from the centre may have a gap offered: centre, parents, grandparents. */
 const LINE_DEPTH = 3;
 
 const SLOT_PREFIX = 'slot:parent-of:';
+const AUNT_UNCLE_PREFIX = 'slot:aunt-uncle-of:';
 
 /** The place of a parent nobody entered. */
 export interface ParentSlot {
@@ -26,11 +31,13 @@ export interface ParentSlot {
 	childId: string;
 	/** The one parent on record, whose partner the slot asks for; absent when there is none. */
 	besideParentId?: string;
+	/** For an aunt or uncle: the cousins they would be the parent of; `childId` is the first. */
+	relatives?: string[];
 }
 
 /** Whether a node id is a slot rather than somebody. */
 export function isParentSlot(id: string): boolean {
-	return id.startsWith(SLOT_PREFIX);
+	return id.startsWith(SLOT_PREFIX) || id.startsWith(AUNT_UNCLE_PREFIX);
 }
 
 /** The parents entered for `childId` in `model`. */
@@ -80,13 +87,42 @@ export function missingParentSlots(
 	return slots;
 }
 
+/**
+ * One aunt-or-uncle slot per group of loose cousins on the map with no parent on record in
+ * `graph`, grouped by whose cousins they are and through whom — the parent they would hang from.
+ */
+export function auntUncleSlots(
+	graph: GraphModel,
+	onMap: GraphModel,
+	parentsKnown: (id: string) => boolean = () => true
+): ParentSlot[] {
+	const shown = new Set(onMap.nodes.filter((n) => n.kind === 'person').map((n) => n.id));
+	const loose = looseRelatives(shown, onMap.edges);
+	const groups = new Map<string, string[]>();
+	for (const id of loose) {
+		if (!parentsKnown(id) || parentsIn(graph, id).length > 0) continue;
+		if (!onMap.edges.some((e) => (e.source === id || e.target === id) && isCousinLine(e))) continue;
+		const anchor = looseAnchor(id, onMap.edges, shown, loose);
+		if (!anchor) continue;
+		const via = looseVia(id, onMap.edges, shown);
+		const key = via ? `${anchor}:${via}` : anchor;
+		groups.set(key, [...(groups.get(key) ?? []), id]);
+	}
+	return [...groups].map(([key, relatives]) => ({
+		id: AUNT_UNCLE_PREFIX + key,
+		childId: relatives[0]!,
+		relatives
+	}));
+}
+
 /** A slot's disc: smaller than anybody's, a button rather than a person. */
 export const SLOT_DIAMETER = 22;
 /** How far over the top of the child's disc the slot's centre stands. */
 const SLOT_RISE = 30;
 
-/** The one line a slot is tied in by: the short one down to the child. */
-export function slotLine(slot: ParentSlot): GraphEdge {
+/** The one line a slot is tied in by: the short one down to the child; none over a group. */
+export function slotLine(slot: ParentSlot): GraphEdge | undefined {
+	if (slot.relatives) return undefined;
 	return {
 		id: `${slot.id}:line`,
 		source: slot.id,
@@ -98,8 +134,9 @@ export function slotLine(slot: ParentSlot): GraphEdge {
 }
 
 /**
- * Where each slot stands once the people are placed: just over its child, so it takes no room
- * in the tree. `discOf` is a person's disc diameter; a slot whose child has no place has none.
+ * Where each slot stands once the people are placed: just over its child, or the middle of its
+ * group, so it takes no room in the tree. `discOf` is a person's disc diameter; a slot whose
+ * child has no place has none.
  */
 export function slotPlaces(
 	slots: readonly ParentSlot[],
@@ -108,9 +145,11 @@ export function slotPlaces(
 ): Map<string, Point> {
 	const placed = new Map<string, Point>();
 	for (const slot of slots) {
-		const child = places.get(slot.childId);
-		if (child)
-			placed.set(slot.id, { x: child.x, y: child.y - discOf(slot.childId) / 2 - SLOT_RISE });
+		const under = (slot.relatives ?? [slot.childId]).filter((id) => places.has(id));
+		if (under.length === 0) continue;
+		const x = under.reduce((sum, id) => sum + places.get(id)!.x, 0) / under.length;
+		const top = Math.min(...under.map((id) => places.get(id)!.y - discOf(id) / 2));
+		placed.set(slot.id, { x, y: top - SLOT_RISE });
 	}
 	return placed;
 }
@@ -120,5 +159,7 @@ export function slotsShown(
 	slots: readonly ParentSlot[],
 	{ gaps, selected }: { gaps: boolean; selected: ReadonlySet<string> }
 ): ParentSlot[] {
-	return gaps ? [...slots] : slots.filter((s) => selected.has(s.childId));
+	return gaps
+		? [...slots]
+		: slots.filter((s) => (s.relatives ?? [s.childId]).some((id) => selected.has(id)));
 }

@@ -11,6 +11,7 @@ import { applyFilters, mergeModels } from '#lib/graph/model/graph-model.js';
 import { hiddenNeighbourCounts } from '#lib/graph/model/hidden-neighbours.js';
 import { impliedKinshipEdgeIds } from '#lib/graph/model/implied-kinship.js';
 import {
+	auntUncleSlots,
 	isParentSlot,
 	missingParentSlots,
 	slotLine,
@@ -209,7 +210,9 @@ export function explorerView(input: ExplorerViewInput, t: Translate): ExplorerVi
 			roleOf,
 			shelved
 		}),
-		...slotElements(slots, slotName)
+		...slotElements(slots, slotName, (slot) =>
+			slot.relatives ? t('graph.tree.auntUncleGap') : '+'
+		)
 	];
 	/*
 	 * Every line is named only while the names fit (docs/dev/05 §5.8); past that they pile up
@@ -278,7 +281,8 @@ export function explorerView(input: ExplorerViewInput, t: Translate): ExplorerVi
 		const asking = new Set(selected ? [selected] : []);
 		for (const slot of slotsShown(slots, { gaps: switches.gaps, selected: asking })) {
 			shown.nodes.add(slot.id);
-			shown.edges.add(slotLine(slot).id);
+			const line = slotLine(slot);
+			if (line) shown.edges.add(line.id);
 		}
 		return shown;
 	};
@@ -299,20 +303,29 @@ export function explorerView(input: ExplorerViewInput, t: Translate): ExplorerVi
 		return centre ? ringsFrom(model(), centre) : new Map<string, number>();
 	});
 	/*
-	 * The slots for missing parents up the centre's line, while the tree writes roles around a
-	 * person (docs/dev/02 §2.7). Never part of `model`: no filter, "+N" or path counts them. A
-	 * person's page carries two hops, so whose parents it holds is whoever an expand could open.
+	 * The slots for missing parents up the centre's line, and for the aunt or uncle over loose
+	 * cousins, while the tree writes roles around a person (docs/dev/02 §2.7). Never part of
+	 * `model`: no filter, "+N" or path counts them. A person's page carries two hops, so whose
+	 * parents it holds is whoever an expand could open.
 	 */
 	const slots = $derived.by(() => {
 		const centre = centerId();
-		return rolesInstead && mayAddParents() && centre
-			? missingParentSlots(graph(), drawnVisible, centre, (id) => canExpand(rings, id, maxRings()))
-			: [];
+		if (!rolesInstead || !mayAddParents() || !centre) return [];
+		const known = (id: string) => canExpand(rings, id, maxRings());
+		return [
+			...missingParentSlots(graph(), drawnVisible, centre, known),
+			...auntUncleSlots(graph(), drawnVisible, known)
+		];
 	});
 	const slotName = (slot: ParentSlot) =>
-		t(slot.besideParentId ? 'graph.tree.addOtherParent' : 'graph.tree.addParent', {
-			name: shortNameOf(slot.childId)
-		});
+		t(
+			slot.relatives
+				? 'graph.tree.addAuntUncle'
+				: slot.besideParentId
+					? 'graph.tree.addOtherParent'
+					: 'graph.tree.addParent',
+			{ name: shortNameOf(slot.childId) }
+		);
 	// Inside the map's reach, and with something left to open — Expand on somebody whose every
 	// link is drawn already, or who has none, was a button that did nothing (docs/dev/02 §2.7).
 	const peekWithinReach = $derived(

@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'bun:test';
 import {
+	auntUncleSlots,
 	isParentSlot,
 	missingParentSlots,
 	SLOT_DIAMETER,
+	slotLine,
 	slotPlaces,
 	slotsShown
 } from './missing-parents';
@@ -29,6 +31,14 @@ const friendOf = (a: string, b: string): GraphEdge => ({
 	kind: 'relationship',
 	category: 'social',
 	typeKey: 'friend'
+});
+const linkOf = (a: string, typeKey: string, b: string): GraphEdge => ({
+	id: `${a}-${typeKey}-${b}`,
+	source: a,
+	target: b,
+	kind: 'relationship',
+	category: 'family',
+	typeKey
 });
 const model = (ids: string[], edges: GraphEdge[]): GraphModel => ({
 	nodes: ids.map(person),
@@ -159,5 +169,67 @@ describe('isParentSlot', () => {
 	it('tells a slot from a person by its id', () => {
 		expect(isParentSlot('slot:parent-of:lena')).toBe(true);
 		expect(isParentSlot('lena')).toBe(false);
+	});
+});
+
+describe('auntUncleSlots', () => {
+	// Sia's cousins were entered straight onto her; nobody entered the aunt or uncle between.
+	const ids = ['kekly', 'sia', 'andy', 'lacky', 'hoat'];
+	const edges = [
+		parentOf('kekly', 'sia'),
+		linkOf('andy', 'spouse', 'sia'),
+		linkOf('lacky', 'cousin', 'sia'),
+		linkOf('hoat', 'cousin', 'sia')
+	];
+
+	it('offers one aunt or uncle over the cousins of one person who have no parent on record', () => {
+		const tree = model(ids, edges);
+
+		expect(auntUncleSlots(tree, tree)).toEqual([
+			{ id: 'slot:aunt-uncle-of:sia', childId: 'lacky', relatives: ['lacky', 'hoat'] }
+		]);
+	});
+
+	it('offers none for a cousin whose parent is on record, even off the map', () => {
+		const graph = model([...ids, 'mai'], [...edges, parentOf('mai', 'lacky')]);
+		const onMap = model(ids, edges);
+
+		expect(auntUncleSlots(graph, onMap)[0]?.relatives).toEqual(['hoat']);
+	});
+
+	it('reads no gap where the parents are past what the page holds', () => {
+		const tree = model(ids, edges);
+
+		expect(auntUncleSlots(tree, tree, () => false)).toEqual([]);
+	});
+
+	it('offers none for an in-law standing loose: no aunt or uncle is missing there', () => {
+		const tree = model(
+			['kekly', 'sia', 'tom'],
+			[parentOf('kekly', 'sia'), linkOf('tom', 'sibling_in_law', 'sia')]
+		);
+
+		expect(auntUncleSlots(tree, tree)).toEqual([]);
+	});
+
+	it('is tied in by no line, and stands over the middle of its cousins', () => {
+		const [slot] = auntUncleSlots(model(ids, edges), model(ids, edges));
+		const places = new Map([
+			['lacky', { x: 100, y: 300 }],
+			['hoat', { x: 200, y: 300 }]
+		]);
+
+		expect(slotLine(slot!)).toBeUndefined();
+		const plus = slotPlaces([slot!], places, () => 40).get(slot!.id)!;
+		expect(plus.x).toBe(150);
+		expect(plus.y).toBeLessThan(300 - 20);
+	});
+
+	it('shows over any one of its cousins selected, and is a slot by its id', () => {
+		const [slot] = auntUncleSlots(model(ids, edges), model(ids, edges));
+
+		expect(slotsShown([slot!], { gaps: false, selected: new Set(['hoat']) })).toHaveLength(1);
+		expect(slotsShown([slot!], { gaps: false, selected: new Set(['sia']) })).toEqual([]);
+		expect(isParentSlot(slot!.id)).toBe(true);
 	});
 });

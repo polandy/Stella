@@ -45,6 +45,12 @@ describe('deriveKinshipEdges', () => {
 		});
 	});
 
+	it('names the people a derived line runs through, for the tree to place by', () => {
+		const [edge] = deriveKinshipEdges(threeGenerations());
+
+		expect(edge.kin?.via).toEqual(['bettina']);
+	});
+
 	it('emits one edge per pair rather than one per perspective', () => {
 		const edges = deriveKinshipEdges(threeGenerations());
 
@@ -76,7 +82,7 @@ describe('deriveKinshipEdges', () => {
 		expect(edges).toHaveLength(1);
 		expect(edges[0]).toMatchObject({ id: 'kin:hans:lisa', directed: false });
 		// Source Hans, in his role towards Lisa; the word for it is the interface's business.
-		expect(edges[0].kin).toEqual({ term: 'sibling', variant: 'male' });
+		expect(edges[0].kin).toMatchObject({ term: 'sibling', variant: 'male' });
 	});
 
 	it('never re-derives a pair the household has already linked itself', () => {

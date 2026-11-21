@@ -1,6 +1,7 @@
 import { CURSOR_CLASS, DRAGGED_LINE_CLASS, HOVERED_CLASS, TUCKED_CLASS } from './canvas-classes';
 import { edgeStyles, lineColour } from './stylesheet-edges';
-import { markStyles, nodeStyles } from './stylesheet-nodes';
+import { markStyles } from './stylesheet-marks';
+import { nodeStyles } from './stylesheet-nodes';
 import type { Palette } from './theme';
 
 /*

@@ -1,6 +1,8 @@
 import { PARENT_CHILD_TYPE_KEY } from '../../relationships/type-keys';
+import { looseRelatives } from '../model/loose-relatives';
 import type { GraphEdge, GraphModel } from '../model/types';
 import type { Point, SizeOf } from './geometry';
+import { atRowEnds } from './row-ends';
 import { barSpans, crossingBars, type BarSpan } from './tree-lines';
 import { barycentreOrder, husbandsLeft, improve, mirrored, type Rows } from './row-order';
 import { inRememberedOrder, orderBreaks, type RowOrders } from './tree-order';
@@ -22,6 +24,11 @@ import { inRememberedOrder, orderBreaks, type RowOrders } from './tree-order';
  * usually drawn. A row the reader ordered by
  * dragging (`tree-order.ts`) keeps that order above all else. The search itself is
  * `row-order.ts`; this file packs the rows and straightens the drops to only children.
+ *
+ * A relative with no bar to hang from — a cousin entered with no aunt or uncle on record — takes
+ * no part in the search: they stand at the end of their row, a family's distance out, on the
+ * side of the parent they are related through, or on the right where no line says which
+ * (`loose-relatives.ts`). Their place is the tree's, not the reader's to drag.
  */
 
 /** Distances a row is packed with, in model units. */
@@ -32,6 +39,8 @@ export interface RowSpacing {
 	unit: number;
 	/** Between one generation's row and the next. */
 	row: number;
+	/** Between a row and the loose relatives at its end. */
+	family: number;
 }
 
 /** A crossing outweighs any length of bar: the search never buys shorter bars with one. */
@@ -50,7 +59,7 @@ export interface FamilyArrangement {
 /** Horizontal position of each member of one family, ordered row by row. */
 export function arrangeFamily(
 	model: GraphModel,
-	family: ReadonlyMap<string, number>,
+	everyone: ReadonlyMap<string, number>,
 	neighbours: ReadonlyMap<string, ReadonlySet<string>>,
 	partners: ReadonlyMap<string, ReadonlySet<string>>,
 	sizeOf: SizeOf,
@@ -58,7 +67,11 @@ export function arrangeFamily(
 	orders: RowOrders = []
 ): FamilyArrangement {
 	const wording = new Map(model.nodes.map((n) => [n.id, n.wording] as const));
-	const familyEdges = model.edges.filter((e) => family.has(e.source) && family.has(e.target));
+	const allEdges = model.edges.filter((e) => everyone.has(e.source) && everyone.has(e.target));
+	const loose = looseRelatives(new Set(everyone.keys()), allEdges);
+	// The search orders whoever hangs from a bar; the loose stand at the rows' ends after it.
+	const family = new Map([...everyone].filter(([id]) => !loose.has(id)));
+	const familyEdges = allEdges.filter((e) => family.has(e.source) && family.has(e.target));
 	const members = new Set(family.keys());
 
 	// Rows of units: a couple, two co-parents, or a longer chain of either moves together.
@@ -140,6 +153,7 @@ export function arrangeFamily(
 			)
 		)
 	);
+	atRowEnds(x, loose, everyone, allEdges, sizeOf, spacing);
 	return { x, rows: chosen };
 }
 

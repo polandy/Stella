@@ -215,3 +215,39 @@ export const pollariSizeOf = (id: string) => ({
 	width: Math.max(56, 7 * (pollariNames[id]?.length ?? 0)),
 	height: 64
 });
+
+/**
+ * Sia's tree as the owner's screenshot holds it: her husband's family, her mother Kek Ly, and
+ * four cousins entered straight onto Sia with no aunt or uncle on record. Listed with the
+ * cousins first, so the arrangement has to send them to the row's end itself.
+ */
+export const siaCousins: GraphModel = {
+	nodes: [
+		person('lacky', 'female'),
+		person('checky', 'female'),
+		person('francesco', 'male'),
+		person('wingkam', 'female'),
+		person('kekly', 'female'),
+		person('sebi', 'male'),
+		person('steve', 'male'),
+		person('hoat', 'male'),
+		person('linda', 'female'),
+		person('andy', 'male'),
+		person('sia', 'female'),
+		person('mouy', 'female'),
+		person('leo', 'male')
+	],
+	edges: [
+		stored('lacky', 'sia', 'cousin'),
+		stored('checky', 'sia', 'cousin'),
+		stored('hoat', 'sia', 'cousin'),
+		stored('mouy', 'sia', 'cousin'),
+		...parentsOf('sebi', 'francesco', 'wingkam'),
+		...parentsOf('steve', 'francesco', 'wingkam'),
+		...parentsOf('linda', 'francesco', 'wingkam'),
+		...parentsOf('andy', 'francesco', 'wingkam'),
+		...parentsOf('sia', 'kekly'),
+		stored('andy', 'sia', 'spouse'),
+		...parentsOf('leo', 'andy', 'sia')
+	]
+};

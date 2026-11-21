@@ -1,5 +1,6 @@
 import { PARENT_CHILD_TYPE_KEY, PARTNER_TYPE_KEYS } from '../../relationships/type-keys';
 import { familiesOf, isFamilyLink } from './generations';
+import { isLooseLine } from './loose-relatives';
 import type { GraphEdge, GraphModel } from './types';
 
 /*
@@ -10,7 +11,9 @@ import type { GraphEdge, GraphModel } from './types';
  * entered or worked out — names a chain of those, and where the chain is on the map the bars
  * already say it; drawn again, it only stacks lines between the rows. So it is left off, even
  * around the selected person, whose roles under the names say it in words. Where its chain is
- * not on the map it stays: then it is the one thing tying the two together.
+ * not on the map it stays: then it is the one thing tying the two together. One along a row — a
+ * cousin, an in-law, a half-sibling, never a sibling — would read as a siblings' bar, so it
+ * shows only while one of its ends is selected, like a friend's (`loose-relatives.ts`).
  *
  * Whoever is outside the family stands on the shelf beneath without a line up to the tree, and
  * a tie that is no family line — a friendship, a colleague, a circle — is not drawn across the
@@ -64,7 +67,8 @@ export function hiddenInTree(
 		if (onPath.has(edge.id) || isTreeLine(edge)) continue;
 		const inFamily = members.has(edge.source) && members.has(edge.target);
 		if (inFamily && isFamilyLink(edge)) {
-			if (joined(edge.source, edge.target)) hidden.add(edge.id);
+			const asked = edge.source === selectedId || edge.target === selectedId;
+			if (joined(edge.source, edge.target) || (isLooseLine(edge) && !asked)) hidden.add(edge.id);
 			continue;
 		}
 		if (edge.source !== selectedId && edge.target !== selectedId) hidden.add(edge.id);

@@ -1,5 +1,6 @@
 import { PARTNER_TYPE_KEYS } from '../../relationships/type-keys';
 import { familiesOf } from '../model/generations';
+import { isLooseLine } from '../model/loose-relatives';
 import { hiddenInTree } from '../model/tree-shown';
 import type { GraphEdge, GraphModel } from '../model/types';
 import {
@@ -129,11 +130,18 @@ export function familyTreeLayout(
 		TREE_SPACING.row
 	);
 	const straightOrBowed = model.edges.filter((e) => !routes.has(e.id));
+	// A cousin's or an in-law's line among the family takes no lane: dotted, around a selection.
+	const dottedLines = new Set(
+		straightOrBowed
+			.filter((e) => isLooseLine(e) && members.has(e.source) && members.has(e.target))
+			.map((e) => e.id)
+	);
 	return {
 		positions,
 		rows,
 		bows: bowsAround(positions, straightOrBowed, sizeOf, LINE_CLEARANCE),
 		routes,
+		dottedLines,
 		// Named only beneath a family: on a map with none, everybody is on the shelf.
 		...(members.size > 0 && rest.length > 0 ? { outsideFamily: { x: 0, y: shelfTop, width } } : {})
 	};

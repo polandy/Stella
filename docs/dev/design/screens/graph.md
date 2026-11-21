@@ -37,7 +37,11 @@ card (§5.5.2); its styling is §5.8.
   children, and somebody who married in stands at the edge
   of their partner's siblings, never amid them. A filter only takes lines away: everybody
   shown keeps their place. Only the tree's own lines are drawn:
-  a grandparent, cousin or sibling line the bars already draw is left off, and friends,
+  a grandparent, cousin or sibling line the bars already draw is left off. A cousin or in-law
+  with nobody on the tree to hang from (a cousin entered without the aunt or uncle between)
+  stands at the end of their row, a family's gap apart, on the side of the parent they are
+  related through when Stella knows it, else on the right; their line is never drawn over the
+  row like a siblings' bar but dotted, and only around a selection. Friends,
   colleagues and circles show their lines only around a person the reader taps or finds — not
   around the opening centre, nor the person just expanded once the tree is laid out again. An
   only child hangs straight under their parents. The map is never framed so far out that the
@@ -56,7 +60,9 @@ card (§5.5.2); its styling is §5.8.
   It is no person — no filter, badge or path counts it — but while it shows the keyboard walk
   steps onto it (the arrow up from the person) and reads it as a button (*Add a parent of Lena*,
   *Add Lena's other parent*); tapping it or Enter opens the person's page with *Add
-  relationship* open on *Child of*, leaving full screen first.
+  relationship* open on *Child of*, leaving full screen first. Over such loose cousins with no
+  parent on record a worded dashed pill **+ Aunt/uncle?** stands for the missing aunt or uncle,
+  on the same terms (one of them selected, or *Show gaps*), and opens the first cousin's page.
 - In the tree, **Export** (before Full screen in the toolbar) opens a dialog: on the left a
   preview of the sheet as it comes out — the page with its margins for a print, the picture
   alone for a PNG, white whatever the theme — and on the right the title, *Picture (PNG)* or
@@ -126,6 +132,11 @@ The slots for missing parents keep to the centre's own line because that is the 
 around one person asks, and three generations cap a large family at seven plus signs. They are
 left out of the model so nothing that counts people — filters, "+N", the path — has to learn to
 skip them; and a slot a reader may not use would be a button that only refuses.
+
+Loose cousins stand at the row end rather than amid it because a line along the row between
+two people reads as a siblings' bar: drawn over a whole family, it said a cousin was the
+siblings' sister. Their role under the name already says *Cousin*, so the line can wait for a
+tap; the worded plus names the real gap, the aunt or uncle nobody entered.
 
 The export draws the tree again on a core of its own rather than photographing the screen, so
 the reader's map neither moves nor turns light, and a private person left out leaves no gap. A

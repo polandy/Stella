@@ -86,6 +86,8 @@ export const search: SearchMessages = {
 	'graph.tree.andMore': (p) => `${p.text} +${p.count}`,
 	'graph.tree.addParent': (p) => `Ein Elternteil von ${p.name} hinzufügen`,
 	'graph.tree.addOtherParent': (p) => `Den anderen Elternteil von ${p.name} hinzufügen`,
+	'graph.tree.auntUncleGap': '+ Tante/Onkel?',
+	'graph.tree.addAuntUncle': (p) => `Tante oder Onkel hinzufügen – ein Elternteil von ${p.name}`,
 	'graph.arrange.circles': 'Nach Kreisen',
 	'graph.arrange.circles.hint': 'Jeder Kreis mit seinen Mitgliedern darum',
 	'graph.loading': 'Der Graph lädt…',

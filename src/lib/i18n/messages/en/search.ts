@@ -87,6 +87,10 @@ export const search = {
 	// A slot for a missing parent in the tree (docs/dev/02 §2.7): what tapping it adds.
 	'graph.tree.addParent': (p: { name: string }) => `Add a parent of ${p.name}`,
 	'graph.tree.addOtherParent': (p: { name: string }) => `Add ${p.name}’s other parent`,
+	// Over cousins entered with no aunt or uncle between: the gap, and what tapping it adds.
+	'graph.tree.auntUncleGap': '+ Aunt/uncle?',
+	'graph.tree.addAuntUncle': (p: { name: string }) =>
+		`Add an aunt or uncle — a parent of ${p.name}`,
 	'graph.arrange.circles': 'By circle',
 	'graph.arrange.circles.hint': 'Each circle with its members around it',
 	'graph.loading': 'Loading the graph…',
