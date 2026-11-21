@@ -1,8 +1,17 @@
 import { describe, expect, it } from 'bun:test';
 import cytoscape from 'cytoscape';
-import { bendLines, CAPTION_ID, CAPTION_RULE_ID, writeCaption } from './tree-canvas';
+import {
+	bendLines,
+	CAPTION_ID,
+	CAPTION_RULE_ID,
+	writeBridges,
+	writeCaption,
+	writeMarks
+} from './tree-canvas';
 import {
 	BOWED_CLASS,
+	BRIDGE_CLASS,
+	BRIDGE_OVER_CLASS,
 	DOTTED_CLASS,
 	CAPTION_CLASS,
 	CAPTION_RULE_CLASS,
@@ -104,5 +113,53 @@ describe('writeCaption', () => {
 		expect(cy.$id(CAPTION_ID).empty()).toBe(true);
 		expect(cy.$id(CAPTION_RULE_ID).empty()).toBe(true);
 		expect(cy.nodes().length).toBe(3);
+	});
+});
+
+describe('writeBridges', () => {
+	const bridge = { at: { x: 200, y: 126 }, over: ['a-c'] };
+
+	it('masks the bar under each bridge and lifts the crossing line over the mask', () => {
+		const cy = core();
+
+		const placed = writeBridges(cy, [bridge]);
+
+		const mask = cy.nodes(`.${BRIDGE_CLASS}`)[0];
+		expect(cy.nodes(`.${BRIDGE_CLASS}`).length).toBe(1);
+		expect(mask.hasClass(CAPTION_CLASS)).toBe(true);
+		expect(mask.grabbable()).toBe(false);
+		expect(placed.get(mask.id())).toEqual({ x: 200, y: 126 });
+		expect(cy.$id('a-c').hasClass(BRIDGE_OVER_CLASS)).toBe(true);
+		expect(cy.$id('a-b').hasClass(BRIDGE_OVER_CLASS)).toBe(false);
+	});
+
+	it('takes the masks away, and lowers the line again, once no line crosses', () => {
+		const cy = core();
+		writeBridges(cy, [bridge]);
+
+		expect(writeBridges(cy, undefined).size).toBe(0);
+		expect(cy.nodes(`.${BRIDGE_CLASS}`).empty()).toBe(true);
+		expect(cy.$id('a-c').hasClass(BRIDGE_OVER_CLASS)).toBe(false);
+		expect(cy.nodes().length).toBe(3);
+	});
+});
+
+describe('writeMarks', () => {
+	it('writes the shelf caption and the bridge masks, and says where each of them stands', () => {
+		const cy = core();
+		const shelf = { x: 0, y: 300, width: 600 };
+
+		const placed = writeMarks(
+			cy,
+			{ outsideFamily: shelf, bridges: [{ at: { x: 200, y: 126 }, over: ['a-c'] }] },
+			'Outside the family'
+		);
+
+		const mask = cy.nodes(`.${BRIDGE_CLASS}`)[0];
+		expect(placed.get(mask.id())).toEqual({ x: 200, y: 126 });
+		expect(placed.has(CAPTION_ID)).toBe(true);
+		expect(placed.has(CAPTION_RULE_ID)).toBe(true);
+		expect(writeMarks(cy, {}, undefined).size).toBe(0);
+		expect(cy.nodes(`.${CAPTION_CLASS}`).empty()).toBe(true);
 	});
 });

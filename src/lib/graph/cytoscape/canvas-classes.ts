@@ -34,6 +34,10 @@ export const ROUTE_FIELDS = {
 export const CAPTION_CLASS = 'caption';
 /** The class of the thin rule over the shelf's caption; it is a caption too. */
 export const CAPTION_RULE_CLASS = 'caption-rule';
+/** A bridge's mask: a gap in the bar another line crosses (`tree-bridges.ts`); a caption too. */
+export const BRIDGE_CLASS = 'bridge';
+/** A line that crosses a bar over a bridge, drawn above its mask. */
+export const BRIDGE_OVER_CLASS = 'bridge-over';
 /** The class a dragged person's lines carry in the family tree until the drop (`tree-dragging.ts`). */
 export const DRAGGED_LINE_CLASS = 'dragged-line';
 /** The class of a missing parent's slot in the family tree, and of its line (`elements.ts`). */

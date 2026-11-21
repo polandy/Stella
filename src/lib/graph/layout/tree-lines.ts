@@ -1,15 +1,10 @@
 import { PARENT_CHILD_TYPE_KEY } from '../../relationships/type-keys';
 import { isLooseLine } from '../model/loose-relatives';
 import type { GraphEdge } from '../model/types';
-import {
-	familyStructure,
-	isPartnerLine,
-	SAME_ROW,
-	type Drop,
-	type Outward
-} from './family-structure';
+import { familyStructure, isPartnerLine, SAME_ROW, type Drop } from './family-structure';
 import { LINE_CLEARANCE, type Point, type Route, type SizeOf } from './geometry';
 import { MAX_NODE_DIAMETER } from './legibility';
+import { dockRise, parentKindOf } from './parent-pairs';
 import { laneKey, laneOffsets, type Leg } from './tree-lanes';
 
 /*
@@ -44,11 +39,17 @@ interface Plan {
 	legs: Leg[];
 	points: (yOf: (leg: Leg) => number) => Point[];
 	/** Where it leaves the upper of its two people, when not from that person. */
-	start?: { at: Point; upper: string };
+	start?: { at: (yOf: (leg: Leg) => number) => Point; upper: string };
+	/** Where it docks on the lower of its two people, when off that person's centre. */
+	end?: Point;
+	/** A parent's line down one gap to a child: where its kind's stroke may begin instead. */
+	bar?: { leg: Leg; drop: number; dock: number; biological: boolean; upper: string };
 	/** Lines with one key share their last drop, which only the first of them names. */
 	nameKey: string;
 	/** The person the last drop comes down to. */
 	lower: string;
+	/** Set where the last drop goes without a name at all. */
+	unnamed?: boolean;
 }
 
 /**
@@ -64,7 +65,7 @@ export function treeRoutes(
 	sizeOf: SizeOf,
 	row: number
 ): Map<string, Route> {
-	const { at, sameRow, familyLines, standsBetween, dropOf } = familyStructure(
+	const { at, sameRow, familyLines, standsBetween, dropOf, dockOf, barsOver } = familyStructure(
 		edges,
 		positions,
 		members,
@@ -115,7 +116,8 @@ export function treeRoutes(
 			// Over the top of the row, in the gap above it — along the bar the two already hang
 			// from when they are siblings, since that bar already says so.
 			const shared = [...barsOf(edge.source)].find((g) => barsOf(edge.target).has(g));
-			const leg = { channel: s.y - row, group: shared ?? `line:${edge.id}`, x1: s.x, x2: t.x };
+			const group = shared ?? `line:${edge.id}`;
+			const leg: Leg = { channel: s.y - row, group, x1: s.x, x2: t.x, over: true };
 			plans.push({
 				edge,
 				legs: [leg],
@@ -131,23 +133,39 @@ export function treeRoutes(
 
 		const [upper, lower] = s.y < t.y ? [edge.source, edge.target] : [edge.target, edge.source];
 		const [u, l] = [at(upper), at(lower)];
-		const drop: Drop =
-			edge.typeKey === PARENT_CHILD_TYPE_KEY && upper === edge.source
-				? dropOf(upper, lower)
-				: { group: `line:${edge.id}:top`, x: u.x };
-		const start = drop.x === u.x || drop.outward ? undefined : { at: { x: drop.x, y: u.y }, upper };
+		const fromParent = edge.typeKey === PARENT_CHILD_TYPE_KEY && upper === edge.source;
+		const drop: Drop = fromParent ? dropOf(upper, lower) : { group: `line:${edge.id}:top`, x: u.x };
+		const start =
+			drop.x === u.x || drop.outward ? undefined : { at: () => ({ x: drop.x, y: u.y }), upper };
+		const dock = fromParent ? dockOf(upper, lower) : l.x;
+		const end = dock === l.x ? undefined : { x: dock, y: l.y - dockRise(dock - l.x) };
+		// Several pairs' drops stand too close to name; each one's stroke says its kind.
+		const unnamed = fromParent && barsOver(lower) > 1;
 		// From an outer edge the line leaves the disc sideways, then drops clear of the name.
 		const out = drop.outward ? [{ x: drop.x, y: u.y }] : [];
 
 		if (l.y - u.y < row + SAME_ROW) {
-			const leg = { channel: u.y, group: drop.group, x1: drop.x, x2: l.x };
+			const leg = { channel: u.y, group: drop.group, x1: drop.x, x2: dock };
 			plans.push({
 				edge,
 				legs: [leg],
 				start,
+				end,
 				nameKey: `${drop.group}|${lower}`,
 				lower,
-				points: (yOf) => [...out, { x: drop.x, y: yOf(leg) }, { x: l.x, y: yOf(leg) }]
+				unnamed,
+				points: (yOf) => [...out, { x: drop.x, y: yOf(leg) }, { x: dock, y: yOf(leg) }],
+				...(fromParent
+					? {
+							bar: {
+								leg,
+								drop: drop.x,
+								dock,
+								biological: parentKindOf(edge) === 'biological',
+								upper
+							}
+						}
+					: {})
 			});
 			continue;
 		}
@@ -155,22 +173,25 @@ export function treeRoutes(
 		// Past a row of people in between: across to a clear column, down it, across to the person.
 		const column = clearColumn(l.x, drop.x, u.y, l.y);
 		const top = { channel: u.y, group: drop.group, x1: drop.x, x2: column };
-		const bottom = { channel: l.y - row, group: `line:${edge.id}:bottom`, x1: column, x2: l.x };
+		const bottom = { channel: l.y - row, group: `line:${edge.id}:bottom`, x1: column, x2: dock };
 		plans.push({
 			edge,
 			legs: [top, bottom],
 			start,
+			end,
 			nameKey: edge.id,
 			lower,
+			unnamed,
 			points: (yOf) => [
 				...out,
 				{ x: drop.x, y: yOf(top) },
 				{ x: column, y: yOf(top) },
 				{ x: column, y: yOf(bottom) },
-				{ x: l.x, y: yOf(bottom) }
+				{ x: dock, y: yOf(bottom) }
 			]
 		});
 	}
+	for (const plan of plans) fromTheBranch(plan, plans);
 
 	const offsetOf = laneOffsets(
 		plans.flatMap((p) => p.legs),
@@ -182,11 +203,12 @@ export function treeRoutes(
 	const named = new Set<string>();
 	for (const plan of plans) {
 		const { edge } = plan;
-		const nameEnd = named.has(plan.nameKey)
-			? null
-			: plan.lower === edge.source
-				? ('source' as const)
-				: ('target' as const);
+		const nameEnd =
+			plan.unnamed || named.has(plan.nameKey)
+				? null
+				: plan.lower === edge.source
+					? ('source' as const)
+					: ('target' as const);
 		named.add(plan.nameKey);
 		const downward = withoutRepeats(plan.points(yOf));
 		// The points run from the upper person down; a line travelled upwards takes them reversed.
@@ -194,86 +216,38 @@ export function treeRoutes(
 			at(edge.source).y < at(edge.target).y || sameRow(at(edge.source), at(edge.target));
 		const route: Route = { waypoints: fromUpper ? downward : downward.reverse(), nameEnd };
 		if (plan.start) {
-			if (plan.start.upper === edge.source) route.sourceEnd = plan.start.at;
-			else route.targetEnd = plan.start.at;
+			if (plan.start.upper === edge.source) route.sourceEnd = plan.start.at(yOf);
+			else route.targetEnd = plan.start.at(yOf);
+		}
+		if (plan.end) {
+			if (plan.lower === edge.source) route.sourceEnd = plan.end;
+			else route.targetEnd = plan.end;
 		}
 		routes.set(edge.id, route);
 	}
 	return routes;
 }
 
-/** The stretch one couple's bar takes in the gap below their row: from their drop to each child. */
-export interface BarSpan {
-	/** The y of the parents' row. */
-	channel: number;
-	left: number;
-	right: number;
-	/** Who hangs from it. */
-	children: string[];
-	/** Who drops into it. */
-	parents: string[];
-	/** Where the drop from the parents meets it. */
-	drop: number;
-	/** Set for a lone parent's bar leaving from their outer edge, away from their couple. */
-	outward?: Outward;
-}
-
-/** Every couple's (or lone parent's) bar over their children, as the stretch of its gap it takes. */
-export function barSpans(
-	edges: readonly GraphEdge[],
-	positions: ReadonlyMap<string, Point>,
-	members: ReadonlySet<string>,
-	sizeOf: SizeOf
-): BarSpan[] {
-	const { at, familyLines, dropOf } = familyStructure(edges, positions, members, sizeOf);
-	const spans = new Map<string, BarSpan>();
-	for (const e of familyLines) {
-		if (e.typeKey !== PARENT_CHILD_TYPE_KEY || at(e.source).y >= at(e.target).y) continue;
-		const drop = dropOf(e.source, e.target);
-		const key = `${at(e.source).y}|${drop.group}`;
-		const known = spans.get(key) ?? {
-			channel: at(e.source).y,
-			left: drop.x,
-			right: drop.x,
-			children: [],
-			parents: [],
-			drop: drop.x,
-			...(drop.outward ? { outward: drop.outward } : {})
-		};
-		const child = at(e.target).x;
-		spans.set(key, {
-			...known,
-			left: Math.min(known.left, drop.x, child),
-			right: Math.max(known.right, drop.x, child),
-			children: known.children.includes(e.target) ? known.children : [...known.children, e.target],
-			parents: known.parents.includes(e.source) ? known.parents : [...known.parents, e.source]
-		});
-	}
-	return [...spans.values()];
-}
-
 /**
- * How many pairs of bars share a stretch of one gap. Each such pair crosses: one family's drop
- * runs down through the other's bar, and the reader can no longer tell whose children are whose.
- * A lone parent's bar running back under their couple counts too: its children no longer read
- * as that parent's alone, and two drops stand under one couple.
+ * A line of another kind than biological on a bar its biological siblings' lines run along
+ * leaves from where it branches off them, so the stretch they share keeps the plain stroke
+ * and the kind's own stroke shows on its branch alone.
  */
-export function crossingBars(spans: readonly BarSpan[]): number {
-	let crossings = spans.filter(reachesBack).length;
-	for (let i = 0; i < spans.length; i++) {
-		for (let j = i + 1; j < spans.length; j++) {
-			const [a, b] = [spans[i], spans[j]];
-			if (a.channel === b.channel && a.left < b.right && b.left < a.right) crossings++;
-		}
-	}
-	return crossings;
-}
-
-/** Whether a lone parent's bar runs back from their outer edge, in under their couple. */
-export function reachesBack(span: BarSpan): boolean {
-	if (span.outward === -1) return span.right > span.drop;
-	if (span.outward === 1) return span.left < span.drop;
-	return false;
+function fromTheBranch(plan: Plan, plans: readonly Plan[]) {
+	const bar = plan.bar;
+	if (!bar || bar.biological) return;
+	const key = laneKey(bar.leg);
+	const plain = plans.flatMap((p) =>
+		p.bar?.biological && laneKey(p.bar.leg) === key ? [p.bar.drop, p.bar.dock] : []
+	);
+	if (plain.length === 0) return;
+	const branch = Math.min(Math.max(bar.dock, Math.min(...plain)), Math.max(...plain));
+	const leg = bar.leg;
+	plan.start = { at: (yOf) => ({ x: branch, y: yOf(leg) }), upper: bar.upper };
+	plan.points = (yOf) => [
+		{ x: branch, y: yOf(leg) },
+		{ x: bar.dock, y: yOf(leg) }
+	];
 }
 
 /** The points with any that repeat the one before dropped: a drop straight down has no corner. */

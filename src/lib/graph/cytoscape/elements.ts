@@ -101,7 +101,8 @@ export function toCytoscapeElements(model: GraphModel, options: ElementOptions =
 				kind: e.kind,
 				category: e.category ?? '',
 				label: options.edgeLabel ? options.edgeLabel(e) : (e.label ?? ''),
-				directed: e.directed ? 1 : 0
+				directed: e.directed ? 1 : 0,
+				...(e.parentKind ? { parentKind: e.parentKind } : {})
 			},
 			classes: [
 				e.derived ? 'derived' : '',

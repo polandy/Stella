@@ -3,7 +3,7 @@ import type { ControllerOptions, ExplorerController, ExplorerOptions } from './e
 import { familyIn } from '../layout/geometry';
 import { DEFAULT_DENSITY, spacingFor } from '../layout/density';
 import type { Point } from './placement';
-import { bendLines, writeCaption } from './tree-canvas';
+import { bendLines, writeMarks } from './tree-canvas';
 import { CAPTION_CLASS } from './canvas-classes';
 import { roomOf, sizeOf } from './canvas-nodes';
 import { trackMotion } from './motion';
@@ -97,12 +97,12 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 		arrange() {
 			if (!alive()) return;
 			rowDrags.setOn(false);
-			writeCaption(cy, undefined, undefined);
+			writeMarks(cy, {}, undefined);
 			bendLines(cy, { bows: new Map() }, (node) => node.position());
 			arranging.glideTo(arranging.forcePositions(), !opts.reducedMotion);
 		},
 
-		arrangeAt({ positions, bows, routes, dottedLines, outsideFamily }, captions = {}) {
+		arrangeAt({ positions, bows, routes, dottedLines, outsideFamily, bridges }, captions = {}) {
 			if (!alive()) return;
 			rowDrags.setOn(captions.rowDrags === true);
 			bendLines(
@@ -110,12 +110,12 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 				{ bows, routes, dottedLines },
 				(node) => positions.get(node.id()) ?? node.position()
 			);
-			const captioned = writeCaption(cy, outsideFamily, captions.outsideFamily);
+			const marks = writeMarks(cy, { outsideFamily, bridges }, captions.outsideFamily);
 			// The core family is what is framed first, should all of it not fit at a readable size.
 			const family = captions.keepNamesDrawn
 				? (captions.coreFamily ?? familyIn({ positions, outsideFamily }))
 				: undefined;
-			arranging.glideTo(new Map([...positions, ...captioned]), !opts.reducedMotion, family);
+			arranging.glideTo(new Map([...positions, ...marks]), !opts.reducedMotion, family);
 		},
 
 		sizeOf(nodeId, { badge = true } = {}) {

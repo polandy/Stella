@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'bun:test';
 import type { Core } from 'cytoscape';
 import { spacingFor } from '../layout/density';
-import { CAPTION_CLASS, ROUTE_FIELDS, ROUTED_CLASS } from './canvas-classes';
+import {
+	BRIDGE_CLASS,
+	BRIDGE_OVER_CLASS,
+	CAPTION_CLASS,
+	ROUTE_FIELDS,
+	ROUTED_CLASS
+} from './canvas-classes';
 import {
 	node,
 	edge,
@@ -180,6 +186,28 @@ describe('arranging the map', () => {
 
 		explorer.arrange();
 		expect(cy.nodes(`.${CAPTION_CLASS}`).length).toBe(0);
+	});
+
+	it('masks a bar where a line bridges it, the crossing line over it, and clears it on a tidy-up', () => {
+		const cy = linkedPair();
+		const explorer = controller(cy);
+
+		explorer.arrangeAt({
+			positions: new Map(),
+			bows: new Map(),
+			bridges: [{ at: { x: 40, y: 90 }, over: ['a-b'] }]
+		});
+		const mask = cy.nodes(`.${BRIDGE_CLASS}`);
+
+		expect(mask.length).toBe(1);
+		expect(mask[0].position()).toEqual({ x: 40, y: 90 });
+		expect(mask[0].grabbable()).toBe(false);
+		expect(cy.$id('a-b').hasClass(BRIDGE_OVER_CLASS)).toBe(true);
+		expect([...explorer.positions().keys()].sort()).toEqual(['a', 'b']);
+
+		explorer.arrange();
+		expect(cy.nodes(`.${BRIDGE_CLASS}`).length).toBe(0);
+		expect(cy.$id('a-b').hasClass(BRIDGE_OVER_CLASS)).toBe(false);
 	});
 
 	it('reads how wide a person’s disc is drawn, and nothing for somebody not on the canvas', () => {

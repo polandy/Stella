@@ -1,9 +1,11 @@
 import type { Core, NodeSingular } from 'cytoscape';
-import type { Arrangement, Point, Shelf } from '../layout/geometry';
+import type { Arrangement, Bridge, Point, Shelf } from '../layout/geometry';
 import { segmentsOf } from './segments';
 import {
 	BOW_FIELD,
 	BOWED_CLASS,
+	BRIDGE_CLASS,
+	BRIDGE_OVER_CLASS,
 	CAPTION_CLASS,
 	CAPTION_RULE_CLASS,
 	DOTTED_CLASS,
@@ -13,7 +15,7 @@ import {
 
 /*
  * What the canvas does for the arranged maps beyond moving people (docs/dev/05 §5.8): bending and
- * routing their lines, and writing the family tree's "Outside the family" caption and its rule. Split from
+ * routing their lines, masking a bar where another line crosses it, and writing the family tree's "Outside the family" caption and its rule. Split from
  * `explorer.ts`, which drives the core and calls these; like the controller's other parts, it
  * touches the library only inside `cytoscape/`, and holds no domain rules.
  */
@@ -123,5 +125,49 @@ export function writeCaption(
 	return new Map([
 		[CAPTION_ID, place],
 		[CAPTION_RULE_ID, ruleAt]
+	]);
+}
+
+/**
+ * Writes a mask over the bar at each bridge, in the ground colour, and lifts each line crossing
+ * there above it; takes away the masks no bridge needs any more. Captions like the shelf's: no
+ * tap, no drag, and the keyboard, framing and filters pass them by. Says where each stands.
+ */
+export function writeBridges(cy: Core, bridges: readonly Bridge[] | undefined): Map<string, Point> {
+	const places = new Map((bridges ?? []).map((b) => [`bridge:${b.at.x}:${b.at.y}`, b.at]));
+	const over = new Set((bridges ?? []).flatMap((b) => b.over));
+	cy.batch(() => {
+		cy.nodes(`.${BRIDGE_CLASS}`)
+			.filter((mask) => !places.has(mask.id()))
+			.remove();
+		for (const [id, at] of places) {
+			if (cy.$id(id).empty()) {
+				cy.add({
+					group: 'nodes',
+					data: { id },
+					classes: `${CAPTION_CLASS} ${BRIDGE_CLASS}`,
+					position: { ...at }
+				}).ungrabify();
+			}
+		}
+		cy.edges().forEach((edge) => {
+			edge.toggleClass(BRIDGE_OVER_CLASS, over.has(edge.id()));
+		});
+	});
+	return places;
+}
+
+/**
+ * Writes an arrangement's marks — the shelf's caption and the bridges' masks — and says where
+ * each is to stand, for the explorer and the export alike.
+ */
+export function writeMarks(
+	cy: Core,
+	arrangement: Pick<Arrangement, 'outsideFamily' | 'bridges'>,
+	captionWords: string | undefined
+): Map<string, Point> {
+	return new Map([
+		...writeCaption(cy, arrangement.outsideFamily, captionWords),
+		...writeBridges(cy, arrangement.bridges)
 	]);
 }

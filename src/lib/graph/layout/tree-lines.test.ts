@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'bun:test';
 import { familyTreeLayout, TREE_SPACING } from './family-tree';
 import { DEFAULT_NODE_SIZE, type Point, type Route } from './geometry';
-import { barSpans, crossingBars, TREE_LINES, treeRoutes } from './tree-lines';
+import { barSpans, crossingBars } from './bar-spans';
+import { TREE_LINES, treeRoutes } from './tree-lines';
 import type { GraphEdge, GraphModel, GraphNode } from '../model/types';
 
 /*
