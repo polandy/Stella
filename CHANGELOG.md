@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.1.12](https://github.com/polandy/Stella/compare/v0.1.11...v0.1.12) (2026-11-21)
+
+
+### Features
+
+* **kinship:** derivation per parent kind — adoptive derives fully, foster only foster siblings ([#572](https://github.com/polandy/Stella/issues/572)) ([41db9ac](https://github.com/polandy/Stella/commit/41db9aca35ef1083d5cd77b105f4481877010b14))
+* **privacy:** Home offers device unlock once a member has a private entry ([#569](https://github.com/polandy/Stella/issues/569)) ([18f255e](https://github.com/polandy/Stella/commit/18f255ed4489914f4ccdc2c6778ea6f1d858fde0))
+* **relationships:** a parent link's kind — biological, adoptive, foster or step ([#571](https://github.com/polandy/Stella/issues/571)) ([cc9268c](https://github.com/polandy/Stella/commit/cc9268cd6c88d52a647cd7a81c6b347567595983))
+* **relationships:** until date for every relationship, plus the cares_for type ([#570](https://github.com/polandy/Stella/issues/570)) ([2522614](https://github.com/polandy/Stella/commit/2522614fb7c00a2202fea3d7bfe64a0e64954c8b))
+
+
+### Bug Fixes
+
+* **relationships:** a former partner can be added beside a current one ([#564](https://github.com/polandy/Stella/issues/564)) ([b396a58](https://github.com/polandy/Stella/commit/b396a5813a068f94fa7857e7c5e9499834771472))
+* **tree:** a lone parent's children stand on that parent's outer side, no two bars under one couple ([#567](https://github.com/polandy/Stella/issues/567)) ([125a46a](https://github.com/polandy/Stella/commit/125a46a52a2a398ec9f0c51a5ef4579201b57ae6))
+* **tree:** a wide tree frames the centre's core family at a readable size, an edge pill counts who stands off screen ([#568](https://github.com/polandy/Stella/issues/568)) ([280bbd2](https://github.com/polandy/Stella/commit/280bbd24b5a2e4fc4cf22a9bc2f2592e5aa06a3a))
+* **tree:** loose same-row relatives stand at the row end, no bar over the row ([#566](https://github.com/polandy/Stella/issues/566)) ([fb6e275](https://github.com/polandy/Stella/commit/fb6e275636a2222fe2da12e82f071aa08ed8d13b))
+
 ## [0.1.11](https://github.com/polandy/Stella/compare/v0.1.10...v0.1.11) (2026-11-20)
 
 
