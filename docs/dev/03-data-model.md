@@ -648,7 +648,7 @@ may edit, give or remove it; only its author may change its visibility or `hidde
 |---|---|---|
 | id | text pk | |
 | contact_id | text fk → contact.id | cascade delete — who it is for |
-| created_by | text fk → user.id | who noted it (*noted by*); not who gave it |
+| created_by | text fk → user.id | who noted it (*noted by*); not who gives it |
 | visibility | text | `'shared' \| 'private'`, default `'shared'` |
 | hidden_from_recipient | int (0/1) | default 0; 1 keeps a shared gift from the member whose own record `contact_id` is (docs/dev/02 §2.25.10); always 0 on a private gift |
 | state | text | `'idea' \| 'bought' \| 'given' \| 'received'` — *bought* only from an idea (§2.25.9) |
@@ -661,6 +661,9 @@ may edit, give or remove it; only its author may change its visibility or `hidde
 | when_age | int null | 1–150, for `from_age`, `at_age` and `christmas_at_age` only |
 | when_on | text null | ISO `YYYY-MM-DD`, for `on_date` only |
 | when_checked_on | text null | ISO `YYYY-MM-DD`: the household's day somebody last answered *Still current?*, or chose the time anew (docs/dev/02 §2.25.8); null on a given or received gift |
+| giver_contact_id | text null fk → contact.id | who gives or gave it (docs/dev/02 §2.25.12); never `contact_id`; null on a received gift. No `ON DELETE`: the contact delete moves the name to `giver_left_name` first |
+| giver_is_household | int (0/1) | default 0; 1 is *Wir*, the household itself; 0 whenever `giver_contact_id` is set |
+| giver_left_name | text null | the display name a deleted giver left; cleared once someone else gives it |
 | group_id | text null fk → gift_group.id | the idea for several people it was noted with (§2.25.11); null for most. No `ON DELETE`: SQLite cannot add `SET NULL` to an existing table's column, so a group is unlinked from its gifts before it is removed (ADR-134) |
 | created_at / updated_at | int | |
 
@@ -669,7 +672,9 @@ make one *when* is refused on read, and restored from an archive as *now*. Wheth
 is worked out on read against the person's birth date and today, never stored.
 
 Indexed on `(contact_id, state, given_on)`: the card's tabs and the story's page of given and
-received gifts (newest `given_on`, then `created_at`) come from it. Exported and restored with
+received gifts (newest `given_on`, then `created_at`) come from it; on `(giver_contact_id, state)`
+for what a person gives. The giver's name is read through the access layer
+(`giverNameVisibleTo`), null when the reader may not see them. Exported and restored with
 the person (§2.15), repointed by a merge.
 
 ### activity_idea
@@ -1233,7 +1238,8 @@ Contact visibility is the root: a `private` contact is visible only to its creat
 `activity_idea`, `interaction`) additionally hide when they are `private` and not owned by `u`, even on a
 shared contact. A **gift** kept from the person it is for (`hidden_from_recipient`) also hides
 from the member whose own record that person is, unless they noted it (`canViewGift` /
-`giftVisibleTo`, docs/dev/02 §2.25.10). A surprise **for several people at once** (a `gift_group`
+`giftVisibleTo`, docs/dev/02 §2.25.10). A gift's **giver** is named only when the giver contact
+is visible too (`giverNameVisibleTo`); otherwise the gift reads *vergeben*, without the id. A surprise **for several people at once** (a `gift_group`
 with `hidden_from_recipients`) hides every gift of the group from each member whose own record
 any of them is for — Mama does not see Papa's gift of the joint idea either (ADR-134); an **outing** kept from its person
 (`hidden_from_person`) likewise — both are a *surprise* (`canViewSurprise` / `surpriseVisibleTo`, docs/dev/02 §2.27.4). Relationships require **both** endpoints visible. A **circle** follows the

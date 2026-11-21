@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { createTranslator } from '../../../i18n/translate';
-import type { IdeaWithBirth, OpenIdea } from '../gifts/gifts';
+import { NO_GIVER, type IdeaWithBirth, type OpenIdea } from '../gifts/gifts';
 import type { OpenPlan } from '../plans/plans';
 import type { HouseholdTodo } from '../todos/todos';
 import {
@@ -199,6 +199,7 @@ describe('todoEvents', () => {
 function idea(over: Partial<IdeaWithBirth<OpenIdea>> = {}): IdeaWithBirth<OpenIdea> {
 	return {
 		id: 'g1',
+		...NO_GIVER,
 		contactId: 'c1',
 		contactName: 'Mia Example',
 		avatarPhotoId: null,

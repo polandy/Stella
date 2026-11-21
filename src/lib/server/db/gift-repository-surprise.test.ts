@@ -6,7 +6,7 @@ import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
 import { createTranslator } from '../../i18n/translate';
 import { calendarFeed } from '../domain/dates/calendar-feed';
-import type { Gift } from '../domain/gifts/gifts';
+import { NO_GIVER, type Gift } from '../domain/gifts/gifts';
 import { createDrizzleGiftRepository } from './gift-repository';
 import * as schema from './schema';
 
@@ -30,6 +30,7 @@ let repo: ReturnType<typeof createDrizzleGiftRepository>;
 function gift(over: Partial<Gift>): Gift {
 	return {
 		id: 'g',
+		...NO_GIVER,
 		contactId: JULIA_PERSON,
 		createdBy: ANDY,
 		visibility: 'shared',

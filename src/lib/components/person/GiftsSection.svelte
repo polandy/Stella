@@ -12,6 +12,8 @@
 	import { datesEditorPath } from '#lib/people/identity-card.js';
 	import { sectionAnchor } from '#lib/people/sections.js';
 	import { giftGroupPath } from '#lib/gifts/group-form.js';
+	import { giverSuggestions } from '#lib/gifts/giver-suggestions.js';
+	import { relationshipRowLabel } from '#lib/relationships/labels.js';
 	import { asksForGiftIdea, byYear, giftTabs, splitIdeas, type GiftTab } from '#lib/gifts/card.js';
 	import type { AddableGiftState } from '#lib/gifts/gifts.js';
 	import { useI18n } from '#lib/i18n/context.svelte.js';
@@ -28,7 +30,7 @@
 	import { alsoFor, opensGiftGroup } from '#lib/gifts/group-panel.js';
 	import GiftIdeas from './GiftIdeas.svelte';
 	import GiftRow from './GiftRow.svelte';
-	import type { GroupLink, PersonForm, PersonPageData } from './types';
+	import type { GiverChoices, GroupLink, PersonForm, PersonPageData } from './types';
 
 	/*
 	 * The Gifts card (docs/dev/02 §2.25): open ideas, what was given and what was received, one tab
@@ -75,6 +77,23 @@
 	const tabs = $derived(
 		giftTabs({ ideas: ideas.open.length, given: given.length, received: received.length })
 	);
+
+	// Whom *Wer schenkt?* offers: the person's living links, then the household (§2.25.12).
+	const givers = $derived.by((): GiverChoices => {
+		const may = new Set(data.giverTieIds);
+		const ties = data.relationships
+			.filter((rel) => may.has(rel.otherContactId))
+			.map((rel) => ({
+				id: rel.otherContactId,
+				name: rel.otherDisplayName,
+				hint: relationshipRowLabel(t, rel)
+			}));
+		return {
+			...giverSuggestions(c.id, ties, data.householdGivers),
+			people: data.people,
+			recipientId: c.id
+		};
+	});
 
 	let tab = $state<GiftTab>('ideas');
 	// The Received tab leaves with its last gift; the card falls back to the ideas.
@@ -256,6 +275,7 @@
 					onGiven={() => (tab = 'given')}
 					recipientIsMember={data.recipientIsMember}
 					{groupOf}
+					{givers}
 				/>
 			{:else}
 				{@const list = current === 'given' ? given : received}
@@ -281,6 +301,7 @@
 									name={c.displayName}
 									recipientIsMember={data.recipientIsMember}
 									group={groupOf(gift)}
+									{givers}
 								/>
 							{/each}
 						</ul>
@@ -315,6 +336,7 @@
 				{estimateHref}
 				canChooseVisibility
 				recipient={data.recipientIsMember ? c.displayName : null}
+				{givers}
 			/>
 		{/key}
 	{/snippet}

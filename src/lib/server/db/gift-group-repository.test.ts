@@ -5,7 +5,7 @@ import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
 import type { GiftGroup } from '../domain/gifts/gift-groups';
-import type { Gift } from '../domain/gifts/gifts';
+import { NO_GIVER, type Gift } from '../domain/gifts/gifts';
 import { createDrizzleGiftGroupRepository } from './gift-group-repository';
 import * as schema from './schema';
 
@@ -39,6 +39,7 @@ const group = (over: Partial<GiftGroup> = {}): GiftGroup => ({
 
 const giftFor = (contactId: string, over: Partial<Gift> = {}): Gift => ({
 	id: `g-${contactId}`,
+	...NO_GIVER,
 	contactId,
 	createdBy: ANDY,
 	visibility: 'shared',

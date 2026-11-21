@@ -20,6 +20,7 @@ import type * as schema from './schema';
 import {
 	activityLog,
 	contact as contactTable,
+	gift,
 	journalEntry,
 	photo,
 	user as userTable
@@ -127,7 +128,7 @@ export function createDrizzleContactRepository(
 		async deleteDeletableBy(remover: Remover, id: string, audit: ActivityOf<'contact.deleted'>) {
 			return db.transaction((tx) => {
 				const found = tx
-					.select({ id: contactTable.id })
+					.select({ id: contactTable.id, displayName: contactTable.displayName })
 					.from(contactTable)
 					.where(and(eq(contactTable.id, id), contactDeletableBy(remover)))
 					.get();
@@ -162,6 +163,12 @@ export function createDrizzleContactRepository(
 				tx.update(userTable)
 					.set({ selfContactId: null })
 					.where(eq(userTable.selfContactId, id))
+					.run();
+
+				// A gift they gave or give keeps their name (§2.25.12); `gift.giver_contact_id` has no cascade.
+				tx.update(gift)
+					.set({ giverLeftName: found.displayName, giverContactId: null })
+					.where(eq(gift.giverContactId, id))
 					.run();
 
 				tx.delete(contactTable).where(eq(contactTable.id, id)).run();

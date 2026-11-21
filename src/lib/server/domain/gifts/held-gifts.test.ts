@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import type { Gift } from './gifts';
+import { NO_GIVER, type Gift } from './gifts';
 import {
 	convertHeldGifts,
 	type HeldGiftNote,
@@ -84,6 +84,7 @@ describe('convertHeldGifts', () => {
 
 		expect(state.gifts.get('monica:gift:1')).toEqual({
 			id: 'monica:gift:1',
+			...NO_GIVER,
 			contactId: 'hilde',
 			createdBy: 'anna',
 			visibility: 'private',
@@ -125,6 +126,7 @@ describe('convertHeldGifts', () => {
 		expect([...state.gifts.values()]).toEqual([
 			{
 				id: 'touch-1',
+				...NO_GIVER,
 				contactId: 'hilde',
 				createdBy: 'ben',
 				visibility: 'private',

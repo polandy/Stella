@@ -1,6 +1,6 @@
 import type { NewInteraction } from '../../interactions/interactions';
 import type { NewNote } from '../../notes/notes';
-import type { Gift } from '../../gifts/gifts';
+import { NO_GIVER, type Gift } from '../../gifts/gifts';
 import type { Todo } from '../../todos/todos';
 import { giftFromMonica } from '../../../../gifts/conversion';
 import type { MonicaId, SourceExport } from './monica-export';
@@ -67,6 +67,7 @@ export function planPersonRecords(exp: SourceExport, ctx: MonicaPlanContext): Pe
 				when: null,
 				whenCheckedOn: null,
 				groupId: null,
+				...NO_GIVER,
 				hiddenFromRecipient: false
 			});
 			continue;

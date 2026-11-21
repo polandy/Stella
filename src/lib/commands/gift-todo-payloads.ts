@@ -25,12 +25,27 @@ const giftContent = {
 
 const giftWhen = optionalWhenOf(GIFT_WHEN_KINDS);
 
+/** Who gives a gift (§2.25.12): a person, or the household itself; null or absent, *us*. */
+const giver = v.nullable(
+	v.union([v.object({ contactId: nonEmpty }), v.object({ household: v.literal(true) })])
+);
+
 /** A gift noted on a person: an idea, or one given or received (docs/dev/02 §2.25). */
 export const GiftAddSchema = v.object({
 	contactId: nonEmpty,
 	state: v.picklist(ADDABLE_GIFT_STATES),
 	...giftContent,
-	when: giftWhen
+	when: giftWhen,
+	giver: v.optional(giver)
+});
+
+/** An open idea or a bought gift *vergeben* — or freed with none — for when it is meant (§2.25.12). */
+export const GiftAssignSchema = v.object({
+	contactId: nonEmpty,
+	giftId: nonEmpty,
+	giver,
+	when: giftWhen,
+	hiddenFromRecipient: v.optional(v.boolean())
 });
 
 /** One person an idea for several is for (§2.25.11). */

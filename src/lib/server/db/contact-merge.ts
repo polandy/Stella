@@ -190,6 +190,12 @@ const SETTLEMENTS: Record<MergeSettlement, (tx: Db, merging: Merging) => void> =
 	'drop-memberships-survivor-has': dropMembershipsSurvivorHas,
 	'drop-survivor-from-own-interactions': dropSurvivorFromOwnInteractions,
 	'unlink-merged-duplicate-group-ideas': unlinkMergedDuplicateGroupIdeas,
+	'drop-givers-of-own-gifts': (tx, { keepId }) =>
+		tx
+			.update(gift)
+			.set({ giverContactId: null })
+			.where(and(eq(gift.contactId, keepId), eq(gift.giverContactId, keepId)))
+			.run(),
 	'turn-merged-cuts': (tx, { mergedId }) => keepUnwornCuts(tx, mergedId, { evenWorn: true })
 };
 

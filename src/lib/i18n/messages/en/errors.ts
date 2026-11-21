@@ -142,6 +142,8 @@ export const errors = {
 	'errors.gift.alreadyGiven': 'This gift was already given.',
 	'errors.gift.gone': 'This gift is no longer there.',
 	'errors.gift.ownSurprise': 'You cannot keep a gift from yourself — it is for you.',
+	'errors.gift.giverIsRecipient': 'A gift cannot come from the person it is for.',
+	'errors.gift.giverGone': 'That giver is no longer here — choose someone else.',
 	'errors.giftGroup.recipients': 'Choose who the idea is for — up to 50 people.',
 	'errors.giftGroup.nobody': 'Nobody can get this idea for that time. Choose another.',
 	'errors.gift.couldNotSave': 'Could not save the gift.',

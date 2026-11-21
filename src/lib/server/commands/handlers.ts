@@ -26,6 +26,7 @@ import {
 	removeGift
 } from '../domain/gifts/gifts';
 import { markGiftBought } from '../domain/gifts/bought';
+import { assignGift } from '../domain/gifts/giver';
 import {
 	addToGiftGroup,
 	detachFromGiftGroup,
@@ -167,6 +168,7 @@ export function createCommandHandlers(
 		'gift.edit': (actor, payload) => editGift(gifts.giftDeps, actor, payload),
 		'gift.markGiven': (actor, payload) => markGiftGiven(gifts.giftDeps, actor, payload),
 		'gift.markBought': (actor, payload) => markGiftBought(gifts.giftDeps, actor, payload),
+		'gift.assign': (actor, payload) => assignGift(gifts.giftDeps, actor, payload),
 		'gift.answerWhen': (actor, payload) => answerIdeaWhen(gifts.giftDeps, actor, payload),
 		'gift.remove': (actor, payload) => removeGift(gifts.giftDeps, actor, payload),
 		'giftGroup.add': (actor, payload) => addGiftGroup(gifts.giftGroupDeps, actor, payload),

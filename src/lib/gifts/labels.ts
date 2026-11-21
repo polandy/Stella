@@ -1,6 +1,7 @@
 import { dayLabel, type DateLanguage } from '../dates/labels';
 import type { Translate } from '../i18n/translate';
 import { isGiftOccasionPreset, type GiftState } from './gifts';
+import type { GiverView } from './giver';
 import type { NextOccasion } from './idea-list';
 
 /*
@@ -55,4 +56,17 @@ export function nextOccasionLabel(lang: DateLanguage, next: NextOccasion): strin
 		timeZone: 'UTC'
 	});
 	return lang.t('gifts.list.next', { occasion: lang.t(`gifts.occasion.${next.kind}`), when, day });
+}
+
+/**
+ * Who gives a gift, in one phrase (docs/dev/02 §2.25.12): *Sandra schenkt* on an open one, *von
+ * Sandra* on one given; null when nobody is named, or on a gift received — it came from its person.
+ */
+export function giverLabel(t: Translate, giver: GiverView, state: GiftState): string | null {
+	if (giver.kind === 'none' || state === 'received') return null;
+	const tense = state === 'given' ? 'gave' : 'gives';
+	if (giver.kind === 'person' || giver.kind === 'left') {
+		return t(`gifts.giver.${tense}.person`, { name: giver.name });
+	}
+	return t(`gifts.giver.${tense}.${giver.kind}`);
 }

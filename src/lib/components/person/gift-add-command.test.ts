@@ -35,6 +35,20 @@ describe('giftAddCommand', () => {
 		});
 	});
 
+	it('carries who gives an idea or gave a gift, and nobody on one received', () => {
+		const given = { state: 'given', title: 'Kite', givenOn: '2025-12-24' };
+		const of = (fields: Record<string, string>) => giftAddCommand(formOf(fields), 'c', 'julia', 7);
+		expect(of({ state: 'idea', title: 'Kite', giver: 'sandra' })?.payload.giver).toEqual({
+			contactId: 'sandra'
+		});
+		expect(of({ ...given, giver: 'household' })?.payload.giver).toEqual({ household: true });
+		expect(of({ state: 'idea', title: 'Kite' })?.payload.giver).toBeNull();
+		expect(of({ ...given, state: 'received', giver: 'sandra' })?.payload.giver).toBeNull();
+		expect(v.safeParse(GiftAddSchema, of({ ...given, giver: 'sandra' })?.payload).success).toBe(
+			true
+		);
+	});
+
 	it('makes a payload the command schema takes', () => {
 		expect(v.safeParse(GiftAddSchema, idea('surprise')?.payload).success).toBe(true);
 	});

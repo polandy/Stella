@@ -223,13 +223,21 @@ export const gift = sqliteTable(
 		whenCheckedOn: text('when_checked_on'),
 		// The idea it was noted with for several people (ADR-134); null for one noted alone.
 		groupId: text('group_id').references(() => giftGroup.id),
+		// Who gives it (ADR-140): a person, or the household itself; neither means *us*, as before.
+		// No cascade: deleting the giver keeps their name in `giver_left_name` and lets go here.
+		giverContactId: text('giver_contact_id').references(() => contact.id),
+		giverIsHousehold: integer('giver_is_household').notNull().default(0),
+		// The giver's name, kept when their record is deleted; written by that delete alone.
+		giverLeftName: text('giver_left_name'),
 		createdAt: integer('created_at').notNull().default(now),
 		updatedAt: integer('updated_at').notNull().default(now)
 	},
 	(t) => [
 		// A person's gifts by state, and their given and received ones in story order.
 		index('gift_contact_state_given_idx').on(t.contactId, t.state, t.givenOn),
-		index('gift_group_idx').on(t.groupId)
+		index('gift_group_idx').on(t.groupId),
+		// What one person gives, by state (the *Schenkt* tab).
+		index('gift_giver_idx').on(t.giverContactId, t.state)
 	]
 );
 

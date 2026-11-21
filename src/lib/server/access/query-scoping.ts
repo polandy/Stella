@@ -113,6 +113,18 @@ export function linkedMomentVisibleTo(viewer: Viewer, momentId: AnyColumn): SQL<
 	>`(SELECT ${journalEntry.id} FROM ${journalEntry} INNER JOIN ${contact} ${sql.identifier(name)} ON ${person.id} = ${journalEntry.contactId} WHERE ${journalEntry.id} = ${momentId} AND ${contactColumnsVisibleTo(viewer, person)} AND (${journalEntry.visibility} = 'shared' OR ${journalEntry.createdBy} = ${viewer.id}))`;
 }
 
+/**
+ * The name of a gift's giver, where the viewer may see that person (docs/dev/03 §3.7): null for
+ * none, and for a person out of their view — the gift then reads *vergeben*, naming nobody.
+ */
+export function giverNameVisibleTo(viewer: Viewer, giverId: AnyColumn): SQL<string | null> {
+	const name = 'gift_giver';
+	const person = alias(contact, name);
+	return sql<
+		string | null
+	>`(SELECT ${person.displayName} FROM ${contact} ${sql.identifier(name)} WHERE ${person.id} = ${giverId} AND ${contactColumnsVisibleTo(viewer, person)})`;
+}
+
 /** The columns `surpriseVisibleTo` decides on. */
 export interface SurpriseColumns {
 	visibility: AnyColumn;

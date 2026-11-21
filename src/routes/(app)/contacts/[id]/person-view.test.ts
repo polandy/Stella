@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import type { GraphModel } from '#lib/graph/model/types.js';
 import type { MentionedIn } from '#lib/server/domain/mentions/mentioned-in.js';
-import type { Gift } from '#lib/server/domain/gifts/gifts.js';
+import { NO_GIVER, type Gift } from '#lib/server/domain/gifts/gifts.js';
 import type { Todo } from '#lib/server/domain/todos/todos.js';
 import type { ContactAccess, Remover } from '#lib/server/access/visibility.js';
 import type { Note } from '#lib/server/domain/notes/notes.js';
@@ -101,6 +101,7 @@ function note(overrides: Partial<Note> = {}): Note {
 describe('giftView', () => {
 	const gift = (overrides: Partial<Gift> = {}): Gift => ({
 		id: 'g-1',
+		...NO_GIVER,
 		contactId: 'c-hilde',
 		createdBy: 'user-2',
 		visibility: 'shared',
@@ -135,8 +136,21 @@ describe('giftView', () => {
 			visibility: 'shared',
 			mine: false,
 			notedBy: 'Hans',
+			giver: { kind: 'none' },
 			createdAt: 1
 		});
+	});
+
+	it('names who gives it, and never the id of a giver the viewer may not see (§2.25.12)', () => {
+		const seen = gift({ giverContactId: 'c-sandra', giverName: 'Sandra' });
+		expect(giftView(seen, context()).giver).toEqual({
+			kind: 'person',
+			contactId: 'c-sandra',
+			name: 'Sandra'
+		});
+		const unseen = giftView(gift({ giverContactId: 'c-secret' }), context());
+		expect(unseen.giver).toEqual({ kind: 'unseen' });
+		expect(JSON.stringify(unseen)).not.toContain('c-secret');
 	});
 
 	it('marks the viewer’s own gift, which only they may make private', () => {

@@ -25,6 +25,7 @@ const KINDS = {
 	'gift.edit': 'change',
 	'gift.markGiven': 'change',
 	'gift.markBought': 'change',
+	'gift.assign': 'change',
 	'gift.answerWhen': 'change',
 	'gift.remove': 'remove',
 	'giftGroup.addRecipients': 'change',

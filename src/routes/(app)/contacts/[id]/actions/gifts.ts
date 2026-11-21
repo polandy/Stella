@@ -2,6 +2,7 @@ import { fromFormData } from '#lib/commands/form-data.js';
 import {
 	GiftAddSchema,
 	GiftAnswerWhenSchema,
+	GiftAssignSchema,
 	GiftEditSchema,
 	GiftMarkBoughtSchema,
 	GiftMarkGivenSchema,
@@ -11,7 +12,9 @@ import { contactSectionPath } from '#lib/people/sections.js';
 import type { RequestEvent } from '@sveltejs/kit';
 import {
 	applyGiftCommand,
+	giverOf,
 	occasionOf,
+	surpriseOf,
 	visibilityOf,
 	whenOf,
 	type GiftCommand,
@@ -48,7 +51,8 @@ export const giftActions = {
 				...fromFormData(GiftAddSchema, form),
 				...visibilityOf(form),
 				occasion: occasionOf(form),
-				when: whenOf(form)
+				when: whenOf(form),
+				giver: giverOf(form)
 			},
 			'giftError'
 		);
@@ -89,6 +93,23 @@ export const giftActions = {
 			form,
 			'gift.markBought',
 			fromFormData(GiftMarkBoughtSchema, form),
+			'giftRowError'
+		);
+	},
+
+	/** *Vergeben…* (§2.25.12): who gives it, for when, and — its author only — kept from its person. */
+	assignGift: async (event) => {
+		const form = await event.request.formData();
+		return onCard(
+			event,
+			form,
+			'gift.assign',
+			{
+				...fromFormData(GiftAssignSchema, form),
+				giver: giverOf(form),
+				when: whenOf(form),
+				hiddenFromRecipient: surpriseOf(form)
+			},
 			'giftRowError'
 		);
 	},

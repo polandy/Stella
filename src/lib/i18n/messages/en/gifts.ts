@@ -156,7 +156,25 @@ export const gifts = {
 
 	// In the story (docs/dev/02 §2.23): what happened on the day.
 	'gifts.story.given': 'Given',
-	'gifts.story.received': 'Received'
+	'gifts.story.received': 'Received',
+	'gifts.giver.gives.person': (p: { name: string }) => `${p.name} is giving it`,
+	'gifts.giver.gives.household': 'We are giving it',
+	'gifts.giver.gives.unseen': 'taken',
+	'gifts.giver.gave.person': (p: { name: string }) => `from ${p.name}`,
+	'gifts.giver.gave.household': 'from us',
+	'gifts.giver.gave.unseen': 'from someone else',
+	'gifts.giver.who': 'Who is giving it?',
+	'gifts.giver.we': 'Us',
+	'gifts.giver.search': 'Someone else…',
+	'gifts.form.from': 'From',
+	'gifts.assign.open': 'Assign…',
+	'gifts.assign.change': 'Change giver',
+	'gifts.assign.title': (p: { title: string }) => `Who is giving “${p.title}”?`,
+	'gifts.assign.replaces': (p: { name: string }) => `Already with ${p.name} – this replaces it.`,
+	'gifts.assign.occasion': 'For which occasion?',
+	'gifts.assign.keep': (p: { name: string }) => `Keep it from ${p.name}`,
+	'gifts.assign.free': 'Free again',
+	'gifts.assign.save': 'Assign'
 };
 
 /** The key set every translation of this area has to provide. */

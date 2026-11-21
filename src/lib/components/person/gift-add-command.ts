@@ -1,5 +1,10 @@
 import type { JsonCommand } from '#lib/commands/commands.js';
-import { isAddableGiftState, occasionFromForm, visibilityFromForm } from '#lib/gifts/gifts.js';
+import {
+	giverFromForm,
+	isAddableGiftState,
+	occasionFromForm,
+	visibilityFromForm
+} from '#lib/gifts/gifts.js';
 import { GIFT_WHEN_KINDS } from '#lib/gifts/idea-when.js';
 import { parsedWhenFromForm } from '#lib/when/form.js';
 
@@ -38,6 +43,8 @@ export function giftAddCommand(
 			givenOn: state === 'idea' ? null : givenOn,
 			occasion: occasionFromForm(text(formData, 'occasionChoice'), text(formData, 'occasionText')),
 			...visibilityFromForm(text(formData, 'visibility')),
+			// What was received came from its person (§2.25.12).
+			giver: state === 'received' ? null : giverFromForm(text(formData, 'giver')),
 			...when
 		},
 		issuedAt

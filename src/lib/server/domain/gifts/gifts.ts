@@ -1,7 +1,7 @@
 import { TranslatableError } from '../../../i18n/translatable';
 import { phrase, type Phrase } from '../../../i18n/phrase';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
-import { hasGiftDay, type GiftState } from '../../../gifts/gifts';
+import { hasGiftDay, type GiftState, type GiverChoice } from '../../../gifts/gifts';
 import type { PartialDate } from '../../../dates/partial-date';
 import { todayFor } from '../../../dates/today';
 import { ideaState, ideaWaits as waitsOn } from '../../../gifts/idea-when';
@@ -39,12 +39,12 @@ import {
 
 export type { GiftState };
 
-/** A gift as stored and as read back. */
-export interface Gift {
+/** What a gift says besides who gives it. */
+interface GiftRecord {
 	id: string;
 	/** The person it is for. */
 	contactId: string;
-	/** Who noted it; shown as *noted by*. Not who gave it — that is usually several people. */
+	/** Who noted it; shown as *noted by*. Who gives it is the giver below (§2.25.12). */
 	createdBy: string;
 	visibility: Visibility;
 	/** A shared gift kept from the member whose own person it is for (§2.25.10); never a private one. */
@@ -68,6 +68,32 @@ export interface Gift {
 	updatedAt: number;
 }
 
+/** Who gives a gift as stored (§2.25.12); none of them set means *us*, as before givers. */
+export interface StoredGiver {
+	/** A person gives it. */
+	giverContactId: string | null;
+	/** *Wir*: the household itself, said outright; never together with a person. */
+	giverIsHousehold: boolean;
+	/** The name of a giver whose record was deleted since; written by that delete alone. */
+	giverLeftName: string | null;
+}
+
+/** A gift as stored and as read back. */
+export interface Gift extends GiftRecord, StoredGiver {
+	/** The giver's name for the reader; null for none, or a person out of their view. Read only. */
+	giverName: string | null;
+}
+
+export type { GiverChoice };
+
+/** No giver named: the household gives it, as every gift did before givers. */
+export const NO_GIVER = {
+	giverContactId: null,
+	giverIsHousehold: false,
+	giverLeftName: null,
+	giverName: null
+} as const satisfies StoredGiver & Pick<Gift, 'giverName'>;
+
 /** A given or received gift: one with a day, as the story shows it. */
 export type DatedGift = Gift & { state: 'given' | 'received'; givenOn: string };
 
@@ -88,7 +114,7 @@ export interface GiftRepository {
 	insert(gift: Gift): Promise<void>;
 	/** The gift on `contactId` the viewer may see, or null. */
 	findVisibleTo(viewer: Viewer, contactId: string, giftId: string): Promise<Gift | null>;
-	/** Store a gift's new state; the caller found it through `findVisibleTo`. */
+	/** Store a gift's new state and giver; the caller found it through `findVisibleTo`. */
 	update(gift: Gift): Promise<void>;
 	/** Remove a gift; the caller found it through `findVisibleTo`. */
 	remove(giftId: string): Promise<void>;
@@ -156,6 +182,8 @@ export interface GiftContent {
 export interface AddGiftInput extends GiftContent {
 	contactId: string;
 	state: Exclude<GiftState, 'bought'>;
+	/** Who gives it; absent or null for *us*, and never asked of a gift received. */
+	giver?: GiverChoice | null;
 }
 
 export interface EditGiftInput extends GiftContent {
@@ -213,7 +241,7 @@ function dayOf(state: GiftState, raw: string | null): string | null {
 }
 
 /** The when an idea for someone born so may keep, checked against the household's day. */
-const whenOf = (when: When | null, birth: PartialDate | null, today: string): When | null =>
+export const whenOf = (when: When | null, birth: PartialDate | null, today: string): When | null =>
 	checkedWhen(when, birth, today, (message) => new InvalidGiftError(message));
 
 /** What a gift says once its content is checked, for its state. */
@@ -228,8 +256,28 @@ function checkedContent(state: GiftState, content: GiftContent) {
 	};
 }
 
+/**
+ * The giver as stored: a person the actor can see who is not the one the gift is for, or the
+ * household. A gift received came from its person, so it names nobody.
+ */
+export async function giverOf(
+	deps: Pick<GiftDeps, 'contacts'>,
+	actor: GiftActor,
+	gift: Pick<Gift, 'contactId' | 'state'>,
+	choice: GiverChoice | null | undefined
+): Promise<StoredGiver & Pick<Gift, 'giverName'>> {
+	if (!choice || gift.state === 'received') return NO_GIVER;
+	if ('household' in choice) return { ...NO_GIVER, giverIsHousehold: true };
+	if (choice.contactId === gift.contactId) {
+		throw new InvalidGiftError(phrase('errors.gift.giverIsRecipient'));
+	}
+	const giver = await deps.contacts.findByIdVisibleTo(viewerOf(actor), choice.contactId);
+	if (!giver) throw new InvalidGiftError(phrase('errors.gift.giverGone'));
+	return { ...NO_GIVER, giverContactId: giver.id, giverName: giver.displayName };
+}
+
 /** Whether a gift is kept from the person it is for (`keptFromPerson`). */
-const hiddenOf = (
+export const hiddenOf = (
 	deps: Pick<GiftDeps, 'ownPeople'>,
 	author: GiftActor,
 	contactId: string,
@@ -286,6 +334,7 @@ export async function addGift(
 		when,
 		whenCheckedOn: null,
 		groupId: null,
+		...(await giverOf(deps, author, input, input.giver)),
 		createdAt: now,
 		updatedAt: now
 	});

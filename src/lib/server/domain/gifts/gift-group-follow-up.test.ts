@@ -10,7 +10,7 @@ import {
 	removeOpenOfGiftGroup
 } from './gift-group-follow-up';
 import type { GiftGroup, GiftGroupDeps, GroupWrite } from './gift-groups';
-import { GiftGoneError, InvalidGiftError, type Gift } from './gifts';
+import { NO_GIVER, GiftGoneError, InvalidGiftError, type Gift } from './gifts';
 
 // Following up one idea for several people (docs/dev/02 §2.25.11); today is 2026-11-18.
 
@@ -36,6 +36,7 @@ let counter: number;
 
 const giftFor = (contactId: string, over: Partial<Gift> = {}): Gift => ({
 	id: `g-${contactId}`,
+	...NO_GIVER,
 	contactId,
 	createdBy: 'andy',
 	visibility: 'shared',

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import type { VisibleGiftGroup } from '#lib/server/domain/gifts/gift-groups.js';
-import type { Gift } from '#lib/server/domain/gifts/gifts.js';
+import { NO_GIVER, type Gift } from '#lib/server/domain/gifts/gifts.js';
 import { giftGroupView } from './gift-group-view';
 
 // What *Who has it?* is handed for one group (docs/dev/02 §2.25.11).
@@ -13,6 +13,7 @@ const ctx = {
 
 const gift = (contactId: string, over: Partial<Gift> = {}) => ({
 	id: `g-${contactId}`,
+	...NO_GIVER,
 	contactId,
 	contactName: contactId,
 	birth: { value: '2022-01-20', precision: 'full' as const },

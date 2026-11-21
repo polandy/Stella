@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import * as v from 'valibot';
 import {
 	GiftAddSchema,
+	GiftAssignSchema,
 	GiftEditSchema,
 	GiftGroupAddSchema,
 	GiftMarkBoughtSchema
@@ -56,6 +57,40 @@ describe('a gift command and whom it is kept from (docs/dev/02 §2.25.10)', () =
 
 	it('adds no gift as already bought: that is only ever reached from an idea', () => {
 		expect(v.safeParse(GiftAddSchema, { ...added, state: 'bought' }).success).toBe(false);
+	});
+});
+
+describe('a gift and who gives it (docs/dev/02 §2.25.12)', () => {
+	it('still takes a command written before givers existed: nobody, so *us*', () => {
+		expect(v.parse(GiftAddSchema, added).giver).toBeUndefined();
+	});
+
+	it('carries a person or the household, and refuses anything else', () => {
+		expect(v.parse(GiftAddSchema, { ...added, giver: { contactId: 'sandra' } }).giver).toEqual({
+			contactId: 'sandra'
+		});
+		expect(v.parse(GiftAddSchema, { ...added, giver: { household: true } }).giver).toEqual({
+			household: true
+		});
+		expect(v.safeParse(GiftAddSchema, { ...added, giver: { household: false } }).success).toBe(
+			false
+		);
+		expect(v.safeParse(GiftAddSchema, { ...added, giver: 'Sandra' }).success).toBe(false);
+	});
+
+	it('assigns a giver, or frees the gift with none; the when and the surprise are optional', () => {
+		const freed = { contactId: 'hilde', giftId: 'g-1', giver: null };
+		expect(v.parse(GiftAssignSchema, freed)).toEqual(freed);
+		const full = {
+			...freed,
+			giver: { contactId: 'sandra' },
+			when: { kind: 'christmas_at_age' as const, age: 6 },
+			hiddenFromRecipient: true
+		};
+		expect(v.parse(GiftAssignSchema, full)).toEqual(full);
+		expect(v.safeParse(GiftAssignSchema, { contactId: 'hilde', giftId: 'g-1' }).success).toBe(
+			false
+		);
 	});
 });
 

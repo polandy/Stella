@@ -117,6 +117,53 @@ describe('markGiftBought on the card (§2.25.9)', () => {
 	});
 });
 
+describe('assignGift on the card (§2.25.12)', () => {
+	const assigning = (sent: unknown[]) =>
+		commanding({
+			'gift.assign': async (_actor, payload) => {
+				sent.push(payload);
+				return { giftId: 'g1' };
+			}
+		});
+	const assign = (services: FakeServices, fields: Record<string, string>) =>
+		answerOf(
+			actions.assignGift(
+				routeEvent({ services, params: { id: 'anna' }, form: formOf({ giftId: 'g1', ...fields }) })
+			)
+		);
+
+	it('gives it to a person or the household, or frees it, keeping the when without a picker', async () => {
+		const sent: unknown[] = [];
+		const services = assigning(sent);
+		expect(await assign(services, { giver: 'sandra' })).toMatchObject({ kind: 'redirect' });
+		await assign(services, { giver: 'household' });
+		await assign(services, { giver: '' });
+		await assign(services, { giver: 'sandra', free: 'on' });
+		expect(sent).toEqual([
+			{ contactId: 'anna', giftId: 'g1', giver: { contactId: 'sandra' } },
+			{ contactId: 'anna', giftId: 'g1', giver: { household: true } },
+			{ contactId: 'anna', giftId: 'g1', giver: null },
+			{ contactId: 'anna', giftId: 'g1', giver: null }
+		]);
+	});
+
+	it('sends the when the picker chose, and the surprise when the form asks it', async () => {
+		const sent: unknown[] = [];
+		const services = assigning(sent);
+		await assign(services, {
+			giver: 'sandra',
+			whenKind: 'at_age',
+			whenAge: '10',
+			surprise: 'kept'
+		});
+		await assign(services, { giver: 'sandra', whenKind: 'now', surprise: 'open' });
+		expect(sent).toMatchObject([
+			{ when: { kind: 'at_age', age: 10 }, hiddenFromRecipient: true },
+			{ when: null, hiddenFromRecipient: false }
+		]);
+	});
+});
+
 describe('the visibility choice on the card (§2.25.10)', () => {
 	const noting = (sent: unknown[]) =>
 		commanding({
@@ -146,6 +193,24 @@ describe('the visibility choice on the card (§2.25.10)', () => {
 			{ visibility: 'shared', hiddenFromRecipient: true },
 			{ visibility: 'shared', hiddenFromRecipient: false }
 		]);
+	});
+
+	it('sends who gives a new gift, or nobody when the field is left out', async () => {
+		const sent: unknown[] = [];
+		const services = noting(sent);
+		const add = (extra: Record<string, string>) =>
+			answerOf(
+				actions.addGift(
+					routeEvent({
+						services,
+						params: { id: 'anna' },
+						form: formOf({ ...fields, visibility: 'shared', ...extra })
+					})
+				)
+			);
+		await add({ giver: 'sandra' });
+		await add({});
+		expect(sent).toMatchObject([{ giver: { contactId: 'sandra' } }, { giver: null }]);
 	});
 
 	it('sends a private gift as kept from nobody, on an edit too', async () => {

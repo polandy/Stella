@@ -461,6 +461,26 @@ describe('deleting a contact', () => {
 		).toEqual(['p-other']);
 	});
 
+	it('keeps the name of a giver on what they gave (§2.25.12)', async () => {
+		db.insert(schema.gift)
+			.values({
+				id: 'g-1',
+				contactId: 'c-stays',
+				createdBy: U1,
+				state: 'given',
+				title: 'Candle',
+				givenOn: '2025-12-24',
+				giverContactId: 'c-gone'
+			})
+			.run();
+
+		expect(await repo.deleteDeletableBy(adminU1, 'c-gone', audit())).not.toBeNull();
+
+		expect(db.select().from(schema.gift).all()).toMatchObject([
+			{ id: 'g-1', giverContactId: null, giverLeftName: 'Gone Person' }
+		]);
+	});
+
 	it('hands back the bytes of their gallery *and* their journal photos', async () => {
 		// The journal entry cascades with the contact, so its photo would leave orphaned
 		// bytes behind if only the gallery were collected.

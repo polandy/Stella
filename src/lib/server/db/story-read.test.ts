@@ -12,6 +12,7 @@ import { createDrizzleJournalRepository } from './journal-repository';
 import { createDrizzlePlanRepository } from './plan-repository';
 import { createDrizzleTodoRepository } from './todo-repository';
 import * as schema from './schema';
+import { NO_GIVER } from '../domain/gifts/gifts';
 
 /*
  * Integration spec for the story read (docs/dev/02 §2.23) over its adapters. `mergeStory` is
@@ -54,6 +55,7 @@ function storyDeps() {
 async function giftForOma(id: string, state: 'idea' | 'given' | 'received', day: string | null) {
 	await createDrizzleGiftRepository(db).insert({
 		id,
+		...NO_GIVER,
 		contactId: 'oma',
 		createdBy: U1,
 		visibility: 'shared',
