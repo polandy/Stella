@@ -906,6 +906,13 @@ parents have no limit, since one foster family can follow another — give each 
 writing down when the partnership to the parent is missing or over; otherwise Stella works the
 step-parent out itself. Editing a parent link lets you change its kind the same way.
 
+The kind also decides which relatives Stella works out through the link. An adoptive parent
+counts like a biological one: their parents are the child's grandparents, their other children
+the child's brothers and sisters, their nieces and nephews the child's cousins. A foster parent
+brings only **foster siblings** — the other children in that home, *Foster sister* or *Foster
+brother* — and no grandparents, aunts or cousins. A step-parent you wrote down brings only
+step-siblings, their own children.
+
 ### What cannot hold
 
 One thing Stella will not let you write down: that two people are each other's parent, or each
