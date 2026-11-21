@@ -2,7 +2,7 @@ import { avatarAccent } from '../../people/avatar';
 import { thumbnailUrl } from '../../media/urls';
 import type { EdgeBundle, RoleGroup, RoleGrouping } from '../model/role-groups';
 import { nodeDiameter, SHELF_NODE_DIAMETER } from '../layout/legibility';
-import { HAS_MORE_CLASS, SLOT_CLASS, TUCKED_CLASS } from './canvas-classes';
+import { HAS_MORE_CLASS, SLOT_CLASS, SLOT_WORDED_CLASS, TUCKED_CLASS } from './canvas-classes';
 import { SLOT_DIAMETER, slotLine, type ParentSlot } from '../model/missing-parents';
 import type { GraphEdge, GraphModel } from '../model/types';
 
@@ -140,20 +140,30 @@ export function toCytoscapeElements(model: GraphModel, options: ElementOptions =
 /**
  * The family tree's slots for missing parents (docs/dev/05 §5.8): a small plus in a dashed ring,
  * and the short dashed line down to its child. `name` is what tapping it adds ("Add a parent of Lena"),
- * which the keyboard walk reads out; the plus alone is drawn.
+ * which the keyboard walk reads out; `caption` is what is drawn — the plus, or for an aunt or
+ * uncle over a group of cousins a worded pill with no line.
  */
 export function slotElements(
 	slots: readonly ParentSlot[],
-	name: (slot: ParentSlot) => string
+	name: (slot: ParentSlot) => string,
+	caption: (slot: ParentSlot) => string = () => '+'
 ): CyElement[] {
 	return slots.flatMap((slot): CyElement[] => {
 		const line = slotLine(slot);
-		return [
-			{
-				group: 'nodes',
-				data: { id: slot.id, label: '+', name: name(slot), kind: 'slot', size: SLOT_DIAMETER },
-				classes: SLOT_CLASS
+		const node: CyElement = {
+			group: 'nodes',
+			data: {
+				id: slot.id,
+				label: caption(slot),
+				name: name(slot),
+				kind: 'slot',
+				size: SLOT_DIAMETER
 			},
+			classes: slot.relatives ? `${SLOT_CLASS} ${SLOT_WORDED_CLASS}` : SLOT_CLASS
+		};
+		if (!line) return [node];
+		return [
+			node,
 			{
 				group: 'edges',
 				data: { id: line.id, source: line.source, target: line.target, kind: 'slot', label: '' },

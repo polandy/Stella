@@ -63,8 +63,11 @@ export interface GraphEdge {
 	label?: string;
 	/** The relationship type's machine key, so a built-in label can be translated. */
 	typeKey?: string;
-	/** For a derived kinship edge: the term and how it is worded, translated at the edge. */
-	kin?: { term: KinTerm; variant: KinVariant };
+	/**
+	 * For a derived kinship edge: the term and how it is worded, translated at the edge, and the
+	 * people it runs through, nearest the asking end first.
+	 */
+	kin?: { term: KinTerm; variant: KinVariant; via?: string[] };
 	/** `true` when the link is derived/inferred rather than stored (docs/dev/02 §2.4.1). */
 	derived?: boolean;
 	/** `true` when direction is meaningful (asymmetric relationship, source → target). */

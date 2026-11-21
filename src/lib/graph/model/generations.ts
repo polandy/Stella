@@ -93,6 +93,11 @@ export function isFamilyLink(edge: GraphEdge): boolean {
 	return constraintOf(edge) !== null;
 }
 
+/** Whether a family line ties two people of one generation: a sibling, a cousin, an in-law. */
+export function isSameGenerationLink(edge: GraphEdge): boolean {
+	return constraintOf(edge)?.offset === 0;
+}
+
 /**
  * The entered family links of `snapshot` between people already on the map. The map grows from
  * one person, so it holds their own lines but not the ones among their relatives — the parents'

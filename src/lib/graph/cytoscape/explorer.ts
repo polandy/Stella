@@ -101,10 +101,14 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 			arranging.glideTo(arranging.forcePositions(), !opts.reducedMotion);
 		},
 
-		arrangeAt({ positions, bows, routes, outsideFamily }, captions = {}) {
+		arrangeAt({ positions, bows, routes, dottedLines, outsideFamily }, captions = {}) {
 			if (!alive()) return;
 			rowDrags.setOn(captions.rowDrags === true);
-			bendLines(cy, { bows, routes }, (node) => positions.get(node.id()) ?? node.position());
+			bendLines(
+				cy,
+				{ bows, routes, dottedLines },
+				(node) => positions.get(node.id()) ?? node.position()
+			);
 			const captioned = writeCaption(cy, outsideFamily, captions.outsideFamily);
 			// The family is what is framed first, should all of it not fit with its names drawn.
 			const family = captions.keepNamesDrawn ? familyIn({ positions, outsideFamily }) : undefined;

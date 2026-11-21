@@ -281,16 +281,26 @@ describe('treeRoutes', () => {
 			['jan', { x: 150, y: 0 }],
 			['kai', { x: 300, y: 0 }]
 		]);
-		const cousins = kin('ina', 'kai', 'cousin');
-		const route = treeRoutes([cousins], positions, new Set(positions.keys()), size, ROW).get(
-			cousins.id
+		const siblings = kin('ina', 'kai', 'sibling');
+		const route = treeRoutes([siblings], positions, new Set(positions.keys()), size, ROW).get(
+			siblings.id
 		)!;
-		const path = pathOf(cousins, route, positions);
+		const path = pathOf(siblings, route, positions);
 
 		expect(path.every((p, i) => i === 0 || i === path.length - 1 || p.y < 0)).toBe(true);
 		expect(
 			path.slice(1).flatMap((to, i) => crossed(path[i], to, positions, ['ina', 'kai']))
 		).toEqual([]);
+	});
+
+	it('leaves a cousin’s or an in-law’s line along the row to its bow: over it, it reads as siblings', () => {
+		const positions = new Map<string, Point>([
+			['ina', { x: 0, y: 0 }],
+			['kai', { x: 300, y: 0 }]
+		]);
+		const lines = [kin('ina', 'kai', 'cousin'), kin('kai', 'ina', 'sibling-in-law')];
+
+		expect(treeRoutes(lines, positions, new Set(positions.keys()), size, ROW).size).toBe(0);
 	});
 
 	it('keeps two bars that would run along each other on separate lanes', () => {

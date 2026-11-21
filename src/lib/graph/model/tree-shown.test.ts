@@ -80,14 +80,35 @@ describe('hiddenInTree', () => {
 	});
 
 	it('keeps a family line nothing on the map draws otherwise', () => {
-		// Without the parents between them, the cousin line is what ties Timo to Lena.
+		// Without the grandparents between them, the aunt line is what ties Daniel to Lena.
 		const sparse: GraphModel = {
-			nodes: ['lena', 'timo'].map(person),
-			edges: [kin('timo', 'lena', 'cousin')]
+			nodes: ['lena', 'daniel'].map(person),
+			edges: [kin('daniel', 'lena', 'aunt-uncle')]
 		};
 
 		expect(hiddenInTree(sparse, null).size).toBe(0);
-		expect(hiddenInTree(family, null).has('kin:timo:lena')).toBe(true);
+		expect(hiddenInTree(family, null).has('kin:daniel:lena')).toBe(true);
+	});
+
+	it('draws a cousin or in-law line along the row only around a selection, like a friend’s', () => {
+		// No aunt between them: a line over the row would read as a siblings' bar.
+		const sparse: GraphModel = {
+			nodes: ['lena', 'timo', 'ida', 'max', 'jo'].map(person),
+			edges: [
+				kin('timo', 'lena', 'cousin'),
+				stored('lena', 'ida', 'sibling_in_law'),
+				stored('lena', 'max', 'half_sibling'),
+				stored('lena', 'jo', 'sibling')
+			]
+		};
+
+		expect([...hiddenInTree(sparse, null)].sort()).toEqual([
+			'kin:timo:lena',
+			'lena-half_sibling-max',
+			'lena-sibling_in_law-ida'
+		]);
+		expect(hiddenInTree(sparse, 'timo').has('kin:timo:lena')).toBe(false);
+		expect(hiddenInTree(sparse, 'timo').has('lena-sibling_in_law-ida')).toBe(true);
 	});
 
 	it('stands the people outside the family without a line, until one end is selected', () => {

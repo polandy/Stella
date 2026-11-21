@@ -6,6 +6,8 @@
 /** The class and data field a bent line carries; the controller sets them, this draws them. */
 export const BOWED_CLASS = 'bowed';
 export const BOW_FIELD = 'bow';
+/** The class of a line the arrangement dots: in the family tree, a cousin's along the row. */
+export const DOTTED_CLASS = 'dotted';
 /** The class a line a bundle stands for carries (docs/dev/02 §2.7); drawn only while selected. */
 export const TUCKED_CLASS = 'tucked';
 /** The class the node the keyboard is on carries (docs/dev/05 §5.8); the controller sets it. */
@@ -36,3 +38,5 @@ export const CAPTION_RULE_CLASS = 'caption-rule';
 export const DRAGGED_LINE_CLASS = 'dragged-line';
 /** The class of a missing parent's slot in the family tree, and of its line (`elements.ts`). */
 export const SLOT_CLASS = 'slot';
+/** A slot worded rather than a bare plus: the aunt or uncle over a group of cousins. */
+export const SLOT_WORDED_CLASS = 'slot-worded';

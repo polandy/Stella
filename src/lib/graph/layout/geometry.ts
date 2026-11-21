@@ -48,6 +48,8 @@ export interface Arrangement {
 	bows: Map<string, number>;
 	/** Lines drawn as a run of straight pieces instead; a line is never both routed and bowed. */
 	routes?: Map<string, Route>;
+	/** Lines drawn dotted: in the family tree, a cousin's or an in-law's along the row. */
+	dottedLines?: Set<string>;
 	/** The shelf of people outside the family, when there is one. */
 	outsideFamily?: Shelf;
 }

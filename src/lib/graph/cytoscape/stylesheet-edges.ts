@@ -1,6 +1,6 @@
 import { RELATIONSHIP_CATEGORIES } from '../../relationships/categories';
 import { LABEL_MIN_ZOOMED_FONT_SIZE, SMALLEST_LABEL_FONT_SIZE } from '../layout/legibility';
-import { BOW_FIELD, BOWED_CLASS, ROUTE_FIELDS, ROUTED_CLASS } from './canvas-classes';
+import { BOW_FIELD, BOWED_CLASS, DOTTED_CLASS, ROUTE_FIELDS, ROUTED_CLASS } from './canvas-classes';
 import type { CyStyle, StyleContext, StyledElement } from './stylesheet';
 
 /* The lines of the graph stylesheet (docs/dev/05 §5.8): their kinds, bends and routes. */
@@ -70,6 +70,9 @@ export function edgeStyles({ p, options, transition }: StyleContext): CyStyle[] 
 			selector: 'edge[kind = "kinship"]',
 			style: { ...lineColour(p.lines.kinship), 'line-style': 'dotted', width: 1.2 }
 		},
+		// A cousin's or an in-law's line along a row of the family tree: dotted like a worked-out
+		// one, so it never reads as a siblings' bar (docs/dev/05 §5.8).
+		{ selector: `edge.${DOTTED_CLASS}`, style: { 'line-style': 'dotted', width: 1.2 } },
 		// A link marked former (docs/dev/02 §2.7): still a link, so still in its category's hue, but
 		// muted toward the grey, thinner, and dashed longer than a circle's line so the two never
 		// read alike. Its name says "former" too, so the mark holds without colour.

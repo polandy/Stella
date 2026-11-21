@@ -206,4 +206,16 @@ describe('slotElements', () => {
 			true
 		);
 	});
+
+	it('words an aunt or uncle over a group of cousins, with no line down to anybody', () => {
+		const worded = slotElements(
+			[{ id: 'slot:aunt-uncle-of:sia', childId: 'lacky', relatives: ['lacky', 'hoat'] }],
+			() => 'Add an aunt or uncle',
+			(slot) => (slot.relatives ? '+ Aunt/uncle?' : '+')
+		);
+
+		expect(worded).toHaveLength(1);
+		expect(worded[0]?.classes).toBe('slot slot-worded');
+		expect(worded[0]?.data.label).toBe('+ Aunt/uncle?');
+	});
 });

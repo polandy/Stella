@@ -6,6 +6,7 @@ import {
 	BOWED_CLASS,
 	CAPTION_CLASS,
 	CAPTION_RULE_CLASS,
+	DOTTED_CLASS,
 	ROUTE_FIELDS,
 	ROUTED_CLASS
 } from './canvas-classes';
@@ -41,16 +42,17 @@ const RULE_ABOVE = 16;
 
 /**
  * Bends exactly the lines in `bows`, routes exactly those in `routes`, and straightens every
- * other. A route's bends are measured from where its two people are going (`placeOf`), not
+ * other; dots exactly those in `dottedLines`. A route's bends are measured from where its two people are going (`placeOf`), not
  * where they stand mid-glide: they are only right once the glide has arrived.
  */
 export function bendLines(
 	cy: Core,
-	{ bows, routes }: Pick<Arrangement, 'bows' | 'routes'>,
+	{ bows, routes, dottedLines }: Pick<Arrangement, 'bows' | 'routes' | 'dottedLines'>,
 	placeOf: (node: NodeSingular) => Point
 ): void {
 	cy.batch(() => {
 		cy.edges().forEach((edge) => {
+			edge.toggleClass(DOTTED_CLASS, dottedLines?.has(edge.id()) === true);
 			const route = routes?.get(edge.id());
 			if (route) {
 				const segments = segmentsOf(route, placeOf(edge.source()), placeOf(edge.target()));

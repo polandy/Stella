@@ -161,6 +161,8 @@ test('a calendar link is shown once, serves the dates and dated to-dos, and stop
 	expect(await feedText(page, second)).toContain("SUMMARY:Markus Brunner's birthday");
 
 	await page.goto('/settings/calendar');
+	// Revoke… is a script control: pressed before hydration it opens nothing.
+	await appReady(page);
 	await page.getByRole('button', { name: 'Revoke…' }).click();
 	await page.getByTestId('calendar-confirm').getByRole('button', { name: 'Revoke' }).click();
 	await expect(page.getByText('Calendar link revoked.')).toBeVisible();
