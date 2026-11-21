@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'bun:test';
-import type { OpenIdea } from '#lib/server/domain/gifts/gifts.js';
+import { NO_GIVER, type OpenIdea } from '#lib/server/domain/gifts/gifts.js';
 import { openIdeaView } from './idea-view';
 
 const idea: OpenIdea & { whenState: null } = {
 	id: 'g-1',
+	...NO_GIVER,
 	contactId: 'c-1',
 	contactName: 'Hilde Brunner',
 	avatarPhotoId: 'p-1',

@@ -68,6 +68,13 @@ describe('the merge plan', () => {
 		);
 	});
 
+	it('drops a giver of their own gift only once the givers have moved', () => {
+		expect(settling('drop-givers-of-own-gifts')).toBeGreaterThan(
+			repointOf('gift', 'giver_contact_id')
+		);
+		expect(settling('drop-givers-of-own-gifts')).toBeGreaterThan(repointOf('gift'));
+	});
+
 	it('settles each table in the plan that the settlement names', () => {
 		const tables = new Set(
 			MERGE_PLAN.flatMap((step) => (step.kind === 'repoint' ? [step.table] : []))

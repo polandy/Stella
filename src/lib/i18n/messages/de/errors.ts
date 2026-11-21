@@ -139,6 +139,8 @@ export const errors: ErrorsMessages = {
 	'errors.gift.alreadyGiven': 'Dieses Geschenk wurde schon verschenkt.',
 	'errors.gift.gone': 'Dieses Geschenk gibt es nicht mehr.',
 	'errors.gift.ownSurprise': 'Ein Geschenk für dich kannst du nicht vor dir selbst verbergen.',
+	'errors.gift.giverIsRecipient': 'Ein Geschenk kann nicht von der Person kommen, für die es ist.',
+	'errors.gift.giverGone': 'Diese Person gibt es hier nicht mehr – wähle jemand anderen.',
 	'errors.giftGroup.recipients': 'Wähle, für wen die Idee ist – bis zu 50 Personen.',
 	'errors.giftGroup.nobody':
 		'Für diesen Zeitpunkt passt die Idee für niemanden. Wähle einen anderen.',

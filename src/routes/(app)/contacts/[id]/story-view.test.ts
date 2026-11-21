@@ -8,6 +8,7 @@ import {
 	type StoryViewContext
 } from './story-view';
 import type { StoryItem } from '#lib/server/domain/story/story.js';
+import { NO_GIVER } from '#lib/server/domain/gifts/gifts.js';
 
 /*
  * What the story timeline is handed (docs/dev/02 §2.23). The merge decides the order; this decides
@@ -200,6 +201,7 @@ describe('toStoryItem, gifts', () => {
 		recordedAt: 300,
 		gift: {
 			id: 'g1',
+			...NO_GIVER,
 			contactId: 'c1',
 			createdBy: 'user-2',
 			visibility: 'shared',

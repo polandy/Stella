@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, inArray, lt, or, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { giftBrowsableBy, giftVisibleTo } from '../access/query-scoping';
+import { giftBrowsableBy, giftVisibleTo, giverNameVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type { DatedGift, Gift, GiftRepository } from '../domain/gifts/gifts';
 import { birthOf } from '../../when/resolve';
@@ -34,9 +34,18 @@ export const columns = {
 	whenAge: gift.whenAge,
 	whenCheckedOn: gift.whenCheckedOn,
 	groupId: gift.groupId,
+	giverContactId: gift.giverContactId,
+	giverIsHousehold: gift.giverIsHousehold,
+	giverLeftName: gift.giverLeftName,
 	createdAt: gift.createdAt,
 	updatedAt: gift.updatedAt
 };
+
+/** A whole gift as this viewer reads it: with its giver's name, where they may see that person. */
+export const columnsFor = (viewer: Viewer) => ({
+	...columns,
+	giverName: giverNameVisibleTo(viewer, gift.giverContactId)
+});
 
 interface BirthColumns {
 	birthDate: string | null;
@@ -56,10 +65,16 @@ function fromRow<R extends WhenColumns>(
 	return { ...rest, when: whenOfColumns({ whenKind, whenOn, whenAge }) };
 }
 
-/** A whole gift row as the domain reads it: its when as one, its surprise flag a boolean. */
-export function giftOf<R extends WhenColumns & { hiddenFromRecipient: number }>(row: R) {
-	const { hiddenFromRecipient, ...rest } = fromRow(row);
-	return { ...rest, hiddenFromRecipient: hiddenFromRecipient !== 0 };
+/** A whole gift row as the domain reads it: its when as one, its two flags booleans. */
+export function giftOf<
+	R extends WhenColumns & { hiddenFromRecipient: number; giverIsHousehold: number }
+>(row: R) {
+	const { hiddenFromRecipient, giverIsHousehold, ...rest } = fromRow(row);
+	return {
+		...rest,
+		hiddenFromRecipient: hiddenFromRecipient !== 0,
+		giverIsHousehold: giverIsHousehold !== 0
+	};
 }
 
 /** A row read with its person's birth date, as the domain reads that. */
@@ -70,8 +85,13 @@ function withBirth<R extends WhenColumns & BirthColumns>(row: R) {
 
 /** A gift as its row stores it: its when as the three when columns. */
 export function giftRow(g: Gift) {
-	const { when, hiddenFromRecipient, ...rest } = g;
-	return { ...rest, hiddenFromRecipient: hiddenFromRecipient ? 1 : 0, ...whenColumns(when) };
+	const { when, hiddenFromRecipient, giverIsHousehold, giverName: _read, ...rest } = g;
+	return {
+		...rest,
+		hiddenFromRecipient: hiddenFromRecipient ? 1 : 0,
+		giverIsHousehold: giverIsHousehold ? 1 : 0,
+		...whenColumns(when)
+	};
 }
 
 const DATED_STATES = ['given', 'received'] as const;
@@ -87,7 +107,7 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 
 		async findVisibleTo(viewer, contactId, giftId) {
 			const row = db
-				.select(columns)
+				.select(columnsFor(viewer))
 				.from(gift)
 				.innerJoin(contact, eq(gift.contactId, contact.id))
 				.where(and(eq(gift.id, giftId), visibleOn(viewer, contactId)))
@@ -108,6 +128,9 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 					occasion: g.occasion,
 					...whenColumns(g.when),
 					whenCheckedOn: g.whenCheckedOn,
+					giverContactId: g.giverContactId,
+					giverIsHousehold: g.giverIsHousehold ? 1 : 0,
+					giverLeftName: g.giverLeftName,
 					updatedAt: g.updatedAt
 				})
 				.where(eq(gift.id, g.id))
@@ -121,7 +144,7 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 		async listForContactVisibleTo(viewer, contactId) {
 			return (
 				db
-					.select(columns)
+					.select(columnsFor(viewer))
 					.from(gift)
 					.innerJoin(contact, eq(gift.contactId, contact.id))
 					.where(visibleOn(viewer, contactId))
@@ -160,7 +183,7 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 		async listOpenIdeasVisibleTo(viewer) {
 			return db
 				.select({
-					...columns,
+					...columnsFor(viewer),
 					contactName: contact.displayName,
 					avatarPhotoId: contact.avatarPhotoId,
 					...birthColumns
@@ -176,7 +199,10 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 				)
 				.orderBy(desc(gift.createdAt))
 				.all()
-				.map((row) => ({ ...withBirth(row), hiddenFromRecipient: row.hiddenFromRecipient !== 0 }));
+				.map(({ birthDate, birthDatePrecision, ...row }) => ({
+					...giftOf(row),
+					birth: birthOf({ birthDate, birthDatePrecision })
+				}));
 		},
 
 		async listStoryPageForContactVisibleTo(viewer, contactId, opts) {
@@ -192,7 +218,7 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 				);
 			}
 			const rows = db
-				.select(columns)
+				.select(columnsFor(viewer))
 				.from(gift)
 				.innerJoin(contact, eq(gift.contactId, contact.id))
 				.where(and(...conditions))

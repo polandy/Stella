@@ -15,7 +15,7 @@ import type { IdGenerator } from '../../id';
 import { checkBirthEstimate } from '../contacts/birth-year';
 import type { ContactLookup } from '../contacts/contacts';
 import { orNull, viewerOf, type OwnPersonReads } from '../shared/idea-on-person';
-import { InvalidGiftError, titleOf, urlOf, type Gift, type GiftActor } from './gifts';
+import { InvalidGiftError, NO_GIVER, titleOf, urlOf, type Gift, type GiftActor } from './gifts';
 
 // One idea for several people (docs/dev/02 §2.25.11, ADR-134): a gift each, bound by a group.
 
@@ -234,6 +234,7 @@ export function groupIdeaFor(
 		when: plan.when,
 		whenCheckedOn: null,
 		groupId: group.id,
+		...NO_GIVER,
 		createdAt: now,
 		updatedAt: now
 	};

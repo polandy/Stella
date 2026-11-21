@@ -1,7 +1,7 @@
 import { giftFromMonicaNote, giftsFromTouchpoint } from '../../../gifts/conversion';
 import type { Locale } from '../../../i18n/locales';
 import type { Visibility } from '../../access/visibility';
-import type { Gift } from './gifts';
+import { NO_GIVER, type Gift } from './gifts';
 
 /*
  * The gifts Stella already held in other shapes, made gift records once (docs/dev/02 §2.25.4): the
@@ -101,6 +101,7 @@ export async function convertHeldGifts(deps: ConvertHeldGiftsDeps): Promise<Held
 			when: null,
 			whenCheckedOn: null,
 			groupId: null,
+			...NO_GIVER,
 			hiddenFromRecipient: false,
 			createdAt: note.createdAt,
 			updatedAt: note.updatedAt
@@ -120,6 +121,7 @@ export async function convertHeldGifts(deps: ConvertHeldGiftsDeps): Promise<Held
 				when: null,
 				whenCheckedOn: null,
 				groupId: null,
+				...NO_GIVER,
 				hiddenFromRecipient: false,
 				createdAt: touch.createdAt,
 				updatedAt: touch.updatedAt

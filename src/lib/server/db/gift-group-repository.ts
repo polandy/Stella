@@ -5,16 +5,16 @@ import type { Viewer } from '../access/visibility';
 import type { GiftGroup, GiftGroupRepository, VisibleGiftGroup } from '../domain/gifts/gift-groups';
 import { birthOf } from '../../when/resolve';
 import { whenColumns, whenOfColumns } from '../../when/when';
-import { columns as giftColumns, giftOf, giftRow } from './gift-repository';
+import { columnsFor, giftOf, giftRow } from './gift-repository';
 import type * as schema from './schema';
 import { contact, gift, giftGroup } from './schema';
 
-const groupGiftColumns = {
-	...giftColumns,
+const groupGiftColumns = (viewer: Viewer) => ({
+	...columnsFor(viewer),
 	contactName: contact.displayName,
 	birthDate: contact.birthDate,
 	birthDatePrecision: contact.birthDatePrecision
-};
+});
 
 // Drizzle adapter for GiftGroupRepository (ADR-134): a group is read through its visible gifts.
 
@@ -39,7 +39,7 @@ export function createDrizzleGiftGroupRepository(
 	function readGroups(viewer: Viewer, groupIds: readonly string[]): VisibleGiftGroup[] {
 		if (groupIds.length === 0) return [];
 		const rows = db
-			.select(groupGiftColumns)
+			.select(groupGiftColumns(viewer))
 			.from(gift)
 			.innerJoin(contact, eq(gift.contactId, contact.id))
 			.where(and(inArray(gift.groupId, [...groupIds]), giftVisibleTo(viewer, gift)))

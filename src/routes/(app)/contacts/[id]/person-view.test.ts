@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import type { GraphModel } from '#lib/graph/model/types.js';
 import type { MentionedIn } from '#lib/server/domain/mentions/mentioned-in.js';
-import type { Gift } from '#lib/server/domain/gifts/gifts.js';
+import { NO_GIVER, type Gift } from '#lib/server/domain/gifts/gifts.js';
 import type { Todo } from '#lib/server/domain/todos/todos.js';
 import type { ContactAccess, Remover } from '#lib/server/access/visibility.js';
 import type { Note } from '#lib/server/domain/notes/notes.js';
@@ -101,6 +101,7 @@ function note(overrides: Partial<Note> = {}): Note {
 describe('giftView', () => {
 	const gift = (overrides: Partial<Gift> = {}): Gift => ({
 		id: 'g-1',
+		...NO_GIVER,
 		contactId: 'c-hilde',
 		createdBy: 'user-2',
 		visibility: 'shared',

@@ -9,7 +9,7 @@ import {
 } from './story';
 import type { JournalEntry } from '../journal/journal';
 import type { Interaction } from '../interactions/interactions';
-import type { DatedGift } from '../gifts/gifts';
+import { NO_GIVER, type DatedGift } from '../gifts/gifts';
 import type { DoneTodo } from '../todos/todos';
 import type { DonePlan } from '../plans/plans';
 
@@ -58,6 +58,7 @@ function present(
 ): DatedGift {
 	return {
 		id,
+		...NO_GIVER,
 		contactId: 'c1',
 		createdBy: 'u1',
 		visibility: 'shared',

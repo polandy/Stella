@@ -167,6 +167,26 @@ describe('what follows the person', () => {
 		).toEqual(['keep', 'keep']);
 	});
 
+	it('makes the survivor the giver of what the merged record gives (§2.25.12)', () => {
+		seedContact('tomy', 'Tomy');
+		db.insert(schema.gift)
+			.values([
+				{ id: 'g1', contactId: 'tomy', createdBy: U1, state: 'idea', title: 'Puzzle' },
+				{ id: 'g2', contactId: 'keep', createdBy: U1, state: 'idea', title: 'Candle' }
+			])
+			.run();
+		db.update(schema.gift).set({ giverContactId: 'dup' }).run();
+
+		expect(merge()).toBe(true);
+
+		const givers = db.select().from(schema.gift).orderBy(schema.gift.id).all();
+		// The one for the survivor came from themselves now, so it names nobody.
+		expect(givers.map((g) => [g.id, g.giverContactId])).toEqual([
+			['g1', 'keep'],
+			['g2', null]
+		]);
+	});
+
 	it('brings their to-dos across, open and ticked alike (docs/dev/02 §2.26)', () => {
 		db.insert(schema.todo)
 			.values([

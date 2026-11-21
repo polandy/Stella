@@ -6,7 +6,7 @@ import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
 import { createTranslator } from '../../i18n/translate';
 import { calendarFeed } from '../domain/dates/calendar-feed';
-import type { Gift } from '../domain/gifts/gifts';
+import { NO_GIVER, type Gift } from '../domain/gifts/gifts';
 import { createDrizzleGiftRepository } from './gift-repository';
 import * as schema from './schema';
 
@@ -29,6 +29,7 @@ let repo: ReturnType<typeof createDrizzleGiftRepository>;
 function gift(over: Partial<Gift>): Gift {
 	return {
 		id: 'g',
+		...NO_GIVER,
 		contactId: 'c-shared',
 		createdBy: U1,
 		visibility: 'shared',
@@ -83,6 +84,41 @@ describe('createDrizzleGiftRepository', () => {
 		});
 		await repo.insert(stored);
 		expect(await repo.findVisibleTo(viewerU1, 'c-shared', 'g-1')).toEqual(stored);
+	});
+
+	it('names the giver to whoever sees them, and only *vergeben* to anyone else (§2.25.12)', async () => {
+		await repo.insert(gift({ id: 'g-1', giverContactId: 'c-priv', createdAt: 1 }));
+		await repo.insert(gift({ id: 'g-2', giverIsHousehold: true, createdAt: 2 }));
+
+		expect(await repo.findVisibleTo(viewerU1, 'c-shared', 'g-1')).toMatchObject({
+			giverContactId: 'c-priv',
+			giverName: 'P'
+		});
+		// U2 cannot see U1's private person: the gift is given, by nobody they may know.
+		expect(await repo.findVisibleTo(viewerU2, 'c-shared', 'g-1')).toMatchObject({
+			giverContactId: 'c-priv',
+			giverName: null
+		});
+		expect(await repo.listForContactVisibleTo(viewerU2, 'c-shared')).toMatchObject([
+			{ id: 'g-2', giverIsHousehold: true, giverName: null },
+			{ id: 'g-1', giverName: null }
+		]);
+	});
+
+	it('keeps the giver someone else cannot see through their edit, and changes it on update', async () => {
+		await repo.insert(gift({ id: 'g-1', giverContactId: 'c-priv' }));
+		const seen = await repo.findVisibleTo(viewerU2, 'c-shared', 'g-1');
+		await repo.update({ ...seen!, title: 'Kettle' });
+		expect(await repo.findVisibleTo(viewerU1, 'c-shared', 'g-1')).toMatchObject({
+			title: 'Kettle',
+			giverName: 'P'
+		});
+
+		await repo.update({ ...seen!, giverContactId: null, giverIsHousehold: true });
+		expect(await repo.findVisibleTo(viewerU1, 'c-shared', 'g-1')).toMatchObject({
+			giverContactId: null,
+			giverIsHousehold: true
+		});
 	});
 
 	it('reads each kind of when back as it was stored, and changes it on update', async () => {

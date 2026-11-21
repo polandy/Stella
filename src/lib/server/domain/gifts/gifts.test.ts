@@ -4,6 +4,7 @@ import type { PartialDate } from '../../../dates/partial-date';
 import { inEnglish } from '../../../i18n/phrase';
 import { ContactGoneError } from '../contacts/require-visible';
 import {
+	NO_GIVER,
 	addGift,
 	answerIdeaWhen,
 	countOpenIdeas,
@@ -86,6 +87,7 @@ describe('addGift', () => {
 		const { giftId } = await addGift(deps, ANDY, idea('  Teapot  '));
 		expect(gifts.rows.get(giftId)).toEqual({
 			id: giftId,
+			...NO_GIVER,
 			contactId: HILDE,
 			createdBy: 'andy',
 			visibility: 'shared',
