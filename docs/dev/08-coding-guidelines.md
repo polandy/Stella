@@ -341,6 +341,10 @@ cross midnight the two collapse into the one day it always checked.
     stays off the wall clock (§8.4.2). The action keeps calling it.
   - `src/lib/server/testing/` speaks SvelteKit, so it sits apart from `domain/testing/`; the
     same guard keeps both out of the build.
+- **A subsection whose behaviour stays unit-covered is marked on its heading**: the
+  `docs/dev/features/*.md` heading carries `**[unit]**` beside the milestone tags, and
+  `scripts/spec-coverage.sh` counts it covered when it reports the feature subsections no
+  e2e header cites. The mark sits on the one heading it speaks for, never the file.
 
 ## 8.6 Naming & structure conventions
 
