@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'bun:test';
 import cytoscape from 'cytoscape';
-import { bendLines, CAPTION_ID, CAPTION_RULE_ID, writeBridges, writeCaption } from './tree-canvas';
+import {
+	bendLines,
+	CAPTION_ID,
+	CAPTION_RULE_ID,
+	writeBridges,
+	writeCaption,
+	writeMarks
+} from './tree-canvas';
 import {
 	BOWED_CLASS,
 	BRIDGE_CLASS,
@@ -134,5 +141,25 @@ describe('writeBridges', () => {
 		expect(cy.nodes(`.${BRIDGE_CLASS}`).empty()).toBe(true);
 		expect(cy.$id('a-c').hasClass(BRIDGE_OVER_CLASS)).toBe(false);
 		expect(cy.nodes().length).toBe(3);
+	});
+});
+
+describe('writeMarks', () => {
+	it('writes the shelf caption and the bridge masks, and says where each of them stands', () => {
+		const cy = core();
+		const shelf = { x: 0, y: 300, width: 600 };
+
+		const placed = writeMarks(
+			cy,
+			{ outsideFamily: shelf, bridges: [{ at: { x: 200, y: 126 }, over: ['a-c'] }] },
+			'Outside the family'
+		);
+
+		const mask = cy.nodes(`.${BRIDGE_CLASS}`)[0];
+		expect(placed.get(mask.id())).toEqual({ x: 200, y: 126 });
+		expect(placed.has(CAPTION_ID)).toBe(true);
+		expect(placed.has(CAPTION_RULE_ID)).toBe(true);
+		expect(writeMarks(cy, {}, undefined).size).toBe(0);
+		expect(cy.nodes(`.${CAPTION_CLASS}`).empty()).toBe(true);
 	});
 });

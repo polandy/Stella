@@ -156,3 +156,18 @@ export function writeBridges(cy: Core, bridges: readonly Bridge[] | undefined): 
 	});
 	return places;
 }
+
+/**
+ * Writes an arrangement's marks — the shelf's caption and the bridges' masks — and says where
+ * each is to stand, for the explorer and the export alike.
+ */
+export function writeMarks(
+	cy: Core,
+	arrangement: Pick<Arrangement, 'outsideFamily' | 'bridges'>,
+	captionWords: string | undefined
+): Map<string, Point> {
+	return new Map([
+		...writeCaption(cy, arrangement.outsideFamily, captionWords),
+		...writeBridges(cy, arrangement.bridges)
+	]);
+}
