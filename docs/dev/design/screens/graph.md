@@ -47,8 +47,11 @@ card (§5.5.2); its styling is §5.8.
   colleagues and circles show their lines only around a person the reader taps or finds — not
   around the opening centre, nor the person just expanded once the tree is laid out again. An
   only child hangs straight under their parents. The map is never framed so far out that the
-  names vanish: a large tree is shown from its top at the smallest zoom that still draws them,
-  the shelf below reached by panning. An expand
+  names vanish: a tree that fits only with tiny names is framed on the centre's core family
+  (parents, grandparents, siblings, partners, children) at a readable size, centred on the
+  centre person, the rest and the shelf below reached by panning; a pill at the edge counts who
+  stands off screen that way (*4 more →*) and a tap on it pans there. A tree that fits readably
+  is shown whole. An expand
   in the tree lays the whole tree out again; everybody glides to their new place.
 - Dragging a person in the tree moves them sideways in their row only, their lines hidden on the
   way; let go, they snap into the row with their partner beside them and the tree glides into
@@ -122,6 +125,9 @@ Their children hang from one bar, and a former couple's from one drop out of the
 the dashed bar, because two bars over the same children, a lane apart, read as two families;
 the dash and the role already say the two are apart. A bar runs just above its children
 rather than halfway down the gap, so it is plainly theirs and not the row's above.
+A wide tree is framed on the core family rather than whole because one long cousin row on a
+portrait tablet shrank everybody to dots in an empty canvas: names that are drawn but a few
+pixels high are not read. The edge pill says the rest is there, so nobody seems missing.
 A filter leaves the arrangement as it was because the reader narrows the lines to read them,
 not to get a different tree; rebuilt, a couple lost its partner line and stood apart.
 

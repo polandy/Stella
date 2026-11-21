@@ -4,6 +4,7 @@ import type { Spacing } from '../layout/density';
 import type { Point } from './placement';
 import type { Captions } from './tree-canvas';
 import type { CyStyle } from './stylesheet';
+import type { Outside } from './viewport';
 
 /*
  * What the explorer canvas offers its caller (`explorer.ts` builds it): the one surface through
@@ -15,6 +16,8 @@ export interface ExplorerHandlers {
 	onTapBackground: () => void;
 	/** A person let go after a drag while the arrangement keeps drags to their row. */
 	onDropNode?: (id: string, at: Point) => void;
+	/** Who of the family tree stands off screen to either side, each time that changes. */
+	onOutside?: (outside: Outside) => void;
 }
 
 /** What the controller needs beyond the core; the core already carries its own container. */
@@ -96,6 +99,8 @@ export interface ExplorerController {
 	 * in which case their view is kept (docs/dev/05 §5.8).
 	 */
 	screenChanged(): void;
+	/** Pans the view one screen towards `side`, where the edge hint says people stand. */
+	stepToward(side: keyof Outside): void;
 	/**
 	 * Re-theme the canvas from a freshly-resolved palette. With `growNames`, the names of the
 	 * selected person and their neighbours grow while the map is zoomed out (`nameGrowth`,

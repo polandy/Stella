@@ -1,9 +1,9 @@
 import type { Core, NodeCollection, NodeSingular } from 'cytoscape';
 import { boxAround, frameAround } from '../layout/group-blocks';
 import { boxAroundPoints, unionBox, withinScreen } from '../layout/boxes';
-import { legibleZoom } from '../layout/legibility';
+import { legibleZoom, READABLE_ZOOM } from '../layout/legibility';
 import { FOLLOWING, followView, type ViewEvent } from '../view-follow';
-import { frameLegibly, widenToReveal, type Viewport } from './viewport';
+import { frameLegibly, outsideOf, widenToReveal, type Outside, type Viewport } from './viewport';
 import { peopleOn, sizeOf } from './canvas-nodes';
 import type { Motion } from './motion';
 import type { Point } from './placement';
@@ -24,6 +24,8 @@ export interface FramingOptions {
 	pixelRatio: number;
 	/** How long the view takes to step back or follow a node, in milliseconds; 0 jumps. */
 	duration: number;
+	/** Who of the family tree stands off screen to either side, each time that changes. */
+	onOutside?: (outside: Outside) => void;
 }
 
 export interface Framing {
@@ -40,6 +42,10 @@ export interface Framing {
 	framed(): void;
 	/** Steps the view back just far enough to take in `targets`, `margin` around each. */
 	reveal(targets: Point[], margin: number): void;
+	/** Pans the view one screen towards `side`, to the people standing off it there. */
+	stepToward(side: keyof Outside): void;
+	/** Tells again who stands off screen, after the people shown have changed. */
+	recount(): void;
 	/** Brings `node` into view, only if it stands off screen or under the toolbar. */
 	bringIntoView(node: NodeSingular): void;
 	/** Centres and zooms onto `node`, as the reader asked. */
@@ -63,6 +69,8 @@ export function frameOn(cy: Core, motion: Motion, opts: FramingOptions): Framing
 	let framedFocus: ReadonlySet<string> | undefined;
 
 	const size = () => ({ width: cy.width(), height: cy.height() });
+	const shownPeople = () =>
+		peopleOn(cy).filter((n) => !n.hasClass('filtered-out')) as NodeCollection;
 	const follow = (event: ViewEvent) => {
 		const next = followView(viewFollow, event);
 		viewFollow = next.state;
@@ -73,7 +81,7 @@ export function frameOn(cy: Core, motion: Motion, opts: FramingOptions): Framing
 		placeOf: (node: NodeSingular) => Point,
 		focusIds: ReadonlySet<string> | undefined
 	) => {
-		const shown = peopleOn(cy).filter((n) => !n.hasClass('filtered-out')) as NodeCollection;
+		const shown = shownPeople();
 		const boxOf = (nodes: NodeCollection) =>
 			boxAround(nodes.map((n) => ({ at: placeOf(n), size: sizeOf(n) })));
 		// A group's frame reaches past its members, its name above them (docs/dev/02 §2.7).
@@ -103,7 +111,8 @@ export function frameOn(cy: Core, motion: Motion, opts: FramingOptions): Framing
 						min: cy.minZoom(),
 						max: cy.maxZoom(),
 						// The family tree keeps its names drawn; Free and By circle frame as before.
-						legible: focus ? legibleZoom(opts.pixelRatio) : 0
+						legible: focus ? legibleZoom(opts.pixelRatio) : 0,
+						readable: focus ? READABLE_ZOOM : 0
 					}
 				)
 			: null;
@@ -124,6 +133,27 @@ export function frameOn(cy: Core, motion: Motion, opts: FramingOptions): Framing
 			follow({ kind: 'framed', size: size() });
 			cy.viewport(view);
 		});
+
+	/*
+	 * Only the family tree tells who stands off screen (docs/dev/05 §5.8), and only once the canvas
+	 * is at rest, so a glide under way does not flicker the hint.
+	 */
+	let told: Outside = { left: 0, right: 0 };
+	const tellOutside = () => {
+		if (!opts.onOutside || cy.destroyed() || !motion.atRest()) return;
+		let next: Outside = { left: 0, right: 0 };
+		if (framedFocus && cy.width() > 0) {
+			const extent = cy.extent();
+			const view = { ...extent, x2: extent.x2 - covered.right / cy.zoom() };
+			const boxes = shownPeople().map((n) => boxAround([{ at: n.position(), size: sizeOf(n) }]));
+			next = outsideOf(boxes, view);
+		}
+		if (next.left === told.left && next.right === told.right) return;
+		told = next;
+		opts.onOutside(next);
+	};
+	cy.on('viewport', tellOutside);
+	motion.onRest(tellOutside);
 
 	// Only the reader's own gestures raise these — never `cy.viewport`, `cy.animate` or a
 	// layout — so the map's framing and its glides are not mistaken for the reader moving it.
@@ -160,6 +190,18 @@ export function frameOn(cy: Core, motion: Motion, opts: FramingOptions): Framing
 			const view = { zoom: next.zoom, pan: { x: next.pan.x, y: next.pan.y + topInset } };
 			motion.whileMoving((complete) => cy.animate(view, { duration, complete }));
 		},
+
+		stepToward(side) {
+			if (cy.width() === 0) return;
+			// The reader asked to move the view: it is theirs now, as after a pan.
+			follow({ kind: 'navigated' });
+			const step = cy.width() - covered.right - 2 * FRAME_PADDING;
+			const panBy = { x: side === 'right' ? -step : step, y: 0 };
+			if (duration === 0) cy.panBy(panBy);
+			else motion.whileMoving((complete) => cy.animate({ panBy }, { duration, complete }));
+		},
+
+		recount: tellOutside,
 
 		bringIntoView(node) {
 			if (cy.width() === 0 || cy.height() === 0) return;

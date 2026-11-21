@@ -99,20 +99,23 @@ export function frameBelow(
 	};
 }
 
-/** What to keep in view when the whole map cannot be shown with its names drawn. */
+/** What to keep in view when the whole map cannot be shown at a readable size. */
 export interface Focus {
-	/** The part that matters most — the family tree. */
+	/** The part that matters most — the centre's core family. */
 	box: Box;
-	/** Where to centre when even that is too wide: the person the map is about. */
+	/** Where to centre when the map is wider than the screen: the person the map is about. */
 	point?: { x: number; y: number };
 }
 
+const clamp = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value));
+
 /**
- * Like {@link frameBelow}, but never zoomed out past `zoom.legible`, where the canvas would stop
- * drawing the names (`legibleZoom`, docs/dev/05 §5.8). When the whole map fits only further out, it
- * is shown at the legible zoom instead: the `focus` (else the map) from its top edge down, centred
- * across the free part — or, if wider than that, centred on its `point` — and whatever falls
- * outside, the shelf beneath the tree, is left to pan to.
+ * Like {@link frameBelow}, but for the family tree (docs/dev/05 §5.8): when the whole map fits only
+ * further out than `zoom.readable`, it zooms out no further than the `focus` (else the map) needs,
+ * and never past `zoom.legible`, where the canvas would stop drawing the names (`legibleZoom`).
+ * Across, it centres on the focus's `point`, shifted so the focus stays whole when it fits and no
+ * empty room shows beyond the map's edge; down, a map taller than the screen shows from the
+ * focus's top. Whatever falls outside is left to pan to.
  */
 export function frameLegibly(
 	map: Box,
@@ -120,22 +123,54 @@ export function frameLegibly(
 	screen: { width: number; height: number },
 	covered: Covered,
 	padding: number,
-	zoom: { min: number; max: number; legible: number }
+	zoom: { min: number; max: number; legible: number; readable: number }
 ): Viewport {
-	const fitted = frameBelow(map, screen, covered, padding, { min: zoom.min, max: zoom.max });
-	if (fitted.zoom >= zoom.legible) return fitted;
+	const range = { min: zoom.min, max: zoom.max };
+	const fitted = frameBelow(map, screen, covered, padding, range);
+	if (fitted.zoom >= zoom.readable) return fitted;
 
-	const { top, right = 0 } = covered;
-	const z = Math.min(zoom.max, Math.max(zoom.min, zoom.legible));
 	const target = focus?.box ?? map;
-	const freeWidth = screen.width - right - 2 * padding;
-	const middle = (screen.width - right) / 2;
-	const x =
-		(target.x2 - target.x1) * z <= freeWidth
-			? (target.x1 + target.x2) / 2
-			: (focus?.point?.x ?? (target.x1 + target.x2) / 2);
+	const fittedTarget = frameBelow(target, screen, covered, padding, range).zoom;
+	const z = clamp(
+		Math.max(fitted.zoom, Math.min(fittedTarget, zoom.readable), zoom.legible),
+		zoom.min,
+		zoom.max
+	);
+	const { top, right = 0, bottom = 0 } = covered;
+	const half = {
+		width: (screen.width - right - 2 * padding) / (2 * z),
+		height: (screen.height - top - bottom - 2 * padding) / (2 * z)
+	};
+	const centreOf = (low: number, high: number) => (low + high) / 2;
+
+	let x = centreOf(map.x1, map.x2);
+	if (map.x2 - map.x1 > 2 * half.width) {
+		x = focus?.point?.x ?? centreOf(target.x1, target.x2);
+		if (target.x2 - target.x1 <= 2 * half.width) {
+			x = clamp(x, target.x2 - half.width, target.x1 + half.width);
+		}
+		x = clamp(x, map.x1 + half.width, map.x2 - half.width);
+	}
+	const y = map.y2 - map.y1 <= 2 * half.height ? centreOf(map.y1, map.y2) : target.y1 + half.height;
 	return {
 		zoom: z,
-		pan: { x: middle - z * x, y: top + padding - z * target.y1 }
+		pan: {
+			x: (screen.width - right) / 2 - z * x,
+			y: top + (screen.height - top - bottom) / 2 - z * y
+		}
+	};
+}
+
+/** How many people stand wholly off the free part of the screen, to either side. */
+export interface Outside {
+	left: number;
+	right: number;
+}
+
+/** Counts the `boxes` (people, in model units) that lie wholly left or right of `view`. */
+export function outsideOf(boxes: readonly Box[], view: Box): Outside {
+	return {
+		left: boxes.filter((b) => b.x2 < view.x1).length,
+		right: boxes.filter((b) => b.x1 > view.x2).length
 	};
 }

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import cytoscape from 'cytoscape';
 import { frameAround } from '../layout/group-blocks';
+import { READABLE_ZOOM } from '../layout/legibility';
 import { group, inGroup, linkedPair, styledCore, controller } from './explorer-fixtures';
 
 /*
@@ -77,6 +78,44 @@ describe('framing the map', () => {
 			bows: new Map()
 		});
 		expect(cy.$id('shelf').renderedPosition().y).toBeLessThan(700);
+	});
+
+	it('frames the core family at a readable size and tells who stands off screen', () => {
+		// The centre, a sibling and a parent, and a cousin row far out to the right.
+		const ids = ['sia', 'linda', 'mum', 'c1', 'c2', 'c3'];
+		const cy = cytoscape({
+			headless: true,
+			elements: ids.map((id) => ({
+				data: { id },
+				classes: id === 'sia' ? 'person center' : 'person'
+			}))
+		});
+		cy.width = () => 800;
+		cy.height = () => 1000;
+		const told: { left: number; right: number }[] = [];
+		const explorer = controller(cy, { pixelRatio: 3, onOutside: (o) => told.push(o) });
+		const positions = new Map([
+			['mum', { x: 0, y: 0 }],
+			['sia', { x: 0, y: 230 }],
+			['linda', { x: 150, y: 230 }],
+			['c1', { x: 1600, y: 230 }],
+			['c2', { x: 1750, y: 230 }],
+			['c3', { x: 1900, y: 230 }]
+		]);
+
+		explorer.arrangeAt(
+			{ positions, bows: new Map() },
+			{ keepNamesDrawn: true, coreFamily: new Set(['sia', 'linda', 'mum']) }
+		);
+
+		expect(cy.zoom()).toBeCloseTo(READABLE_ZOOM);
+		expect(cy.$id('sia').renderedPosition().x).toBeGreaterThan(0);
+		expect(cy.$id('linda').renderedPosition().x).toBeLessThan(800);
+		expect(told.at(-1)).toEqual({ left: 0, right: 3 });
+
+		// A step towards them brings the cousins in; the family now stands off to the left.
+		explorer.stepToward('right');
+		expect(told.at(-1)).toEqual({ left: 3, right: 0 });
 	});
 
 	it('frames the map clear of a panel over the right or the foot of the canvas', () => {

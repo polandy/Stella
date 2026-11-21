@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'bun:test';
-import { frameBelow, frameLegibly, widenToReveal, type Box } from './viewport';
+import {
+	frameBelow,
+	frameLegibly,
+	outsideOf,
+	widenToReveal,
+	type Box,
+	type Covered
+} from './viewport';
 
 /*
  * Bringing an expand's newcomers into view without losing the view the reader had: the frame
@@ -124,66 +131,90 @@ describe('frameBelow', () => {
 describe('frameLegibly', () => {
 	const SCREEN = { width: 1000, height: 700 };
 	const covered = { top: 80 };
-	const zoom = { min: MIN_ZOOM, max: 2.5, legible: 0.51 };
+	const zoom = { min: MIN_ZOOM, max: 2.5, legible: 0.51, readable: 0.64 };
+	const frame = (map: Box, core: Box, point: { x: number; y: number }, cover: Covered = covered) =>
+		frameLegibly(map, { box: core, point }, SCREEN, cover, PADDING, zoom);
+	const inFree = (x: number, y: number, next: ReturnType<typeof frame>) => {
+		const at = onScreen(x, y, next);
+		return (
+			at.x >= PADDING - 1e-9 &&
+			at.x <= SCREEN.width - PADDING + 1e-9 &&
+			at.y >= covered.top + PADDING - 1e-9 &&
+			at.y <= SCREEN.height - PADDING + 1e-9
+		);
+	};
 
-	it('frames like frameBelow while the whole map fits with its names drawn', () => {
+	it('frames like frameBelow while the whole map fits at a readable size', () => {
 		const map = box(0, 0, 800, 500);
 
-		expect(frameLegibly(map, null, SCREEN, covered, PADDING, zoom)).toEqual(
+		expect(frame(map, box(300, 0, 500, 500), { x: 400, y: 250 })).toEqual(
 			frameBelow(map, SCREEN, covered, PADDING, zoom)
 		);
 	});
 
-	it('stops at the legible zoom and frames the family, the shelf beneath it left to pan to', () => {
-		// The tree fits at half zoom; with the shelf beneath, the whole map would need less.
-		const map = box(0, 0, 1200, 1600);
-		const tree = box(0, 0, 1200, 900);
-		const next = frameLegibly(
-			map,
-			{ box: tree, point: { x: 600, y: 450 } },
-			SCREEN,
-			covered,
-			PADDING,
-			zoom
-		);
-		const treeTop = onScreen(0, 0, next);
-		const treeBottom = onScreen(1200, 900, next);
+	it('frames the core family at the readable zoom, the wide cousin row left to pan to', () => {
+		const map = box(0, 0, 2400, 900);
+		const core = box(800, 0, 1600, 900);
+		const next = frame(map, core, { x: 1300, y: 450 });
 
-		expect(next.zoom).toBe(zoom.legible);
-		expect(treeTop.y).toBeCloseTo(covered.top + PADDING);
-		expect(treeTop.x).toBeGreaterThanOrEqual(PADDING - 1e-9);
-		expect(treeBottom.x).toBeLessThanOrEqual(SCREEN.width - PADDING + 1e-9);
-		expect(onScreen(0, 1600, next).y).toBeGreaterThan(SCREEN.height);
+		expect(next.zoom).toBe(zoom.readable);
+		expect(inFree(800, 0, next) && inFree(1600, 900, next)).toBe(true);
+		expect(onScreen(1300, 0, next).x).toBeCloseTo(SCREEN.width / 2);
+		expect(inFree(0, 450, next) || inFree(2400, 450, next)).toBe(false);
 	});
 
-	it('centres on the centre person when even the family is wider than the screen', () => {
+	it('zooms out as far as the core family needs, when it fits only below the readable zoom', () => {
+		const map = box(0, 0, 3000, 500);
+		const core = box(0, 0, 1800, 500);
+		const next = frame(map, core, { x: 900, y: 250 });
+
+		expect(next.zoom).toBeCloseTo(960 / 1800);
+		expect(inFree(0, 0, next) && inFree(1800, 500, next)).toBe(true);
+	});
+
+	it('never zooms past the legible zoom; a core wider than that centres on the centre person', () => {
 		const map = box(0, 0, 4000, 1600);
-		const tree = box(0, 0, 4000, 900);
-		const next = frameLegibly(
-			map,
-			{ box: tree, point: { x: 3000, y: 450 } },
-			SCREEN,
-			covered,
-			PADDING,
-			zoom
-		);
+		const core = box(0, 0, 4000, 900);
+		const next = frame(map, core, { x: 3000, y: 450 });
 
 		expect(next.zoom).toBe(zoom.legible);
 		expect(onScreen(3000, 0, next).x).toBeCloseTo(SCREEN.width / 2);
 		expect(onScreen(0, 0, next).y).toBeCloseTo(covered.top + PADDING);
 	});
 
+	it('shows no empty room beyond the map when the centre person stands near its edge', () => {
+		const next = frame(box(0, 0, 4000, 900), box(0, 0, 4000, 900), { x: 100, y: 450 });
+
+		expect(onScreen(0, 0, next).x).toBeCloseTo(PADDING);
+	});
+
+	it('shows a tall map from the top of the core family, the shelf beneath left to pan to', () => {
+		const next = frame(box(0, 0, 1200, 1600), box(0, 0, 1200, 900), { x: 600, y: 450 });
+
+		expect(next.zoom).toBe(zoom.readable);
+		expect(onScreen(0, 0, next).y).toBeCloseTo(covered.top + PADDING);
+		expect(onScreen(0, 1600, next).y).toBeGreaterThan(SCREEN.height);
+	});
+
 	it('keeps clear of a panel at the right when it centres', () => {
 		const map = box(0, 0, 4000, 1600);
-		const next = frameLegibly(
-			map,
-			{ box: map, point: { x: 2000, y: 0 } },
-			SCREEN,
-			{ top: 80, right: 300 },
-			PADDING,
-			zoom
-		);
+		const next = frame(map, map, { x: 2000, y: 0 }, { top: 80, right: 300 });
 
 		expect(onScreen(2000, 0, next).x).toBeCloseTo((SCREEN.width - 300) / 2);
+	});
+});
+
+describe('outsideOf', () => {
+	it('counts the people wholly off the view to either side, not those it cuts', () => {
+		const view = box(0, 0, 1000, 700);
+		const people = [
+			box(-300, 0, -200, 50),
+			box(-50, 0, 50, 50),
+			box(400, 0, 500, 50),
+			box(1100, 0, 1200, 50),
+			box(1300, 900, 1400, 950)
+		];
+
+		expect(outsideOf(people, view)).toEqual({ left: 1, right: 2 });
 	});
 });

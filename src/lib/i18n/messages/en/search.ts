@@ -78,6 +78,12 @@ export const search = {
 	'graph.arrange.tree': 'Tree',
 	'graph.arrange.tree.hint': 'One row per generation, the oldest at the top',
 	'graph.tree.outsideFamily': 'Outside the family',
+	// At the edge of the framed tree: how many stand off screen that way; a tap pans there.
+	'graph.tree.offScreen': (p: { count: number }) => `${p.count} more`,
+	'graph.tree.offScreenLeft': (p: { count: number }) =>
+		p.count === 1 ? 'Show 1 more person to the left' : `Show ${p.count} more people to the left`,
+	'graph.tree.offScreenRight': (p: { count: number }) =>
+		p.count === 1 ? 'Show 1 more person to the right' : `Show ${p.count} more people to the right`,
 	// Under somebody on the shelf: what they are to the person they hang off.
 	'graph.tree.tieOf': (p: { role: string; name: string }) => `${p.role} of ${p.name}`,
 	// A household's own type, by its own words ("Godparent of") and the person.

@@ -1439,6 +1439,10 @@ the people in between — a cousin with no aunt or uncle on record — stand tog
 of their row, on the side of the parent they are related through when Stella can tell, and
 their dotted line shows only when you tap one of them. The Filter menu only hides lines in
 the tree: everybody stays where they are.
+A big tree opens on the person in the middle and their closest family — parents,
+grandparents, brothers and sisters, partner and children — at a size you can read; if the
+whole tree fits at that size it is all shown. Whoever stands beyond the edge is counted there
+(*4 more* with an arrow): tap it, or swipe, to move the view that way.
 Where a parent is missing above the person in the middle, their parents or their
 grandparents, a small dashed **+** appears just above that person when you tap them (and above
 the person in the middle when the map opens); switch on *Show gaps* in the Filter menu to see
