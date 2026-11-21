@@ -342,6 +342,14 @@ cross midnight the two collapse into the one day it always checked.
   - `src/lib/server/testing/` speaks SvelteKit, so it sits apart from `domain/testing/`; the
     same guard keeps both out of the build.
 
+Which feature subsections still owe an e2e is readable, not remembered:
+`scripts/spec-coverage.sh` lists every numbered subsection of `docs/dev/features` that no
+spec's header cites — exactly that number, so citing §2.26 does not cite §2.26.1, and an
+en-dash range (`§2.26.6–7`) covers every subsection it spans. A subsection whose behaviour the
+suite pins in `bun test` alone marks itself instead: `**[unit]**` appended to its heading, the
+milestone tags' style (docs/dev/02). The marker is per heading — one marked subsection hides
+neither its siblings nor its parent — and the script skips it.
+
 ## 8.6 Naming & structure conventions
 
 - Files: `kebab-case.ts`. Types/classes: `PascalCase`. Functions/vars: `camelCase`.
