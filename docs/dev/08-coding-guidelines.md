@@ -342,6 +342,14 @@ cross midnight the two collapse into the one day it always checked.
   - `src/lib/server/testing/` speaks SvelteKit, so it sits apart from `domain/testing/`; the
     same guard keeps both out of the build.
 
+**Marking a subsection unit-covered.** A feature subsection whose behaviour is pinned by
+`bun test` alone, with no e2e of its own, ends its heading in `docs/dev/features/` with
+`**[unit]**` (`### 2.13.2 Birthdays are derived, never duplicated **[unit]**`). The marker is
+per heading, so a marked one says nothing about its siblings, and a spec that later covers it
+drops the marker. `scripts/spec-coverage.sh` lists the numbered headings that neither an e2e
+header cites nor carries the marker; it is report-only, a prompt to cite the section, mark it,
+or write the case.
+
 ## 8.6 Naming & structure conventions
 
 - Files: `kebab-case.ts`. Types/classes: `PascalCase`. Functions/vars: `camelCase`.
