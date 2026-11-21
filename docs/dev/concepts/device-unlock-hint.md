@@ -75,7 +75,7 @@ a passkey, so a tap shows a private entry here.* A notice the member cannot act 
 |---|---|---|
 | `label` | Privacy | Privatsphäre |
 | `title` | Show private entries with your fingerprint, face or PIN | Private Einträge mit Fingerabdruck, Gesicht oder PIN zeigen |
-| `body` | Your private entries are blurred against a glance over your shoulder. Set up device unlock, and one check shows them all for five minutes. Stella keeps a passkey for it on this device. | Deine privaten Einträge sind verschwommen, gegen den Blick über die Schulter. Richte die Geräte-Entsperrung ein, dann zeigt eine Bestätigung alle für fünf Minuten. Stella legt dafür einen Passkey auf diesem Gerät an. |
+| `body` | Your private entries are blurred against a glance over your shoulder. Set up device unlock, and one check shows them all for five minutes. It uses a passkey in your password manager. | Deine privaten Einträge sind verschwommen, gegen den Blick über die Schulter. Richte die Geräte-Entsperrung ein, dann zeigt eine Bestätigung alle für fünf Minuten. Dafür nutzt Stella einen Passkey in deinem Passwortmanager. |
 | `setUp` | Set up device unlock *(reuses `privacy.unlock.setUp`)* | Geräte-Entsperrung einrichten |
 | `waiting` | Waiting for your device… | Warte auf dein Gerät … |
 | `later` | Later | Später |
