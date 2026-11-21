@@ -129,6 +129,16 @@ first to find somebody, so there the page opens on the person search.
   `WelcomeCard` only draws it. It replaces the stream's own empty state rather than stacking
   on top of it.
 
+- **Device-unlock hint** (docs/dev/02 §2.10.1): a card at the top of the stream column, under the
+  first-run card when both show — a *Privacy* label, a heading, two lines of body and three
+  buttons: **Set up device unlock** (primary), **Later**, **Not on this device** (ghost); the
+  `private` icon in a `--primary-soft` disc. On a phone the primary takes its own full-width line.
+  An offer, not a warning: no alarm colour, and neither a modal (it would block the page the
+  member came for) nor a toast (gone before it is read). While the device prompt is open the
+  primary reads *Waiting for your device…* and the others are disabled; set up, it becomes one
+  `--success-text` line and *Done*; failed, a `--danger` line above the buttons. When it shows is
+  `#lib/privacy/unlock-hint`; `DeviceUnlockHint` only draws it.
+
 ### Why
 
 Eight tags fill about one line beside *All* and *All tags*; the rest are a tap away, and a

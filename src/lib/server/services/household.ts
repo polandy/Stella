@@ -3,11 +3,13 @@ import type { Clock } from '../clock';
 import { createDrizzleAttentionRepository } from '../db/attention-repository';
 import { createDrizzleMemberAccountRepository } from '../db/member-account-repository';
 import { createDrizzleMemberRepository } from '../db/member-repository';
+import { createDrizzlePrivateEntryReads } from '../db/private-entry-reads';
 import type * as schema from '../db/schema';
 import { createDrizzleSearchRepository } from '../db/search-repository';
 import type { AttentionRepository } from '../domain/attention/last-touched';
 import type { MemberDeps, MemberRepository } from '../domain/household/members';
 import type { MemberAccountDeps } from '../domain/household/remove-member';
+import type { PrivateEntryReads } from '../domain/household/private-entries';
 import type { SearchDeps, SearchRepository } from '../domain/search/search';
 import type { IdGenerator } from '../id';
 
@@ -28,6 +30,8 @@ export interface HouseholdServices {
 	search: SearchRepository;
 	/** The latest day anything was recorded about each person, for the People list (§2.2). */
 	attention: AttentionRepository;
+	/** Whether a member has written anything private, for the device-unlock hint (§2.10.1). */
+	privateEntries: PrivateEntryReads;
 	memberDeps: MemberDeps;
 	/** The Members page in Settings: the accounts, and removing one (docs/dev/02 §2.1). */
 	memberAccountDeps: MemberAccountDeps;
@@ -49,6 +53,7 @@ export function createHouseholdServices({ db, ids, clock }: HouseholdWiring): Ho
 		members,
 		search,
 		attention,
+		privateEntries: createDrizzlePrivateEntryReads(db),
 		memberDeps: { members },
 		memberAccountDeps: { accounts: createDrizzleMemberAccountRepository(db), ids, clock },
 		searchDeps: { search }

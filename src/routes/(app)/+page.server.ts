@@ -121,6 +121,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			selfContactId: user.selfContactId,
 			isAdmin: user.role === 'admin'
 		}),
+		// Only asked while blur is on: with it off the hint cannot show (docs/dev/02 §2.10.1).
+		hasPrivateEntry: user.blurPrivate
+			? await locals.services.household.privateEntries.hasPrivateEntry(user.id)
+			: false,
 		filter,
 		members,
 		tagChips: homeTagChips(entryTags, filter.tags),
