@@ -118,6 +118,14 @@ contacts from a vCard.
 Stella speaks **English and German**, chosen per family member and kept with their profile.
 A photo gallery is next. See the [roadmap](docs/dev/06-roadmap.md).
 
+## License
+
+Stella is licensed under the [Elastic License 2.0](LICENSE): you may use, copy, modify and
+share it, but you may not offer it to third parties as a hosted or managed service, nor run
+it as an app on someone else's platform.
+Hosting Stella for your own household and family — relatives you invite to your instance
+included — is explicitly permitted and is not a service to third parties under that license.
+
 <div align="center">
 <sub><em>stella</em> — Latin for “star”. Every person is one; their relationships are the constellations.</sub>
 </div>
