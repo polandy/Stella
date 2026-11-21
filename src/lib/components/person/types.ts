@@ -32,7 +32,8 @@ export type RelationshipChoices = RelationshipTypeOption<
 export type ExclusionOf = (
 	option: { type: { key: string; category: RelationshipCategory }; side: 'forward' | 'reverse' },
 	targetId: string | null | undefined,
-	exceptId?: string | null
+	exceptId?: string | null,
+	former?: boolean
 ) => Exclusion | null;
 
 /** A photo on the Photos card — a gallery photo or one from Immich — with where it lives. */

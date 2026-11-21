@@ -97,6 +97,8 @@ export interface ExclusionQuery {
 	side: RelationshipSide;
 	/** A link being retyped is not measured against itself. */
 	exceptId?: string | null;
+	/** The claim is a past tie: the one-partner rule is about partnerships that hold. */
+	former?: boolean;
 }
 
 /** Why the claim is refused, and what makes that reason concrete. */
@@ -145,7 +147,7 @@ const childOf = (query: ExclusionQuery) =>
  * two people are committed to elsewhere.
  */
 export function exclusionFor(facts: ExclusionFacts, query: ExclusionQuery): Exclusion | null {
-	const { subjectId, targetId, type, exceptId } = query;
+	const { subjectId, targetId, type, exceptId, former } = query;
 
 	if (EXCLUSIVE_CATEGORIES.includes(type.category)) {
 		const band = facts.subjectTies.find(
@@ -163,7 +165,7 @@ export function exclusionFor(facts: ExclusionFacts, query: ExclusionQuery): Excl
 		}
 	}
 
-	if (PARTNER_TYPE_KEYS.includes(type.key)) {
+	if (PARTNER_TYPE_KEYS.includes(type.key) && !former) {
 		// Which of the two is spoken for is the point of the sentence, so it is carried rather
 		// than left for the reader to guess from whose page they happen to be on.
 		const subjectPartner = romanticPartnerOf(facts, subjectId, targetId);

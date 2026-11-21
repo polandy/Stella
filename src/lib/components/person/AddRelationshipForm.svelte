@@ -30,7 +30,12 @@
 	import { firstPickable } from '#lib/relationships/picker-groups.js';
 	import { sinceDateFromBirth } from '#lib/relationships/since.js';
 	import { PARENT_CHILD_TYPE_KEY, PARTNER_TYPE_KEYS } from '#lib/relationships/type-keys.js';
-	import { CURRENT_RELATIONSHIP_STATUS, RELATIONSHIP_STATUSES } from '#lib/relationships/status.js';
+	import {
+		CURRENT_RELATIONSHIP_STATUS,
+		FORMER_RELATIONSHIP_STATUS,
+		RELATIONSHIP_STATUSES,
+		type RelationshipStatus
+	} from '#lib/relationships/status.js';
 	import { usePending } from '#lib/sync/context.svelte.js';
 	import { trackPending } from '#lib/sync/pending.js';
 	import { useRemovals } from '#lib/undo/context.svelte.js';
@@ -192,9 +197,13 @@
 	const nameOfPicked = (id: string) =>
 		pickedPeople.find((person) => person.id === id)?.displayName ?? nameOfContact(id);
 
+	/** The status the form would post: a past partnership is not stopped by a current one. */
+	let status = $state<RelationshipStatus>(CURRENT_RELATIONSHIP_STATUS);
+	const former = $derived(status === FORMER_RELATIONSHIP_STATUS);
+
 	/** An entry is greyed out only when it is refused for everyone picked. */
 	const forEveryone = (option: RelationshipChoices[number]) =>
-		exclusionForEveryone(picked, (targetId) => exclusionOf(option, targetId));
+		exclusionForEveryone(picked, (targetId) => exclusionOf(option, targetId, null, former));
 	/*
 	 * The entry the form would post: the one that was picked, or — since the select is read
 	 * rather than bound — the first one that *can* be picked, which is where an untouched
@@ -218,7 +227,13 @@
 		return chosen && submittedChoice === chosen.value ? form.refusals : [];
 	});
 	const refusals = $derived(
-		chosen ? chipRefusals(picked, (targetId) => exclusionOf(chosen, targetId), serverRefusals) : []
+		chosen
+			? chipRefusals(
+					picked,
+					(targetId) => exclusionOf(chosen, targetId, null, former),
+					serverRefusals
+				)
+			: []
 	);
 	const refusalLine = (refusal: (typeof refusals)[number]) =>
 		'exclusion' in refusal
@@ -268,7 +283,7 @@
 			canOffer: (personId) =>
 				otherContacts.some((person) => person.id === personId) &&
 				chosen !== null &&
-				exclusionOf(chosen, personId) === null
+				exclusionOf(chosen, personId, null, former) === null
 		});
 		const partner = offer && otherContacts.find((person) => person.id === offer.partnerId);
 		return offer && partner ? { partner, parentName: nameOfPicked(offer.parentId) } : null;
@@ -405,10 +420,10 @@
 			<span class="text-fg-muted">{t('contact.relationships.status')}</span>
 			<!-- A link being entered is one that holds, so `current` is preselected and
 			     "not said" is not on offer (docs/dev/02 §2.4). Shared by every pair. -->
-			<select name="status" class={INPUT}>
-				{#each RELATIONSHIP_STATUSES as status (status)}
-					<option value={status} selected={status === CURRENT_RELATIONSHIP_STATUS}>
-						{relationshipStatusLabel(t, status)}
+			<select name="status" class={INPUT} bind:value={status}>
+				{#each RELATIONSHIP_STATUSES as option (option)}
+					<option value={option}>
+						{relationshipStatusLabel(t, option)}
 					</option>
 				{/each}
 			</select>

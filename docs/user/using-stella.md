@@ -903,7 +903,8 @@ of saving it. Change the link that is already there to the direction you meant, 
 Some kinds of link also stop being offered once they would contradict what you have already
 written down. Pick the other person first, and any kind that cannot hold is **greyed out under
 a line saying why**: somebody with a partnership that still holds gets no second one ("Not
-possible — already with Carl"), a pair that is already a couple gets no second kind of
+possible — already with Carl") unless the new partnership is marked **former** — an ex can
+always be added —, a pair that is already a couple gets no second kind of
 partnership, with the link in the way named as it reads on the page you are on ("Not possible —
 already Partner of Bert" — change that link instead), and nobody gets a third parent.
 

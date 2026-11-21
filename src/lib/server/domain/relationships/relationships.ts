@@ -1,4 +1,5 @@
 import { TranslatableError } from '../../../i18n/translatable';
+import { FORMER_RELATIONSHIP_STATUS } from '../../../relationships/status';
 import { phrase } from '../../../i18n/phrase';
 import type { Viewer } from '../../access/visibility';
 import type { RelationshipCategory } from '../../../relationships/categories';
@@ -258,7 +259,8 @@ export async function createRelationship(
 		type,
 		// Whose profile this was entered from, where the caller said; the stored `from` end
 		// otherwise, which is the same person for every asymmetric type.
-		input.perspectiveContactId ?? fromContactId
+		input.perspectiveContactId ?? fromContactId,
+		{ former: details.status === FORMER_RELATIONSHIP_STATUS }
 	);
 
 	const now = deps.clock.now();

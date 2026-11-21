@@ -1,5 +1,6 @@
 import { phrase } from '../../../i18n/phrase';
 import { relationshipPair } from '../../../relationships/endpoints';
+import { FORMER_RELATIONSHIP_STATUS, type RelationshipStatus } from '../../../relationships/status';
 import { endpointsForSide, type RelationshipSide } from '../../../relationships/type-options';
 import { GENERATION_TYPE_KEYS } from '../../../relationships/type-keys';
 import type { Viewer } from '../../access/visibility';
@@ -62,7 +63,8 @@ async function planRetype(
 	viewer: Viewer,
 	current: StoredRelationship,
 	perspectiveContactId: string,
-	choice: { typeId: string; side: RelationshipSide }
+	choice: { typeId: string; side: RelationshipSide },
+	status: RelationshipStatus
 ): Promise<Retype | null> {
 	const type = await deps.types.getType(viewer, choice.typeId);
 	if (!type) throw new InvalidRelationshipTypeError(phrase('errors.relationshipType.gone'));
@@ -95,7 +97,10 @@ async function planRetype(
 		throw new ContradictoryRelationshipError();
 	}
 
-	await guardExclusions(deps, viewer, endpoints, type, perspectiveContactId, current.id);
+	await guardExclusions(deps, viewer, endpoints, type, perspectiveContactId, {
+		exceptId: current.id,
+		former: status === FORMER_RELATIONSHIP_STATUS
+	});
 
 	return { endpoints, typeId: type.id };
 }
@@ -120,7 +125,14 @@ export async function editRelationship(
 	if (input.typeChoice) {
 		const current = await deps.relationships.findVisibleTo(viewer, input.relationshipId);
 		if (!current) return false;
-		retype = await planRetype(deps, viewer, current, input.perspectiveContactId, input.typeChoice);
+		retype = await planRetype(
+			deps,
+			viewer,
+			current,
+			input.perspectiveContactId,
+			input.typeChoice,
+			details.status
+		);
 		if (!retype) return false;
 	}
 

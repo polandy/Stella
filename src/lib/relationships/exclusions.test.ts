@@ -59,6 +59,17 @@ describe('exclusionFor — one active romantic tie per person', () => {
 		).toEqual({ reason: 'romanticTaken', personId: 'anna', partnerId: 'carl' });
 	});
 
+	it('lets a former partner be added beside the current one, from either side', () => {
+		for (const [subjectId, targetId] of [
+			['anna', 'bert'],
+			['bert', 'anna']
+		]) {
+			expect(
+				ask(marriedToCarl, { subjectId, targetId, type: partner, side: 'forward', former: true })
+			).toBeNull();
+		}
+	});
+
 	it('refuses a partner too — partner and spouse are the same claim', () => {
 		expect(
 			ask(marriedToCarl, { subjectId: 'anna', targetId: 'bert', type: partner, side: 'forward' })

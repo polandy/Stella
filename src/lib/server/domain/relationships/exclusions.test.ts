@@ -77,4 +77,35 @@ describe('guardExclusions', () => {
 
 		expect(thrown).toBe(down);
 	});
+
+	it('lets a former partner be added to someone who has a current one', async () => {
+		const partner: RelationshipType = {
+			id: 'rt-partner',
+			householdId: null,
+			key: 'partner',
+			forwardLabel: 'Partner of',
+			reverseLabel: 'Partner of',
+			category: 'romantic',
+			symmetric: true,
+			sortOrder: 3
+		};
+		const withCurrentPartner: KinshipGraph = {
+			...graph,
+			partnerEdges: [{ a: 'anna', b: 'bert' }]
+		};
+		const claim = (former: boolean) =>
+			guardExclusions(
+				source(async () => withCurrentPartner),
+				viewer,
+				{ fromContactId: 'anna', toContactId: 'carla' },
+				partner,
+				'anna',
+				{ former }
+			)
+				.then(() => null)
+				.catch((err: unknown) => err);
+
+		expect(await claim(true)).toBeNull();
+		expect(await claim(false)).toBeInstanceOf(RelationshipExcludedError);
+	});
 });

@@ -175,7 +175,8 @@
 	const exclusionOf = (
 		option: { type: { key: string; category: RelationshipCategory }; side: 'forward' | 'reverse' },
 		targetId: string | null | undefined,
-		exceptId: string | null = null
+		exceptId: string | null = null,
+		former = false
 	): Exclusion | null =>
 		targetId
 			? exclusionFor(data.exclusionFacts, {
@@ -183,7 +184,8 @@
 					targetId,
 					type: { key: option.type.key, category: option.type.category },
 					side: option.side,
-					exceptId
+					exceptId,
+					former
 				})
 			: null;
 	/** Whoever a reason is about; both people are on the page already. */
