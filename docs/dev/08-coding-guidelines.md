@@ -194,6 +194,12 @@ calls (`Pick<ContactDirectoryReads, 'listVisibleTo'>`), as its own field of `dep
 Test files are `*.test.ts`, colocated with the code under test (hence `bun test src`, which
 keeps the Playwright specs out of Bun's runner).
 
+Run `scripts/spec-coverage.sh` to list numbered feature headings with no exact `§2.…`
+citation in an e2e spec's first block comment. This is a report, not a CI gate or proof of
+coverage. When a heading is intentionally covered by unit tests alone, append
+`<!-- coverage: unit -->` to that heading in `docs/dev/features/`. The marker applies only to
+that heading, not to its subsections.
+
 **Shared test support** lives in `src/lib/server/domain/testing/`: `fixedClock(now)` (stands
 still until the test calls `advance`), `sequentialIds(...first)`, one in-memory fake per
 read-model port (`inMemoryContactDirectory`, `inMemoryCircleMemberships`, `inMemoryTagLists`,
