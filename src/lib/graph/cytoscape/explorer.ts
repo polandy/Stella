@@ -55,7 +55,8 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 	const framing = frameOn(cy, motion, {
 		topInset: opts.topInset ?? 0,
 		pixelRatio: opts.pixelRatio ?? 1,
-		duration
+		duration,
+		...(opts.onOutside ? { onOutside: opts.onOutside } : {})
 	});
 	const arranging = arrangeOn(cy, { motion, framing, spacing: () => spacing, duration });
 
@@ -110,8 +111,10 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 				(node) => positions.get(node.id()) ?? node.position()
 			);
 			const captioned = writeCaption(cy, outsideFamily, captions.outsideFamily);
-			// The family is what is framed first, should all of it not fit with its names drawn.
-			const family = captions.keepNamesDrawn ? familyIn({ positions, outsideFamily }) : undefined;
+			// The core family is what is framed first, should all of it not fit at a readable size.
+			const family = captions.keepNamesDrawn
+				? (captions.coreFamily ?? familyIn({ positions, outsideFamily }))
+				: undefined;
 			arranging.glideTo(new Map([...positions, ...captioned]), !opts.reducedMotion, family);
 		},
 
@@ -152,6 +155,7 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 					e.toggleClass('filtered-out', !edgeIds.has(e.id()));
 				});
 			});
+			framing.recount();
 		},
 
 		highlightNeighborhood(nodeId) {
@@ -183,6 +187,11 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 			if (!alive()) return;
 			const node = markCursor(cy, nodeId);
 			if (node) framing.bringIntoView(node);
+		},
+
+		stepToward(side) {
+			if (!alive()) return;
+			framing.stepToward(side);
 		},
 
 		screenChanged() {

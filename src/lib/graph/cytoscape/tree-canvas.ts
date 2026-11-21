@@ -27,6 +27,8 @@ export interface Captions {
 	 * whose roles are what it is read by. The other arrangements frame the whole map.
 	 */
 	keepNamesDrawn?: boolean;
+	/** Whom `keepNamesDrawn` frames first: the centre's core family; else the whole family. */
+	coreFamily?: ReadonlySet<string>;
 	/** A drag keeps to the person's row and reports its drop (`tree-dragging.ts`): the tree. */
 	rowDrags?: boolean;
 }

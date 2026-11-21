@@ -12,6 +12,9 @@
 	} from '#lib/graph/explorer-state.js';
 	import { treeRelaidFor } from '#lib/graph/tree-view.js';
 	import { createExplorer, type ExplorerController } from '#lib/graph/cytoscape/explorer.js';
+	import type { Outside } from '#lib/graph/cytoscape/viewport.js';
+	import { coreFamilyOf } from '#lib/graph/model/core-family.js';
+	import GraphOffScreen from './GraphOffScreen.svelte';
 	import { buildStylesheet } from '#lib/graph/cytoscape/stylesheet.js';
 	import { paletteFromDom } from '#lib/graph/cytoscape/theme.js';
 	import { findConnectionPath } from '#lib/graph/model/connection-path.js';
@@ -381,6 +384,7 @@
 			canvas.arrangeAt(treeLayout(canvas), {
 				outsideFamily: t('graph.tree.outsideFamily'),
 				keepNamesDrawn: true,
+				...(centerId ? { coreFamily: coreFamilyOf(view.drawn, centerId) } : {}),
 				rowDrags: true
 			});
 			return;
@@ -426,6 +430,10 @@
 		if (!ready || !controller) return;
 		controller.setTopInset(inset);
 	});
+	/** Screen pixels a peek panel beside the map covers at its right. */
+	let coveredRight = $state(0);
+	/** Who of the family tree stands off screen, as the canvas last told it. */
+	let outside = $state<Outside>({ left: 0, right: 0 });
 	/*
 	 * The peek panel floats beside the map on a wide window and along its foot below `lg`. The
 	 * next framing — the family tree after an expand — keeps the map clear of it, so nobody it
@@ -439,13 +447,15 @@
 		void tick().then(() => {
 			const panel = open ? frame.querySelector<HTMLElement>('aside') : null;
 			if (!panel) {
+				coveredRight = 0;
 				controller?.setCovered({ right: 0, bottom: 0 });
 				return;
 			}
 			const beside = panel.offsetLeft > frame.clientWidth / 2;
+			coveredRight = beside ? frame.clientWidth - panel.offsetLeft : 0;
 			controller?.setCovered(
 				beside
-					? { right: frame.clientWidth - panel.offsetLeft, bottom: 0 }
+					? { right: coveredRight, bottom: 0 }
 					: { right: 0, bottom: frame.clientHeight - panel.offsetTop }
 			);
 		});
@@ -495,7 +505,8 @@
 			spacing: spacingFor(density),
 			onTapNode,
 			onTapBackground,
-			onDropNode
+			onDropNode,
+			onOutside: (next) => (outside = next)
 		});
 		if (disposed) {
 			explorer.destroy();
@@ -549,6 +560,15 @@
 		onClear={() => dispatch({ type: 'cleared' })}
 		clearable={escapeLetsGo(ui)}
 	/>
+
+	{#if ready && arrangedBy === 'tree'}
+		<GraphOffScreen
+			{outside}
+			top={toolbarBottom() + 12}
+			right={coveredRight}
+			onStep={(side) => controller?.stepToward(side)}
+		/>
+	{/if}
 
 	<!-- Out of the way while a peek panel is open. -->
 	{#if ready && view.lonelyCentre && !selected}

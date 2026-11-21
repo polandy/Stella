@@ -80,6 +80,11 @@ export const search: SearchMessages = {
 	'graph.arrange.tree': 'Stammbaum',
 	'graph.arrange.tree.hint': 'Eine Zeile pro Generation, die Ältesten oben',
 	'graph.tree.outsideFamily': 'Außerhalb der Familie',
+	'graph.tree.offScreen': (p) => `${p.count} weitere`,
+	'graph.tree.offScreenLeft': (p) =>
+		p.count === 1 ? '1 weitere Person links zeigen' : `${p.count} weitere Personen links zeigen`,
+	'graph.tree.offScreenRight': (p) =>
+		p.count === 1 ? '1 weitere Person rechts zeigen' : `${p.count} weitere Personen rechts zeigen`,
 	'graph.tree.tieOf': (p) => `${p.role} von ${p.name}`,
 	'graph.tree.ownWords': (p) => `${p.words} ${p.name}`,
 	'graph.tree.namePair': (p) => `${p.first}, ${p.second}`,

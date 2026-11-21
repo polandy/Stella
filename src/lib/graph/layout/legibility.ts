@@ -54,6 +54,15 @@ export function legibleZoom(
 /** The size a person's name and a circle's name are drawn at, in model units. */
 export const NAME_FONT_SIZE = 11;
 
+/** The smallest a name is drawn on screen, in CSS pixels, for it to be read without zooming in. */
+export const READABLE_NAME_PIXELS = 7;
+
+/**
+ * The furthest out the family tree is framed while the whole of it would still fit (docs/dev/05
+ * §5.8): its names stay readable, not just drawn; past it, the core family is framed instead.
+ */
+export const READABLE_ZOOM = READABLE_NAME_PIXELS / NAME_FONT_SIZE;
+
 /** The most a lit name grows; past it the names would cover the people they belong to. */
 export const MAX_NAME_GROWTH = 2;
 

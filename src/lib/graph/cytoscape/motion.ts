@@ -24,6 +24,10 @@ export interface Motion {
 	 * before then, only the last one runs.
 	 */
 	afterSettling(run: () => void): void;
+	/** Whether nothing moves the canvas right now. */
+	atRest(): boolean;
+	/** Calls `listener` every time the canvas comes to rest. */
+	onRest(listener: () => void): void;
 	/** Stops every layout still running, before the core goes. */
 	stopLayouts(): void;
 }
@@ -44,6 +48,7 @@ export function trackMotion(cy: Core): Motion {
 	let moving = 0;
 	// What waits for the canvas to come to rest.
 	let onceSettled: (() => void) | undefined;
+	const restListeners: (() => void)[] = [];
 	const atRest = () => running.size === 0 && moving === 0;
 
 	// Only the last layout to finish, with nothing else moving, has brought the canvas to rest;
@@ -56,6 +61,7 @@ export function trackMotion(cy: Core): Motion {
 			onceSettled = undefined;
 			run();
 		}
+		if (settled) restListeners.forEach((listener) => listener());
 	};
 
 	setLayoutState(SETTLING);
@@ -81,6 +87,12 @@ export function trackMotion(cy: Core): Motion {
 		afterSettling(run) {
 			if (atRest()) run();
 			else onceSettled = run;
+		},
+
+		atRest,
+
+		onRest(listener) {
+			restListeners.push(listener);
 		},
 
 		stopLayouts() {
