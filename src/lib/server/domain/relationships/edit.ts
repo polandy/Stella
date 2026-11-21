@@ -4,6 +4,7 @@ import { FORMER_RELATIONSHIP_STATUS, type RelationshipStatus } from '../../../re
 import { endpointsForSide, type RelationshipSide } from '../../../relationships/type-options';
 import { GENERATION_TYPE_KEYS } from '../../../relationships/type-keys';
 import type { Viewer } from '../../access/visibility';
+import { todayFor } from '../../../dates/today';
 import type { Clock } from '../../clock';
 import { parseRelationshipDetails, type RelationshipDetailsInput } from './details';
 import { guardExclusions, type ExclusionSource } from './exclusions';
@@ -119,7 +120,7 @@ export async function editRelationship(
 	viewer: Viewer,
 	input: EditRelationshipInput
 ): Promise<boolean> {
-	const details = parseRelationshipDetails(input);
+	const details = parseRelationshipDetails(input, todayFor(deps.clock));
 
 	let retype: Retype | null = null;
 	if (input.typeChoice) {

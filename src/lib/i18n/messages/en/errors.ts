@@ -38,6 +38,7 @@ export const errors = {
 	'errors.relationship.parentsComplete': (p: { name: string; max: number }) =>
 		`${p.name} already has ${p.max} parents. Correct one of them instead of adding another.`,
 	'errors.relationship.noSuchDay': (p: { day: string }) => `${p.day} is not a day that exists.`,
+	'errors.relationship.untilBeforeSince': 'A relationship cannot end before it began.',
 	'errors.relationship.currentOrFormer': 'A relationship is either current or former.',
 	/** One refused person of a batch, by name, before the reason (docs/dev/02 §2.4). */
 	'errors.relationship.refusedFor': (p: { name: string; reason: string }) =>

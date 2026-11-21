@@ -357,7 +357,7 @@ never end up on a `relationship` row. Writes go further and match only `househol
 viewer's household`, which is what keeps the built-in set read-only in SQL as well as in the
 use-case. `key` is derived from the forward label and may never be one of `parent_child`,
 `sibling`, `partner` or `spouse` — the keys the kinship inference reads (docs/dev/02 §2.4.1).
-`sort_order` is 0…17 for the built-ins — family first, closest first — and 100 for every
+`sort_order` is 0…18 for the built-ins — family first, closest first — and 100 for every
 custom type, with the forward label breaking the tie. The startup seeder adds a built-in type a
 release brings and brings the built-ins' `sort_order` up to date; nothing else of an existing
 row is overwritten. A type is not deletable while `relationship` rows still reference it, and
@@ -383,6 +383,7 @@ direction of those rows.
 | `neighbor` | social | Neighbor of | — | ✓ |
 | `acquaintance` | social | Acquaintance of | — | ✓ |
 | `knows` | social | Knows | — | ✓ |
+| `cares_for` | other | Looks after | Looked after by | — |
 | `other` | other | Connected to | — | ✓ |
 
 The family types after `sibling` are the terms the kinship engine works out (docs/dev/02 §2.4.1),
@@ -407,6 +408,7 @@ An instance connecting two contacts.
 | type_id | text fk → relationship_type.id | |
 | description | text null | free-text: how these two connect (see §2.4). Column name `note`. |
 | since_date | text null | full ISO day, validated against the calendar |
+| until_date | text null | full ISO day, never before `since_date`; a day before today stores the link as `former` whatever status was sent (§2.4) |
 | status | text not null, default `'current'` | `'current' \| 'former'` — there is no unset state: a link that is on record holds until someone ends it, so anything else reads as `current`. `former` on a partner link stops all kinship derivation through it (§2.4.1) |
 | created_by | text fk → user.id | |
 | created_at / updated_at | int | |

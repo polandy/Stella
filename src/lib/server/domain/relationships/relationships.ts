@@ -16,6 +16,7 @@ import {
 	InvalidRelationshipTypeError,
 	type RelationshipTypeRepository
 } from './relationship-types';
+import { todayFor } from '../../../dates/today';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 
@@ -231,7 +232,7 @@ export async function createRelationship(
 ): Promise<string> {
 	const type = await deps.types.getType(viewer, input.typeId);
 	if (!type) throw new InvalidRelationshipTypeError(phrase('errors.relationshipType.gone'));
-	const details = parseRelationshipDetails(input);
+	const details = parseRelationshipDetails(input, todayFor(deps.clock));
 
 	const { fromContactId, toContactId } = relationshipPair(
 		input.fromContactId,

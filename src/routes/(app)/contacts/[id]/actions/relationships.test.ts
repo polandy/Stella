@@ -312,6 +312,16 @@ describe('editRelationship', () => {
 		]);
 	});
 
+	it('hands the end day on to be saved', async () => {
+		const saved: unknown[] = [];
+		const services = saving(async (_v, _id, details) => {
+			saved.push(details);
+			return true;
+		});
+		await post(actions.editRelationship, services, formOf({ ...edit, untilDate: '2099-01-01' }));
+		expect(saved).toEqual([expect.objectContaining({ untilDate: '2099-01-01', status: 'former' })]);
+	});
+
 	it('refuses a post naming no link', async () => {
 		expect(await post(actions.editRelationship, {}, formOf({ description: 'x' }))).toEqual({
 			kind: 'fail',

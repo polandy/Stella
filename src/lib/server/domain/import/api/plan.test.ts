@@ -212,6 +212,7 @@ describe('relationships', () => {
 				typeId: 'parent_child',
 				description: null,
 				sinceDate: null,
+				untilDate: null,
 				status: 'current',
 				createdBy: ME,
 				createdAt: NOW,

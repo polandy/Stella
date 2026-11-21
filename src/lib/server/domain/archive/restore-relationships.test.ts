@@ -37,6 +37,7 @@ type Link = {
 	type: string;
 	description?: string;
 	since?: string;
+	until?: string;
 	status?: string;
 };
 
@@ -79,6 +80,23 @@ describe('a symmetric link is stored with its ends sorted', () => {
 		expect(ends(plan([{ id: 'r-1', from: 'carl', to: 'anna', type: 'friend' }]))).toEqual([
 			{ id: 'r-1', from: 'anna', to: 'carl' }
 		]);
+	});
+
+	it('carries the end date of a link through', () => {
+		const planned = plan([
+			{
+				id: 'r-1',
+				from: 'anna',
+				to: 'carl',
+				type: 'friend',
+				since: '2015-01-01',
+				until: '2018-06-30'
+			}
+		]);
+		expect(planned.tables.find((t) => t.table === 'relationship')!.rows[0]).toMatchObject({
+			since_date: '2015-01-01',
+			until_date: '2018-06-30'
+		});
 	});
 
 	it('leaves a symmetric link that is already sorted exactly as it is', () => {

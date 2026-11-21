@@ -330,6 +330,13 @@
       "when": 1795072551038,
       "tag": "0046_row_rules",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "6",
+      "when": 1795269048138,
+      "tag": "0047_relationship_until_date",
+      "breakpoints": true
     }
   ]
 }

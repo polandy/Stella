@@ -63,6 +63,7 @@ const link = (side: 'forward' | 'reverse' = 'reverse') => ({
 	typeChoice: encodeRelationshipChoice('parent_child', side),
 	description: null,
 	sinceDate: null,
+	untilDate: null,
 	status: null
 });
 

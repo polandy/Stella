@@ -21,6 +21,8 @@ type TieRole =
 	| 'mentor'
 	| 'mentee'
 	| 'neighbor'
+	| 'carer'
+	| 'cared-for'
 	| 'acquaintance'
 	| 'knows'
 	| 'connected';
@@ -49,6 +51,7 @@ const ROLES: Readonly<Record<string, { forward: RoleTerm; reverse: RoleTerm }>> 
 	colleague: { forward: 'colleague', reverse: 'colleague' },
 	mentor_mentee: { forward: 'mentor', reverse: 'mentee' },
 	neighbor: { forward: 'neighbor', reverse: 'neighbor' },
+	cares_for: { forward: 'carer', reverse: 'cared-for' },
 	acquaintance: { forward: 'acquaintance', reverse: 'acquaintance' },
 	knows: { forward: 'knows', reverse: 'knows' },
 	other: { forward: 'connected', reverse: 'connected' }

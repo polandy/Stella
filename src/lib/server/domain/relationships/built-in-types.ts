@@ -179,6 +179,16 @@ export const BUILT_IN_RELATIONSHIP_TYPES: readonly RelationshipType[] = [
 		sortOrder: 16
 	},
 	{
+		id: 'cares_for',
+		householdId: null,
+		key: 'cares_for',
+		forwardLabel: 'Looks after',
+		reverseLabel: 'Looked after by',
+		category: 'other',
+		symmetric: false,
+		sortOrder: 17
+	},
+	{
 		id: 'other',
 		householdId: null,
 		key: 'other',
@@ -186,6 +196,6 @@ export const BUILT_IN_RELATIONSHIP_TYPES: readonly RelationshipType[] = [
 		reverseLabel: 'Connected to',
 		category: 'other',
 		symmetric: true,
-		sortOrder: 17
+		sortOrder: 18
 	}
 ];

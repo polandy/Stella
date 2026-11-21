@@ -42,17 +42,46 @@ function migrationsBefore(tag: string): string {
 
 let db: BunSQLiteDatabase<typeof schema>;
 
+let sqlite: Database;
+
+const COLUMNS = {
+	note: 'note',
+	updatedAt: 'updated_at',
+	sinceDate: 'since_date',
+	status: 'status'
+} as const;
+
+// Plain SQL: the schema as it is today names columns a later migration adds.
 const link = (
 	id: string,
 	fromContactId: string,
 	toContactId: string,
 	typeId: string,
-	fields: Partial<typeof schema.relationship.$inferInsert> = {}
-) =>
-	db
-		.insert(schema.relationship)
-		.values({ id, householdId: H, fromContactId, toContactId, typeId, createdBy: U, ...fields })
-		.run();
+	fields: Partial<Record<keyof typeof COLUMNS, string | number | null>> = {}
+) => {
+	const named = Object.entries(fields).map(([key, value]) => [
+		COLUMNS[key as keyof typeof COLUMNS],
+		value
+	]);
+	const columns = [
+		'id',
+		'household_id',
+		'from_contact_id',
+		'to_contact_id',
+		'type_id',
+		'created_by'
+	];
+	const values = [id, H, fromContactId, toContactId, typeId, U];
+	for (const [column, value] of named) {
+		columns.push(column as string);
+		values.push(value as string);
+	}
+	sqlite
+		.query(
+			`INSERT INTO relationship (${columns.join(', ')}) VALUES (${columns.map(() => '?').join(', ')})`
+		)
+		.run(...values);
+};
 
 const links = () =>
 	db
@@ -62,7 +91,7 @@ const links = () =>
 		.sort((a, b) => a.id.localeCompare(b.id));
 
 beforeEach(() => {
-	const sqlite = new Database(':memory:');
+	sqlite = new Database(':memory:');
 	sqlite.exec('PRAGMA foreign_keys = ON;');
 	db = drizzle(sqlite, { schema });
 	migrate(db, { migrationsFolder: migrationsBefore(TAG) });

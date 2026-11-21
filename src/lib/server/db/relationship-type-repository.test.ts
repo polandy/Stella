@@ -44,6 +44,7 @@ function newRelationship(id: string, fromContactId: string, toContactId: string,
 		typeId,
 		description: null,
 		sinceDate: null,
+		untilDate: null,
 		status: CURRENT_RELATIONSHIP_STATUS,
 		createdBy: U1,
 		createdAt: 0,
@@ -116,6 +117,17 @@ describe('relationship types', () => {
 		const listed = await types.listTypes(viewerU1);
 		expect(listed.find((t) => t.id === 'parent_child')?.forwardLabel).toBe('Parent of');
 		expect(listed.find((t) => t.id === 'sibling')?.symmetric).toBe(true);
+	});
+
+	it('seeds the childminder type: directed, in the category of the rest', async () => {
+		const listed = await types.listTypes(viewerU1);
+		expect(listed.find((t) => t.id === 'cares_for')).toMatchObject({
+			key: 'cares_for',
+			forwardLabel: 'Looks after',
+			reverseLabel: 'Looked after by',
+			category: 'other',
+			symmetric: false
+		});
 	});
 
 	it('brings an older install up to the current built-ins: new types added, the order redone', async () => {

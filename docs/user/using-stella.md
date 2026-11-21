@@ -920,7 +920,10 @@ profiles, and the next one can then be entered as usual.
 ### How they connect
 
 A link can say more than its label. **How they connect** is yours to write — "met through
-Peter at the ski course" — and there is a **since** day if it helps; both are optional. The
+Peter at the ski course" — and there is a **since** day and a **until** day (*Bis*) if they
+help; all are optional. A link with an until day in the past is saved as **former**, and its
+row on the profile reads, say, "Childminder · 2015–2018". For someone who looked after a
+child or relative, use **Looks after / Looked after by**. The
 status stands on **current**, because a link you are entering is one that holds; you set it to
 **former** on the day it ends. All three can be changed later with *Edit* on the row.
 Marking a partnership **former** keeps it on both profiles, but Stella stops working relatives

@@ -40,6 +40,7 @@ function newRelationship(id: string, fromContactId: string, toContactId: string,
 		typeId,
 		description: null,
 		sinceDate: null,
+		untilDate: null,
 		status: CURRENT_RELATIONSHIP_STATUS,
 		createdBy: U1,
 		createdAt: 0,
@@ -88,6 +89,7 @@ describe('exists / insert', () => {
 			typeId: 'parent_child',
 			description: null,
 			sinceDate: null,
+			untilDate: null,
 			status: CURRENT_RELATIONSHIP_STATUS,
 			createdBy: U1,
 			createdAt: 0,
@@ -228,6 +230,7 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 			typeId: 'parent_child',
 			description: null,
 			sinceDate: null,
+			untilDate: null,
 			status: CURRENT_RELATIONSHIP_STATUS,
 			createdBy: U1,
 			createdAt: 0,
@@ -241,6 +244,7 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 			typeId: 'friend',
 			description: 'quiet',
 			sinceDate: null,
+			untilDate: null,
 			status: CURRENT_RELATIONSHIP_STATUS,
 			createdBy: U2,
 			createdAt: 0,
@@ -258,6 +262,7 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 			{
 				description: 'she raised him alone',
 				sinceDate: '1994-03-02',
+				untilDate: '1999-12-31',
 				status: CURRENT_RELATIONSHIP_STATUS,
 				retype: null
 			},
@@ -268,6 +273,7 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 		expect(await detailsOf('rel-open')).toMatchObject({
 			note: 'she raised him alone',
 			sinceDate: '1994-03-02',
+			untilDate: '1999-12-31',
 			status: 'current'
 		});
 	});
@@ -276,6 +282,7 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 		const patch = {
 			description: 'changed',
 			sinceDate: null,
+			untilDate: null,
 			status: CURRENT_RELATIONSHIP_STATUS,
 			retype: null
 		};
@@ -322,6 +329,7 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 			{
 				description: null,
 				sinceDate: null,
+				untilDate: null,
 				status: CURRENT_RELATIONSHIP_STATUS,
 				retype: {
 					endpoints: { fromContactId: 'hans', toContactId: 'bettina' },
@@ -346,6 +354,7 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 			{
 				description: 'unchanged type',
 				sinceDate: null,
+				untilDate: null,
 				status: CURRENT_RELATIONSHIP_STATUS,
 				retype: null
 			},
@@ -366,7 +375,13 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 			await repo.updateVisibleTo(
 				viewerU1,
 				'no-such-relationship',
-				{ description: null, sinceDate: null, status: CURRENT_RELATIONSHIP_STATUS, retype: null },
+				{
+					description: null,
+					sinceDate: null,
+					untilDate: null,
+					status: CURRENT_RELATIONSHIP_STATUS,
+					retype: null
+				},
 				1
 			)
 		).toBe(false);
@@ -439,6 +454,7 @@ describe('a generation claimed both ways', () => {
 				{
 					description: null,
 					sinceDate: null,
+					untilDate: null,
 					status: CURRENT_RELATIONSHIP_STATUS,
 					retype: { endpoints: { fromContactId: 'hans', toContactId: 'bettina' }, typeId }
 				},

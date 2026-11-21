@@ -67,6 +67,7 @@ export async function addRelationships(
 				typeChoice: input.typeChoice,
 				description: input.description,
 				sinceDate,
+				untilDate: input.untilDate,
 				status: input.status
 			});
 			links.push({ targetId, relationshipId });

@@ -82,6 +82,7 @@ const toRow = (rel: NewRelationship) => ({
 	typeId: rel.typeId,
 	note: rel.description,
 	sinceDate: rel.sinceDate,
+	untilDate: rel.untilDate,
 	status: rel.status,
 	createdBy: rel.createdBy,
 	createdAt: rel.createdAt,
@@ -161,6 +162,7 @@ export function createDrizzleRelationshipRepository(
 					.set({
 						note: update.description,
 						sinceDate: update.sinceDate,
+						untilDate: update.untilDate,
 						status: update.status,
 						// A retype can move the row's endpoints: the type decides the stored direction.
 						...(update.retype

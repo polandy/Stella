@@ -224,6 +224,8 @@ export const contact = {
 	'contact.relationships.howConnectOptional': 'How they connect (optional)',
 	'contact.relationships.howConnectPlaceholder': 'met through Peter at the ski course',
 	'contact.relationships.sinceLabel': 'Since',
+	'contact.relationships.until': (p: { day: string }) => `until ${p.day}`,
+	'contact.relationships.untilLabel': 'Until',
 	'contact.relationships.status': 'Status',
 	'contact.relationships.is': (p: { name: string }) => `${p.name} is…`,
 	'contact.relationships.typeLabel': 'Relationship',

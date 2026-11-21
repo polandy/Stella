@@ -157,7 +157,7 @@ describe(TAG, () => {
 			sqlite.query(`SELECT count(*) AS n FROM sqlite_master WHERE type = 'trigger'`).get()
 		).toEqual(before);
 		expect(sqlite.query(`SELECT count(*) AS n FROM __drizzle_migrations`).get()).toEqual({
-			n: journalLength() - 1
+			n: migrationsBeforeCount()
 		});
 	});
 
@@ -221,9 +221,9 @@ function migrationFailure(): string {
 	throw new Error('the migration ran through');
 }
 
-function journalLength(): number {
+function migrationsBeforeCount(): number {
 	const journal = JSON.parse(
 		readFileSync(join(MIGRATIONS, 'meta', '_journal.json'), 'utf8')
 	) as Journal;
-	return journal.entries.length;
+	return journal.entries.findIndex((entry) => entry.tag === TAG);
 }
