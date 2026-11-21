@@ -430,16 +430,16 @@
 		if (!ready || !controller) return;
 		controller.setTopInset(inset);
 	});
+	/** Screen pixels a peek panel beside the map covers at its right. */
+	let coveredRight = $state(0);
+	/** Who of the family tree stands off screen, as the canvas last told it. */
+	let outside = $state<Outside>({ left: 0, right: 0 });
 	/*
 	 * The peek panel floats beside the map on a wide window and along its foot below `lg`. The
 	 * next framing — the family tree after an expand — keeps the map clear of it, so nobody it
 	 * brought in lands underneath. Read from the layout, not the screen, so a panel still
 	 * sliding in is measured where it will stand.
 	 */
-	/** Screen pixels a peek panel beside the map covers at its right. */
-	let coveredRight = $state(0);
-	/** Who of the family tree stands off screen, as the canvas last told it. */
-	let outside = $state<Outside>({ left: 0, right: 0 });
 	const peekOpen = $derived((view.peekNode !== null || view.peekGroup !== null) && !pathMode);
 	$effect(() => {
 		const open = peekOpen;

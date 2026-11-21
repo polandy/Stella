@@ -113,6 +113,10 @@ describe('framing the map', () => {
 		expect(cy.$id('linda').renderedPosition().x).toBeLessThan(800);
 		expect(told.at(-1)).toEqual({ left: 0, right: 3 });
 
+		// A filter that hides a cousin is told at once: the count is of those shown.
+		explorer.setVisible(new Set(['sia', 'linda', 'mum', 'c1', 'c2']), new Set());
+		expect(told.at(-1)).toEqual({ left: 0, right: 2 });
+
 		// A step towards them brings the cousins in; the family now stands off to the left.
 		explorer.stepToward('right');
 		expect(told.at(-1)).toEqual({ left: 3, right: 0 });
