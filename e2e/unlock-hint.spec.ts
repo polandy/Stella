@@ -19,6 +19,8 @@ async function relayToServer(page: Page) {
 		const request = route.request();
 		const headers = { ...request.headers() };
 		if (headers.origin) headers.origin = SERVER;
+		// The browser's localhost cookies would replace the context's 127.0.0.1 ones, session included.
+		delete headers.cookie;
 		await route.fulfill({
 			response: await route.fetch({
 				url: request.url().replace(`http://localhost:${PORT}`, SERVER),
