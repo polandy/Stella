@@ -37,6 +37,8 @@ export const errors = {
 		`${p.name} is already with ${p.partner}, and that partnership still holds. Mark it as former first.`,
 	'errors.relationship.parentsComplete': (p: { name: string; max: number }) =>
 		`${p.name} already has ${p.max} parents. Correct one of them instead of adding another.`,
+	'errors.relationship.adoptiveParentsComplete': (p: { name: string; max: number }) =>
+		`${p.name} already has ${p.max} adoptive parents. Correct one of them instead of adding another.`,
 	'errors.relationship.noSuchDay': (p: { day: string }) => `${p.day} is not a day that exists.`,
 	'errors.relationship.untilBeforeSince': 'A relationship cannot end before it began.',
 	'errors.relationship.currentOrFormer': 'A relationship is either current or former.',

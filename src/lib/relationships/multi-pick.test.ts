@@ -37,6 +37,12 @@ describe('pickCap', () => {
 		expect(pickCap({ type: { key: 'godparent' }, side: 'reverse' }, 2)).toBeNull();
 	});
 
+	it('caps "Child of" per kind: two adoptive beside two birth parents, foster and step open', () => {
+		expect(pickCap(childOf, 0, 'adoptive')).toBe(2);
+		expect(pickCap(childOf, 2, 'foster')).toBeNull();
+		expect(pickCap(childOf, 2, 'step')).toBeNull();
+	});
+
 	it('is unlimited while no type is chosen', () => {
 		expect(pickCap(null, 2)).toBeNull();
 	});
@@ -51,6 +57,17 @@ describe('parentsOnRecord', () => {
 		];
 		expect(parentsOnRecord({ parentEdges }, 'lio')).toBe(1);
 		expect(parentsOnRecord({ parentEdges }, 'otto')).toBe(0);
+	});
+
+	it('counts only the parents of the kind asked about', () => {
+		const parentEdges = [
+			{ parentId: 'anna', childId: 'lio' },
+			{ parentId: 'otto', childId: 'lio', kind: 'adoptive' as const },
+			{ parentId: 'ruth', childId: 'lio', kind: 'foster' as const }
+		];
+		expect(parentsOnRecord({ parentEdges }, 'lio')).toBe(1);
+		expect(parentsOnRecord({ parentEdges }, 'lio', 'adoptive')).toBe(1);
+		expect(parentsOnRecord({ parentEdges }, 'lio', 'step')).toBe(0);
 	});
 });
 

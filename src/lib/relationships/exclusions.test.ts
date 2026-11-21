@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { exclusionFor, MAX_PARENTS, type ExclusionFacts } from './exclusions';
+import { ANY_PARENT_KIND, exclusionFor, MAX_PARENTS, type ExclusionFacts } from './exclusions';
 
 /*
  * Which ties cannot be claimed beside the ties already on record (docs/dev/02 §2.4). The
@@ -251,7 +251,7 @@ describe('exclusionFor — at most two parents', () => {
 				type: parentChild,
 				side: 'forward'
 			})
-		).toEqual({ reason: 'parentsComplete', personId: 'bert' });
+		).toEqual({ reason: 'parentsComplete', personId: 'bert', parentKind: 'biological' });
 	});
 
 	it('reads the reverse side the other way round — the subject is the child then', () => {
@@ -268,7 +268,7 @@ describe('exclusionFor — at most two parents', () => {
 				type: parentChild,
 				side: 'reverse'
 			})
-		).toEqual({ reason: 'parentsComplete', personId: 'anna' });
+		).toEqual({ reason: 'parentsComplete', personId: 'anna', parentKind: 'biological' });
 	});
 
 	it('allows the second parent', () => {
@@ -386,5 +386,72 @@ describe('exclusionFor — a godparent blocks no kinship', () => {
 
 	it('offers work and social, as it always did', () => {
 		expect(askTheOther(colleague)).toBeNull();
+	});
+});
+
+describe('exclusionFor — parents counted per kind', () => {
+	const bertHasTwoBirthParents = facts({
+		parentEdges: [
+			{ parentId: 'carl', childId: 'bert' },
+			{ parentId: 'dora', childId: 'bert', kind: 'biological' }
+		]
+	});
+	const claim = (parentKind?: Parameters<typeof exclusionFor>[1]['parentKind']) =>
+		ask(bertHasTwoBirthParents, {
+			subjectId: 'anna',
+			targetId: 'bert',
+			type: parentChild,
+			side: 'forward',
+			parentKind
+		});
+
+	it('takes adoptive parents beside two birth parents', () => {
+		expect(claim('adoptive')).toBeNull();
+	});
+
+	it('refuses a third adoptive parent, naming the kind', () => {
+		const twoAdoptive = facts({
+			parentEdges: [
+				{ parentId: 'carl', childId: 'bert', kind: 'adoptive' },
+				{ parentId: 'dora', childId: 'bert', kind: 'adoptive' }
+			]
+		});
+		expect(
+			ask(twoAdoptive, {
+				subjectId: 'anna',
+				targetId: 'bert',
+				type: parentChild,
+				side: 'forward',
+				parentKind: 'adoptive'
+			})
+		).toEqual({ reason: 'parentsComplete', personId: 'bert', parentKind: 'adoptive' });
+	});
+
+	it('has no limit on foster and step parents', () => {
+		const manyFoster = facts({
+			parentEdges: ['carl', 'dora', 'emil'].map((parentId) => ({
+				parentId,
+				childId: 'bert',
+				kind: 'foster' as const
+			}))
+		});
+		expect(
+			ask(manyFoster, {
+				subjectId: 'anna',
+				targetId: 'bert',
+				type: parentChild,
+				side: 'forward',
+				parentKind: 'foster'
+			})
+		).toBeNull();
+		expect(claim('step')).toBeNull();
+	});
+
+	it('reads a claim without a kind as biological', () => {
+		expect(claim()?.reason).toBe('parentsComplete');
+	});
+
+	it('leaves the type open to the picker while some kind still has room', () => {
+		expect(claim(ANY_PARENT_KIND)).toBeNull();
 	});
 });

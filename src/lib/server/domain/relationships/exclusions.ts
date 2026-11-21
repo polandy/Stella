@@ -44,10 +44,12 @@ const PHRASE_FOR_REASON: Record<ExclusionReason, (e: Exclusion, nameOf: NameOf) 
 			partner: exclusion.partnerId ? nameOf(exclusion.partnerId) : ''
 		}),
 	parentsComplete: (exclusion, nameOf) =>
-		phrase('errors.relationship.parentsComplete', {
-			name: nameOf(exclusion.personId),
-			max: MAX_PARENTS
-		})
+		phrase(
+			exclusion.parentKind === 'adoptive'
+				? 'errors.relationship.adoptiveParentsComplete'
+				: 'errors.relationship.parentsComplete',
+			{ name: nameOf(exclusion.personId), max: MAX_PARENTS }
+		)
 };
 
 /** A tie that cannot hold beside the ties already on record (docs/dev/02 §2.4). */

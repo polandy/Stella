@@ -96,7 +96,9 @@ export function exclusionLabel(
 				partner: exclusion.partnerId ? nameOf(exclusion.partnerId) : ''
 			});
 		case 'parentsComplete':
-			return t('relationships.blocked.parentsComplete', { name, max: MAX_PARENTS });
+			return exclusion.parentKind === 'adoptive'
+				? t('relationships.blocked.adoptiveParentsComplete', { name, max: MAX_PARENTS })
+				: t('relationships.blocked.parentsComplete', { name, max: MAX_PARENTS });
 	}
 }
 

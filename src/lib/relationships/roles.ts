@@ -1,6 +1,7 @@
 // Imported relatively, like `labels.ts`, so the module carries no SvelteKit alias.
 import { hasMessage, type Translate } from '../i18n/translate';
 import type { KinTerm, KinVariant } from '../kinship/kinship';
+import type { ParentKind } from './parent-kinds';
 
 /*
  * Who somebody on a person's People card is *to that person* (docs/dev/05 §5.5). A row is read
@@ -14,6 +15,10 @@ import type { KinTerm, KinVariant } from '../kinship/kinship';
 type TieRole =
 	| 'parent'
 	| 'child'
+	| 'adoptive-parent'
+	| 'adoptive-child'
+	| 'foster-parent'
+	| 'foster-child'
 	| 'partner'
 	| 'spouse'
 	| 'friend'
@@ -62,7 +67,18 @@ interface RoleRow {
 	typeKey: string;
 	/** Which of the type's labels the row reads from the page's side; forward when unsaid. */
 	side?: 'forward' | 'reverse';
+	/** A `parent_child` row's kind; biological when unsaid. */
+	parentKind?: ParentKind | null;
 }
+
+/** A parent or child said with the tie's kind; only the label carries it, grouping keeps the plain role. */
+const KINDED_ROLES: Readonly<
+	Record<Exclude<ParentKind, 'biological'>, Record<'parent' | 'child', RoleTerm>>
+> = {
+	adoptive: { parent: 'adoptive-parent', child: 'adoptive-child' },
+	foster: { parent: 'foster-parent', child: 'foster-child' },
+	step: { parent: 'step-parent', child: 'step-child' }
+};
 
 /**
  * What the person at the row's other end is to the page's person, or null for a household's
@@ -88,7 +104,12 @@ export function relationshipRoleLabel(
 ): string {
 	const role = otherEndRole(row);
 	if (role === null) return otherSideLabel ?? row.label;
-	return roleTermLabel(t, role, variant) ?? row.label;
+	return roleTermLabel(t, kindedRole(role, row.parentKind), variant) ?? row.label;
+}
+
+function kindedRole(role: RoleTerm, kind: ParentKind | null | undefined): RoleTerm {
+	if (!kind || kind === 'biological' || (role !== 'parent' && role !== 'child')) return role;
+	return KINDED_ROLES[kind][role];
 }
 
 /**

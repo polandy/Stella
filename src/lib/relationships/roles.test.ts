@@ -46,6 +46,26 @@ describe('relationshipRoleLabel', () => {
 		expect(relationshipRoleLabel(en, daughter, 'neutral')).toBe('Child');
 	});
 
+	it('says a parent or child with the tie’s kind', () => {
+		const mother = { typeKey: 'parent_child', side: 'reverse' as const, label: 'Child of' };
+		expect(relationshipRoleLabel(de, { ...mother, parentKind: 'foster' }, 'female')).toBe(
+			'Pflegemutter'
+		);
+		expect(relationshipRoleLabel(en, { ...mother, parentKind: 'adoptive' }, 'male')).toBe(
+			'Adoptive father'
+		);
+		expect(relationshipRoleLabel(de, { ...daughter, parentKind: 'step' }, 'female')).toBe(
+			'Stieftochter'
+		);
+		expect(relationshipRoleLabel(en, { ...daughter, parentKind: 'adoptive' }, 'neutral')).toBe(
+			'Adopted child'
+		);
+		expect(relationshipRoleLabel(en, { ...daughter, parentKind: 'biological' }, 'female')).toBe(
+			'Daughter'
+		);
+		expect(otherEndRole({ ...mother, parentKind: 'foster' })).toBe('parent');
+	});
+
 	it('borrows the worked-out relatives’ words for the terms they share', () => {
 		const grandson = { typeKey: 'grandparent_grandchild', side: 'forward' as const, label: '' };
 		expect(relationshipRoleLabel(en, grandson, 'male')).toBe('Grandson');
