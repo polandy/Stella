@@ -104,6 +104,20 @@ describe('loadVisibleGraph', () => {
 		expect(graph.edges.find((e) => e.id === 'r-child')).not.toHaveProperty('former');
 	});
 
+	it("carries a parent link's kind other than biological, for the tree's stroke", async () => {
+		const before = await createDrizzleGraphRepository(db).loadVisibleGraph(viewerU1);
+		expect(before.edges.find((e) => e.id === 'r-child')).not.toHaveProperty('parentKind');
+
+		db.update(schema.relationship)
+			.set({ parentKind: 'foster' })
+			.where(eq(schema.relationship.id, 'r-child'))
+			.run();
+		const graph = await createDrizzleGraphRepository(db).loadVisibleGraph(viewerU1);
+
+		expect(graph.edges.find((e) => e.id === 'r-child')?.parentKind).toBe('foster');
+		expect(graph.edges.find((e) => e.id === 'r-partner')).not.toHaveProperty('parentKind');
+	});
+
 	it('words each person’s role by the gender on record, and neutrally without one', async () => {
 		db.update(schema.contact).set({ gender: 'female' }).where(eq(schema.contact.id, 'mara')).run();
 		db.update(schema.contact).set({ gender: 'Male ' }).where(eq(schema.contact.id, 'jonas')).run();

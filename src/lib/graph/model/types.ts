@@ -1,4 +1,5 @@
 import type { KinTerm, KinVariant } from '../../kinship/kinship';
+import type { ParentKind } from '../../relationships/parent-kinds';
 /*
  * Pure graph domain — value types (docs/dev/04 §4.11, docs/dev/02 §2.7).
  *
@@ -77,6 +78,11 @@ export interface GraphEdge {
 	 * §3.3). Still a link, drawn muted and dashed; absent on every current one.
 	 */
 	former?: true;
+	/**
+	 * A parent link's kind other than biological (docs/dev/02 §2.4); absent on a biological one.
+	 * The family tree draws it as the line's stroke (docs/dev/05 §5.8).
+	 */
+	parentKind?: Exclude<ParentKind, 'biological'>;
 }
 
 export interface GraphModel {

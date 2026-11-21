@@ -61,6 +61,7 @@ export const search: SearchMessages = {
 	'graph.density.spacious': 'Großzügig',
 	'graph.allKinship': 'Alle Verwandtschaftslinien',
 	'graph.allKinship.hint': 'Auch die, die sich aus den eingetragenen Linien ergeben',
+	'graph.parentKinds': 'Elternarten',
 	'graph.formerLinks': 'Ehemalige Beziehungen',
 	'graph.formerLinks.hint': 'Beendete Verbindungen, etwa zu Ex-Partnern, gestrichelt',
 	'graph.gaps': 'Lücken zeigen',

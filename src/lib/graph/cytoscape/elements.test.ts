@@ -90,6 +90,26 @@ describe('toCytoscapeElements', () => {
 		expect(of('now')?.classes.split(' ')).not.toContain('former');
 	});
 
+	it('carries a parent link’s kind for its stroke, and none for a biological one', () => {
+		const kinds: GraphModel = {
+			nodes: model.nodes,
+			edges: [
+				{
+					id: 'adopted',
+					source: 'mara',
+					target: 'walter',
+					kind: 'relationship',
+					parentKind: 'adoptive'
+				},
+				{ id: 'born', source: 'mara', target: 'walter', kind: 'relationship' }
+			]
+		};
+		const out = toCytoscapeElements(kinds);
+		const of = (id: string) => out.find((e) => e.data.id === id);
+		expect(of('adopted')?.data.parentKind).toBe('adoptive');
+		expect(of('born')?.data.parentKind).toBeUndefined();
+	});
+
 	it('drops edges whose endpoint is not a present node', () => {
 		expect(edge('dangling')).toBeUndefined();
 	});

@@ -1457,6 +1457,13 @@ Two parents of the same children stand side by side, both lines running into one
 the children even when no partnership is entered. A child entered under only one of the two
 stands on that parent's outer side, on a line of its own from that parent's outer edge, so it
 never runs into the couple's line; enter the second parent to bring the child in under both.
+A child with more than one pair of parents — birth parents, adoptive parents, a foster family,
+a step-parent — hangs from each of them, every pair on a line of its own that meets the child
+at its own spot. The family the child lives with stands nearest, the birth parents beside it,
+an ended foster family farthest out. The kind shows in the line: solid for birth parents,
+double for adoptive, dash-dot for foster and short dashes for step; while *Family* is on, the
+Filter menu shows these four as a key. Where one line has to cross another's, the crossed
+line has a small gap so you can tell they don't join. An exported tree keeps the same lines.
 Someone who married into the family
 stands at the end of their partner's brothers and sisters. Cousins or in-laws entered without
 the people in between — a cousin with no aunt or uncle on record — stand together at the end

@@ -2,9 +2,10 @@ import { PARENT_CHILD_TYPE_KEY } from '../../relationships/type-keys';
 import { looseRelatives } from '../model/loose-relatives';
 import type { GraphEdge, GraphModel } from '../model/types';
 import type { Point, SizeOf } from './geometry';
+import { pairOrderBreaks, parentKindOf } from './parent-pairs';
 import { atRowEnds } from './row-ends';
-import { barSpans, crossingBars, type BarSpan } from './tree-lines';
-import { clearOfCouples, straightened } from './row-nudges';
+import { barSpans, crossingBars, hangings, type BarSpan } from './bar-spans';
+import { clearOfCouples, straightened, towardHome } from './row-nudges';
 import { barycentreOrder, husbandsLeft, improve, mirrored, type Rows } from './row-order';
 import { inRememberedOrder, orderBreaks, type RowOrders } from './tree-order';
 
@@ -19,8 +20,9 @@ import { inRememberedOrder, orderBreaks, type RowOrders } from './tree-order';
  * It starts from the usual barycentre passes (each unit under the mean of its neighbours on
  * the row above, then over the row below) and then improves the order by moving one unit at a
  * time — anywhere on its row, or turned round — for as long as that takes somebody out from
- * among strangers, removes a crossing or draws the bars shorter. Last, of the order and its
- * mirror image, it keeps the one with more husbands to the left of their wives, so a person's
+ * among strangers, removes a crossing, puts a child's parent pairs in their order (the family
+ * the child lives with nearest, `parent-pairs.ts`) or draws the bars shorter. Last, of the
+ * order and its mirror image, it keeps the one with more husbands to the left of their wives, so a person's
  * father's family stands on the left and their mother's on the right, as a family tree is
  * usually drawn. A row the reader ordered by
  * dragging (`tree-order.ts`) keeps that order above all else. The search itself is
@@ -46,6 +48,8 @@ export interface RowSpacing {
 	family: number;
 }
 
+/** A child's pairs in the wrong order outweigh any length of bar, never a crossing. */
+const PAIR_ORDER_WEIGHT = 1e5;
 /** A crossing outweighs any length of bar: the search never buys shorter bars with one. */
 const CROSSING_WEIGHT = 1e6;
 /** Somebody amid another family's children — a partner amid their siblings — is worse still. */
@@ -121,6 +125,7 @@ export function arrangeFamily(
 			orderBreaks(order, orders) * ORDER_WEIGHT +
 			crossingBars(spans) * CROSSING_WEIGHT +
 			strangersAmong(spans, positions) * STRANGER_WEIGHT +
+			pairOrderBreaks(hangings(spans, positions)) * PAIR_ORDER_WEIGHT +
 			length
 		);
 	};
@@ -142,23 +147,26 @@ export function arrangeFamily(
 	const mirror = husbandsLeft(mirrored(rows), together, wording, cost, counts);
 	const mirrorKeepsOrders = orderBreaks(mirror.rows, orders) <= orderBreaks(asIs.rows, orders);
 	const chosen = mirror.balance > asIs.balance && mirrorKeepsOrders ? mirror.rows : asIs.rows;
-	const spansAt = (x: ReadonlyMap<string, number>) =>
-		barSpans(
-			familyEdges,
-			new Map(
-				[...family].map(([id, generation]) => [id, { x: x.get(id)!, y: generation * spacing.row }])
-			),
-			members,
-			sizeOf
+	const positionsAt = (x: ReadonlyMap<string, number>) =>
+		new Map(
+			[...family].map(([id, generation]) => [id, { x: x.get(id)!, y: generation * spacing.row }])
 		);
+	const spansAt = (x: ReadonlyMap<string, number>) =>
+		barSpans(familyEdges, positionsAt(x), members, sizeOf);
 	const crossingsAt = (x: ReadonlyMap<string, number>) => crossingBars(spansAt(x));
+	const breaksAt = (x: ReadonlyMap<string, number>) =>
+		pairOrderBreaks(hangings(spansAt(x), positionsAt(x)));
 	const x = straightened(chosen, place(chosen), familyEdges, family, sizeOf, spacing, crossingsAt);
 	clearOfCouples(chosen, x, family, sizeOf, spacing, spansAt, crossingsAt);
+	towardHome(chosen, x, family, sizeOf, spacing, spansAt, crossingsAt, breaksAt);
 	atRowEnds(x, loose, everyone, allEdges, sizeOf, spacing);
 	return { x, rows: chosen };
 }
 
-/** Who stands beside whom in a unit: partners, and two parents of one child on one row. */
+/**
+ * Who stands beside whom in a unit: partners, and two parents of one child on one row of one
+ * kind — a child's foster parent and biological parents are no unit for that child.
+ */
 function couplesOf(
 	family: ReadonlyMap<string, number>,
 	familyEdges: readonly GraphEdge[],
@@ -181,7 +189,8 @@ function couplesOf(
 	const parentsOf = new Map<string, string[]>();
 	for (const e of familyEdges) {
 		if (e.typeKey !== PARENT_CHILD_TYPE_KEY) continue;
-		parentsOf.set(e.target, [...(parentsOf.get(e.target) ?? []), e.source]);
+		const pair = `${e.target}|${parentKindOf(e)}`;
+		parentsOf.set(pair, [...(parentsOf.get(pair) ?? []), e.source]);
 	}
 	for (const parents of parentsOf.values()) {
 		for (let i = 0; i < parents.length; i++) {
