@@ -356,6 +356,7 @@ describe('dispatchCommand, for several links at once', () => {
 			status: 'current',
 			description: null,
 			untilDate: null,
+			parentKind: null,
 			links: [
 				{ targetId: 'anna', sinceDate: '2015-04-12' },
 				{ targetId: 'bert', sinceDate: null }

@@ -34,6 +34,7 @@ export interface AddRelationshipInput {
 	sinceDate: string | null;
 	untilDate: string | null;
 	status: string | null;
+	parentKind: string | null;
 }
 
 /** Store a link between two people the author can see; returns its id. */
@@ -58,7 +59,8 @@ export async function addRelationshipChecked(
 		description: input.description,
 		sinceDate: input.sinceDate,
 		untilDate: input.untilDate,
-		status: input.status
+		status: input.status,
+		parentKind: input.parentKind
 	});
 	return { relationshipId };
 }

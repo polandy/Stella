@@ -93,7 +93,8 @@ export function createDrizzleGraphRepository(
 				forwardLabel: relationshipType.forwardLabel,
 				symmetric: relationshipType.symmetric,
 				status: relationship.status,
-				sinceDate: relationship.sinceDate
+				sinceDate: relationship.sinceDate,
+				parentKind: relationship.parentKind
 			})
 			.from(relationship)
 			.innerJoin(relationshipType, eq(relationship.typeId, relationshipType.id))
@@ -164,7 +165,8 @@ export function createDrizzleGraphRepository(
 				toId: r.toContactId,
 				key: r.typeKey,
 				status: r.status,
-				sinceDate: r.sinceDate
+				sinceDate: r.sinceDate,
+				parentKind: r.parentKind
 			}))
 		);
 		// Derived kinship (docs/dev/02 §2.4.1) as its own edge kind: what the primary links imply

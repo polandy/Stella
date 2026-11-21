@@ -116,8 +116,11 @@ describe('planMonicaImport — relationships', () => {
 			fromContactId: 'monica:contact:1',
 			toContactId: 'monica:contact:2',
 			// Monica says nothing about whether a link still holds; one it recorded does.
-			status: 'current'
+			status: 'current',
+			// Nor about what kind of parent: a parent link arrives as biological.
+			parentKind: 'biological'
 		});
+		expect(plan.relationships[1]).toMatchObject({ parentKind: null });
 		// symmetric: canonical (sorted) endpoints, whichever row came first
 		expect(plan.relationships[1]).toMatchObject({
 			typeId: 'sibling',

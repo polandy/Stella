@@ -235,7 +235,8 @@ describe('createRelationship', () => {
 				toContactId: 'bettina',
 				typeId: 'parent_child',
 				status: 'current',
-				untilDate: '2000-01-01'
+				untilDate: '2000-01-01',
+				parentKind: 'biological'
 			}
 		);
 		expect(f.inserted).toMatchObject({ untilDate: '2000-01-01', status: 'former' });
@@ -548,13 +549,28 @@ describe('readKinship', () => {
 describe('parseRelationshipDetails', () => {
 	const TODAY = '2026-11-21';
 	const parse = (input: Parameters<typeof parseRelationshipDetails>[0]) =>
-		parseRelationshipDetails(input, TODAY);
+		parseRelationshipDetails(input, 'friend', TODAY);
+
+	it('reads a parent link without a kind as biological, and keeps a named one', () => {
+		expect(parseRelationshipDetails({}, 'parent_child', TODAY).parentKind).toBe('biological');
+		expect(parseRelationshipDetails({ parentKind: 'step' }, 'parent_child', TODAY).parentKind).toBe(
+			'step'
+		);
+	});
+
+	it('refuses a kind on any other link, and a kind that does not exist', () => {
+		expect(() => parse({ parentKind: 'foster' })).toThrow(InvalidRelationshipDetailsError);
+		expect(() =>
+			parseRelationshipDetails({ parentKind: 'godparent' }, 'parent_child', TODAY)
+		).toThrow(InvalidRelationshipDetailsError);
+	});
 
 	it('keeps the text as written, trimmed', () => {
 		expect(parse({ description: '  met at the ski course ' })).toEqual({
 			description: 'met at the ski course',
 			sinceDate: null,
 			untilDate: null,
+			parentKind: null,
 			status: 'current'
 		});
 	});
@@ -564,12 +580,14 @@ describe('parseRelationshipDetails', () => {
 			description: null,
 			sinceDate: null,
 			untilDate: null,
+			parentKind: null,
 			status: 'current'
 		});
 		expect(parse({ description: '   ', sinceDate: '', status: '' })).toEqual({
 			description: null,
 			sinceDate: null,
 			untilDate: null,
+			parentKind: null,
 			status: 'current'
 		});
 	});
@@ -655,6 +673,7 @@ describe('createRelationship with details', () => {
 				description: 'met at the ski course',
 				sinceDate: '2019-06-01',
 				untilDate: null,
+				parentKind: null,
 				status: 'former'
 			}
 		);
@@ -663,6 +682,7 @@ describe('createRelationship with details', () => {
 			description: 'met at the ski course',
 			sinceDate: '2019-06-01',
 			untilDate: null,
+			parentKind: null,
 			status: 'former'
 		});
 	});
@@ -689,9 +709,16 @@ describe('createRelationship with details', () => {
 describe('editRelationship', () => {
 	const viewer: Viewer = { id: 'u1', householdId: 'h1' };
 	const deps = (f: ReturnType<typeof fakeRepo>) => ({ ...f.deps, clock });
+	const stored: StoredRelationship = {
+		id: 'rel-1',
+		fromContactId: 'a',
+		toContactId: 'b',
+		typeId: 'friend',
+		parentKind: null
+	};
 
 	it('writes the checked details, stamped from the clock, leaving the type alone', async () => {
-		const f = fakeRepo({});
+		const f = fakeRepo({ stored });
 
 		const written = await editRelationship(deps(f), viewer, {
 			relationshipId: 'rel-1',
@@ -699,6 +726,7 @@ describe('editRelationship', () => {
 			description: '  they met skiing ',
 			sinceDate: '2019-06-01',
 			untilDate: null,
+			parentKind: null,
 			status: 'former'
 		});
 
@@ -710,6 +738,7 @@ describe('editRelationship', () => {
 					description: 'they met skiing',
 					sinceDate: '2019-06-01',
 					untilDate: null,
+					parentKind: null,
 					status: 'former',
 					retype: null
 				},
@@ -718,8 +747,8 @@ describe('editRelationship', () => {
 		]);
 	});
 
-	it('refuses an unreal detail without going near the repository', async () => {
-		const f = fakeRepo({});
+	it('refuses an unreal detail without writing it', async () => {
+		const f = fakeRepo({ stored });
 
 		await expect(
 			editRelationship(deps(f), viewer, {
@@ -762,7 +791,13 @@ describe('editRelationship', () => {
 		it('carries a symmetric link over to another type, keeping the canonical pair', async () => {
 			const f = fakeRepo({
 				typesById,
-				stored: { id: 'rel-1', fromContactId: 'anna', toContactId: 'bert', typeId: 'partner' }
+				stored: {
+					id: 'rel-1',
+					fromContactId: 'anna',
+					toContactId: 'bert',
+					typeId: 'partner',
+					parentKind: null
+				}
 			});
 
 			const written = await editRelationship(deps(f), viewer, {
@@ -787,7 +822,8 @@ describe('editRelationship', () => {
 					id: 'rel-1',
 					fromContactId: 'bettina',
 					toContactId: 'hans',
-					typeId: 'parent_child'
+					typeId: 'parent_child',
+					parentKind: 'biological'
 				}
 			});
 
@@ -817,7 +853,8 @@ describe('editRelationship', () => {
 					id: 'rel-1',
 					fromContactId: 'bettina',
 					toContactId: 'hans',
-					typeId: 'parent_child'
+					typeId: 'parent_child',
+					parentKind: 'biological'
 				},
 				existsFor: (from, to, _typeId, exceptId) => {
 					asked.push({ from, to, exceptId });
@@ -839,7 +876,13 @@ describe('editRelationship', () => {
 		it('refuses a type that would duplicate another link between the two', async () => {
 			const f = fakeRepo({
 				typesById,
-				stored: { id: 'rel-1', fromContactId: 'anna', toContactId: 'bert', typeId: 'partner' },
+				stored: {
+					id: 'rel-1',
+					fromContactId: 'anna',
+					toContactId: 'bert',
+					typeId: 'partner',
+					parentKind: null
+				},
 				exists: true
 			});
 
@@ -856,7 +899,13 @@ describe('editRelationship', () => {
 		it('refuses a generation that another link already claims the other way round', async () => {
 			const f = fakeRepo({
 				typesById,
-				stored: { id: 'rel-1', fromContactId: 'bettina', toContactId: 'hans', typeId: 'partner' },
+				stored: {
+					id: 'rel-1',
+					fromContactId: 'bettina',
+					toContactId: 'hans',
+					typeId: 'partner',
+					parentKind: null
+				},
 				// Hans is already stored as Bettina's parent by some other row.
 				existsFor: (from, to, typeId, exceptId) =>
 					from === 'hans' && to === 'bettina' && typeId === 'parent_child' && exceptId === 'rel-1'
@@ -888,7 +937,13 @@ describe('editRelationship', () => {
 		it('reports false when the edit comes from a profile that is not an endpoint', async () => {
 			const f = fakeRepo({
 				typesById,
-				stored: { id: 'rel-1', fromContactId: 'anna', toContactId: 'bert', typeId: 'partner' }
+				stored: {
+					id: 'rel-1',
+					fromContactId: 'anna',
+					toContactId: 'bert',
+					typeId: 'partner',
+					parentKind: null
+				}
 			});
 
 			expect(
@@ -904,7 +959,13 @@ describe('editRelationship', () => {
 		it('refuses a type it cannot resolve, and writes nothing', async () => {
 			const f = fakeRepo({
 				typesById,
-				stored: { id: 'rel-1', fromContactId: 'anna', toContactId: 'bert', typeId: 'partner' }
+				stored: {
+					id: 'rel-1',
+					fromContactId: 'anna',
+					toContactId: 'bert',
+					typeId: 'partner',
+					parentKind: null
+				}
 			});
 
 			await expect(
@@ -976,6 +1037,15 @@ const spouse: RelationshipType = {
 	symmetric: true,
 	sortOrder: 4
 };
+const friend: RelationshipType = {
+	...spouse,
+	id: 'friend',
+	key: 'friend',
+	forwardLabel: 'Friend of',
+	reverseLabel: 'Friend of',
+	category: 'social',
+	sortOrder: 20
+};
 
 /** One row of `listForContactVisibleTo`, in the fields the exclusion rules read. */
 const tie = (
@@ -1010,7 +1080,13 @@ describe('createRelationship — what is already on record', () => {
 	});
 
 	it('allows a former spouse beside a marriage that holds, and refuses making it current', async () => {
-		const stored = { id: 'rel-9', fromContactId: 'anna', toContactId: 'bert', typeId: 'spouse' };
+		const stored = {
+			id: 'rel-9',
+			fromContactId: 'anna',
+			toContactId: 'bert',
+			typeId: 'spouse',
+			parentKind: null
+		};
 		const f = fakeRepo({ type: spouse, graph: married('anna', 'carl'), stored });
 		await createRelationship(
 			{ ...f.deps, ids: idGen('rel-x'), clock },
@@ -1104,6 +1180,51 @@ describe('createRelationship — what is already on record', () => {
 		expect(f.inserted).toBeNull();
 	});
 
+	it('stores an adoptive parent beside two biological ones — the limit is counted per kind', async () => {
+		const f = fakeRepo({
+			type: parentChild,
+			graph: {
+				people: peopleNamed('bert'),
+				parentEdges: [
+					{ parentId: 'carl', childId: 'bert', kind: 'biological' },
+					{ parentId: 'dora', childId: 'bert', kind: 'biological' }
+				]
+			}
+		});
+		await createRelationship(
+			{ ...f.deps, ids: idGen('rel-x'), clock },
+			{ id: 'u', householdId: 'h' },
+			{ fromContactId: 'anna', toContactId: 'bert', typeId: 'parent_child', parentKind: 'adoptive' }
+		);
+		expect(f.inserted).toMatchObject({ fromContactId: 'anna', parentKind: 'adoptive' });
+	});
+
+	it('refuses a third adoptive parent, and leaves foster and step parents unlimited', async () => {
+		const graph = {
+			people: peopleNamed('bert'),
+			parentEdges: [
+				{ parentId: 'carl', childId: 'bert', kind: 'adoptive' as const },
+				{ parentId: 'dora', childId: 'bert', kind: 'adoptive' as const },
+				{ parentId: 'emil', childId: 'bert', kind: 'foster' as const },
+				{ parentId: 'fred', childId: 'bert', kind: 'foster' as const }
+			]
+		};
+		const adding = (f: ReturnType<typeof fakeRepo>, parentKind: string) =>
+			createRelationship(
+				{ ...f.deps, ids: idGen('rel-x'), clock },
+				{ id: 'u', householdId: 'h' },
+				{ fromContactId: 'anna', toContactId: 'bert', typeId: 'parent_child', parentKind }
+			);
+
+		const refused = fakeRepo({ type: parentChild, graph });
+		await expect(adding(refused, 'adoptive')).rejects.toBeInstanceOf(RelationshipExcludedError);
+		expect(refused.inserted).toBeNull();
+
+		const foster = fakeRepo({ type: parentChild, graph });
+		await adding(foster, 'foster');
+		expect(foster.inserted).toMatchObject({ parentKind: 'foster' });
+	});
+
 	/*
 	 * A refusal carrying nothing but the other person's name reads as a claim about the entry
 	 * it refuses rather than about the link in the way. It names the link, from the side the
@@ -1190,7 +1311,13 @@ describe('editRelationship — what is already on record', () => {
 	it('lets a partner be retyped to a spouse — that is an edit, not a second partnership', async () => {
 		const f = fakeRepo({
 			typesById: { spouse },
-			stored: { id: 'r1', fromContactId: 'anna', toContactId: 'bert', typeId: 'partner' },
+			stored: {
+				id: 'r1',
+				fromContactId: 'anna',
+				toContactId: 'bert',
+				typeId: 'partner',
+				parentKind: null
+			},
 			ties: [
 				tie('r1', 'bert', 'romantic', {
 					typeKey: 'partner',
@@ -1213,7 +1340,13 @@ describe('editRelationship — what is already on record', () => {
 	it('refuses a retype that would make a married person married twice', async () => {
 		const f = fakeRepo({
 			typesById: { spouse },
-			stored: { id: 'r1', fromContactId: 'anna', toContactId: 'bert', typeId: 'friend' },
+			stored: {
+				id: 'r1',
+				fromContactId: 'anna',
+				toContactId: 'bert',
+				typeId: 'friend',
+				parentKind: null
+			},
 			graph: {
 				people: peopleNamed('anna', 'carl'),
 				partnerEdges: [{ a: 'anna', b: 'carl' }]
@@ -1221,6 +1354,60 @@ describe('editRelationship — what is already on record', () => {
 		});
 		await expect(edit(f, 'spouse')).rejects.toBeInstanceOf(RelationshipExcludedError);
 		expect(f.updates).toHaveLength(0);
+	});
+
+	describe('a parent link’s kind', () => {
+		const fosterLink: StoredRelationship = {
+			id: 'r1',
+			fromContactId: 'anna',
+			toContactId: 'bert',
+			typeId: 'parent_child',
+			parentKind: 'foster'
+		};
+		const editing = (f: ReturnType<typeof fakeRepo>, parentKind?: string) =>
+			editRelationship(
+				{ ...f.deps, clock },
+				{ id: 'u', householdId: 'h' },
+				{ relationshipId: 'r1', perspectiveContactId: 'anna', description: 'x', parentKind }
+			);
+
+		it('keeps the stored kind when the edit names none', async () => {
+			const f = fakeRepo({ type: parentChild, stored: fosterLink });
+			expect(await editing(f)).toBe(true);
+			expect(f.updates[0]?.update.parentKind).toBe('foster');
+		});
+
+		it('refuses a kind that would give the child a third parent of it', async () => {
+			const f = fakeRepo({
+				type: parentChild,
+				stored: fosterLink,
+				graph: {
+					people: peopleNamed('anna', 'bert'),
+					parentEdges: [
+						{ parentId: 'carl', childId: 'bert', kind: 'adoptive' },
+						{ parentId: 'dora', childId: 'bert', kind: 'adoptive' },
+						{ parentId: 'anna', childId: 'bert', kind: 'foster' }
+					]
+				}
+			});
+			await expect(editing(f, 'adoptive')).rejects.toBeInstanceOf(RelationshipExcludedError);
+			expect(f.updates).toHaveLength(0);
+		});
+
+		it('drops the kind when the link is retyped away from a parent link', async () => {
+			const f = fakeRepo({ typesById: { friend }, stored: fosterLink });
+			const written = await editRelationship(
+				{ ...f.deps, clock },
+				{ id: 'u', householdId: 'h' },
+				{
+					relationshipId: 'r1',
+					perspectiveContactId: 'anna',
+					typeChoice: { typeId: 'friend', side: 'forward' }
+				}
+			);
+			expect(written).toBe(true);
+			expect(f.updates[0]?.update.parentKind).toBeNull();
+		});
 	});
 });
 

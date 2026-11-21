@@ -464,6 +464,7 @@ export function buildArchiveDocument(
 				description: text(r, 'note'),
 				since: text(r, 'since_date'),
 				until: text(r, 'until_date'),
+				parent_kind: text(r, 'parent_kind'),
 				status: text(r, 'status'),
 				author: text(r, 'created_by'),
 				created_at: moment(r, 'created_at')

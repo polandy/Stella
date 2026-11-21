@@ -236,10 +236,12 @@ export const contact = {
 	 * go*): how many the type takes, who is refused.
 	 */
 	'contact.relationships.parentsRoom': (p: { count: number }): string =>
-		p.count >= 2 ? 'Up to two parents.' : 'One more parent: one is on record already.',
+		p.count >= 2
+			? 'Up to two parents of this kind.'
+			: 'One more parent of this kind: one is on record already.',
 	'contact.relationships.parentsOnRecord':
-		'Two parents are on record already — that is the limit for Child of.',
-	'contact.relationships.parentsFull': 'Two parents — that is the limit for Child of.',
+		'Two parents of this kind are on record already — that is the limit.',
+	'contact.relationships.parentsFull': 'Two parents of this kind — that is the limit.',
 	'contact.relationships.partnerFull': 'One person — a partnership is between two.',
 	'contact.relationships.capFullPlaceholder': 'No more for this type',
 	'contact.relationships.overCap': (p: { type: string; max: number; extra: number }) =>

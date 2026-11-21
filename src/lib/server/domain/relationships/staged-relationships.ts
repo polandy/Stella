@@ -78,7 +78,8 @@ export function stageRelationships(
 					fromId: link.fromContactId,
 					toId: link.toContactId,
 					key: (await typeOf(viewer, link.typeId)).key,
-					status: link.status
+					status: link.status,
+					parentKind: link.parentKind
 				}))
 			);
 			const added = kinshipGraphOf([], rows);
@@ -115,6 +116,7 @@ export function stageRelationships(
 							description: link.description,
 							sinceDate: link.sinceDate,
 							untilDate: link.untilDate,
+							parentKind: link.parentKind,
 							status: link.status
 						};
 					})

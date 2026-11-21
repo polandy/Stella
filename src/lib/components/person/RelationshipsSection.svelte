@@ -3,7 +3,12 @@
 	import Section from '#lib/components/ui/Section.svelte';
 	import { sectionAnchor } from '#lib/people/sections.js';
 	import { useI18n } from '#lib/i18n/context.svelte.js';
-	import { exclusionFor, type Exclusion } from '#lib/relationships/exclusions.js';
+	import {
+		exclusionFor,
+		type ANY_PARENT_KIND,
+		type Exclusion
+	} from '#lib/relationships/exclusions.js';
+	import type { ParentKind } from '#lib/relationships/parent-kinds.js';
 	import type { RelationshipCategory } from '#lib/relationships/categories.js';
 	import { relationshipTypeLabel } from '#lib/relationships/labels.js';
 	import { foldPeople, groupPeople, type HiddenGroup } from '#lib/relationships/people-groups.js';
@@ -176,7 +181,8 @@
 		option: { type: { key: string; category: RelationshipCategory }; side: 'forward' | 'reverse' },
 		targetId: string | null | undefined,
 		exceptId: string | null = null,
-		former = false
+		former = false,
+		parentKind?: ParentKind | typeof ANY_PARENT_KIND
 	): Exclusion | null =>
 		targetId
 			? exclusionFor(data.exclusionFacts, {
@@ -185,7 +191,8 @@
 					type: { key: option.type.key, category: option.type.category },
 					side: option.side,
 					exceptId,
-					former
+					former,
+					parentKind
 				})
 			: null;
 	/** Whoever a reason is about; both people are on the page already. */

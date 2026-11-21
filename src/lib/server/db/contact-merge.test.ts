@@ -300,6 +300,7 @@ describe('what would collide', () => {
 					fromContactId: 'keep',
 					toContactId: 'lena',
 					typeId: 'parent_child',
+					parentKind: 'biological',
 					createdBy: U1
 				},
 				{
@@ -308,6 +309,7 @@ describe('what would collide', () => {
 					fromContactId: 'dup',
 					toContactId: 'lena',
 					typeId: 'parent_child',
+					parentKind: 'biological',
 					createdBy: U1
 				}
 			])
@@ -597,7 +599,16 @@ describe('links in their stored order (docs/dev/03 §relationship)', () => {
 	) =>
 		db
 			.insert(schema.relationship)
-			.values({ id, householdId: H, fromContactId, toContactId, typeId, createdBy: U1, ...fields })
+			.values({
+				id,
+				householdId: H,
+				fromContactId,
+				toContactId,
+				typeId,
+				parentKind: typeId === 'parent_child' ? 'biological' : null,
+				createdBy: U1,
+				...fields
+			})
 			.run();
 	const links = () =>
 		db

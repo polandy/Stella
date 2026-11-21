@@ -26,10 +26,12 @@
 		type ServerRefusal
 	} from '#lib/relationships/multi-pick.js';
 	import { addRelationshipCommand } from '#lib/relationships/add-command.js';
+	import { ANY_PARENT_KIND } from '#lib/relationships/exclusions.js';
 	import { livesAtOffer } from '#lib/relationships/lives-at.js';
 	import { firstPickable } from '#lib/relationships/picker-groups.js';
 	import { sinceDateFromBirth } from '#lib/relationships/since.js';
 	import { PARENT_CHILD_TYPE_KEY, PARTNER_TYPE_KEYS } from '#lib/relationships/type-keys.js';
+	import { BIOLOGICAL_PARENT_KIND, type ParentKind } from '#lib/relationships/parent-kinds.js';
 	import {
 		CURRENT_RELATIONSHIP_STATUS,
 		FORMER_RELATIONSHIP_STATUS,
@@ -45,6 +47,7 @@
 	import LivesAtOffer from './LivesAtOffer.svelte';
 	import { postLivesAt } from './lives-at-post';
 	import RelationshipTypeSelect from './RelationshipTypeSelect.svelte';
+	import ParentKindField from './ParentKindField.svelte';
 	import SecondParentOffer from './SecondParentOffer.svelte';
 	import SinceDates from './SinceDates.svelte';
 	import { announceSavedBatch, relationshipIdsOf } from './saved-batch';
@@ -202,24 +205,33 @@
 	let status = $state<RelationshipStatus>(CURRENT_RELATIONSHIP_STATUS);
 	const former = $derived(status === FORMER_RELATIONSHIP_STATUS);
 
+	/** The kind a parent link is entered as; the type list asks whether any kind is open. */
+	let parentKind = $state<ParentKind>(BIOLOGICAL_PARENT_KIND);
+
 	/** An entry is greyed out only when it is refused for everyone picked. */
-	const forEveryone = (option: RelationshipChoices[number]) =>
-		exclusionForEveryone(picked, (targetId) => exclusionOf(option, targetId, null, former));
+	const forEveryone = (
+		option: RelationshipChoices[number],
+		kind: ParentKind | typeof ANY_PARENT_KIND = ANY_PARENT_KIND
+	) =>
+		exclusionForEveryone(picked, (targetId) => exclusionOf(option, targetId, null, former, kind));
 	/*
 	 * The entry the form would post: the one that was picked, or — since the select is read
-	 * rather than bound — the first one that *can* be picked, which is where an untouched
-	 * control stands, disabled entries skipped.
+	 * rather than bound — the first one that *can* be posted as the form stands, which is where
+	 * an untouched control is put.
 	 */
 	const chosen = $derived(
 		relationshipChoices.find((option) => option.value === relationshipChoice) ??
-			firstPickable(relationshipChoices, forEveryone) ??
+			firstPickable(relationshipChoices, (option) => forEveryone(option, parentKind)) ??
 			relationshipChoices[0] ??
 			null
 	);
 	/** Refused for everyone picked: the button goes with it, so nothing greyed out is submitted. */
-	const blockedChoice = $derived(chosen ? forEveryone(chosen) : null);
+	const blockedChoice = $derived(chosen ? forEveryone(chosen, parentKind) : null);
+	const isParentChoice = $derived(chosen?.type.key === PARENT_CHILD_TYPE_KEY);
 
-	const cap = $derived(pickCap(chosen, parentsOnRecord(data.exclusionFacts, c.id)));
+	const cap = $derived(
+		pickCap(chosen, parentsOnRecord(data.exclusionFacts, c.id, parentKind), parentKind)
+	);
 	const capped = $derived(capState(cap, picked.length));
 
 	/** What the last refused batch said, while it is about the type still chosen. */
@@ -231,7 +243,7 @@
 		chosen
 			? chipRefusals(
 					picked,
-					(targetId) => exclusionOf(chosen, targetId, null, former),
+					(targetId) => exclusionOf(chosen, targetId, null, former, parentKind),
 					serverRefusals
 				)
 			: []
@@ -284,7 +296,7 @@
 			canOffer: (personId) =>
 				otherContacts.some((person) => person.id === personId) &&
 				chosen !== null &&
-				exclusionOf(chosen, personId, null, former) === null
+				exclusionOf(chosen, personId, null, former, parentKind) === null
 		});
 		const partner = offer && otherContacts.find((person) => person.id === offer.partnerId);
 		return offer && partner ? { partner, parentName: nameOfPicked(offer.parentId) } : null;
@@ -344,7 +356,7 @@
 			</span>
 			<RelationshipTypeSelect
 				choices={relationshipChoices}
-				chosen={relationshipChoice}
+				chosen={chosen?.value ?? ''}
 				{forEveryone}
 				{nameOfContact}
 				onchoose={(value) => (relationshipChoice = value)}
@@ -404,6 +416,16 @@
 				<LivesAtOffer line={livesAt.line} {housemates} bind:taken={livesAtTaken} />
 			{/if}
 		</div>
+		{#if isParentChoice}
+			<ParentKindField
+				value={parentKind}
+				onchange={(kind) => {
+					// Picking a kind settles the type too, so a full kind refuses rather than retypes.
+					relationshipChoice = chosen?.value ?? relationshipChoice;
+					parentKind = kind;
+				}}
+			/>
+		{/if}
 		<label class="flex w-full flex-col gap-1 text-sm">
 			<span class="text-fg-muted">
 				{several

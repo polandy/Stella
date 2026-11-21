@@ -2,6 +2,7 @@ import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { eq, like } from 'drizzle-orm';
 import type * as schema from './schema';
 import { relationshipPair } from '../../relationships/endpoints';
+import { defaultParentKindFor } from '../../relationships/parent-kinds';
 import { hashPasswordSync } from '../auth/password';
 import { systemClock, type Clock } from '../clock';
 import {
@@ -146,6 +147,7 @@ export function seedDemoData(
 					householdId,
 					...relationshipPair(cid(r.from), cid(r.to), symmetric),
 					typeId: r.type,
+					parentKind: defaultParentKindFor(r.type),
 					createdBy: authorId,
 					createdAt: seededAt
 				};

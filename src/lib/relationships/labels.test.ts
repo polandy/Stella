@@ -126,6 +126,9 @@ describe('exclusionLabel', () => {
 		expect(exclusionLabel(en, { reason: 'parentsComplete', personId: 'c' }, carl)).toBe(
 			`Carl already has ${MAX_PARENTS} parents`
 		);
+		expect(
+			exclusionLabel(en, { reason: 'parentsComplete', personId: 'c', parentKind: 'adoptive' }, carl)
+		).toBe(`Carl already has ${MAX_PARENTS} adoptive parents`);
 	});
 });
 

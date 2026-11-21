@@ -1,4 +1,5 @@
 import type { RelationshipCategory } from './categories';
+import { BIOLOGICAL_PARENT_KIND, maxParentsOf, type ParentKind } from './parent-kinds';
 import { PARENT_CHILD_TYPE_KEY, PARTNER_TYPE_KEYS } from './type-keys';
 import type { RelationshipSide } from './type-options';
 
@@ -24,11 +25,14 @@ import type { RelationshipSide } from './type-options';
 export type ExclusionReason = 'alreadyRomantic' | 'romanticTaken' | 'parentsComplete';
 
 /**
- * The most parents a child is given. Stella has no step- or adoptive parent type, so a
- * third parent is more often a mistyped link than a real third parent — the household can
- * still record one by correcting an existing link rather than adding to it.
+ * The most biological parents a child is given — and adoptive ones, counted apart. A third of
+ * the same kind is more often a mistyped link than a real third parent; foster and step
+ * parents have no limit (`parent-kinds.ts`).
  */
 export const MAX_PARENTS = 2;
+
+/** The type picker's question, before a kind is chosen: is the parent type open in any kind? */
+export const ANY_PARENT_KIND = 'any';
 
 /**
  * The one category a pair holds only once. Everything else stacks: a colleague is often a
@@ -70,6 +74,8 @@ export interface ExclusionPair {
 export interface ExclusionParentEdge {
 	parentId: string;
 	childId: string;
+	/** Absent reads as biological, what every parent link was before kinds. */
+	kind?: ParentKind;
 }
 
 /** A partnership that still holds, with the day it began where entered. */
@@ -99,6 +105,8 @@ export interface ExclusionQuery {
 	exceptId?: string | null;
 	/** The claim is a past tie: the one-partner rule is about partnerships that hold. */
 	former?: boolean;
+	/** The kind of a parent claim; absent reads as biological. */
+	parentKind?: ParentKind | typeof ANY_PARENT_KIND;
 }
 
 /** Why the claim is refused, and what makes that reason concrete. */
@@ -112,6 +120,8 @@ export interface Exclusion {
 	personId: string;
 	/** Who that person is already with, for `romanticTaken`. */
 	partnerId?: string;
+	/** Which kind of parent is complete, for `parentsComplete`. */
+	parentKind?: ParentKind;
 	/**
 	 * The link standing in the way, where there is one: `alreadyRomantic` refuses *because of*
 	 * a particular row, and saying which one is the difference between "these two are already
@@ -178,15 +188,19 @@ export function exclusionFor(facts: ExclusionFacts, query: ExclusionQuery): Excl
 		}
 	}
 
-	if (type.key === PARENT_CHILD_TYPE_KEY) {
+	const parentKind = query.parentKind ?? BIOLOGICAL_PARENT_KIND;
+	const max = parentKind === ANY_PARENT_KIND ? null : maxParentsOf(parentKind);
+	if (type.key === PARENT_CHILD_TYPE_KEY && parentKind !== ANY_PARENT_KIND && max !== null) {
 		const child = childOf(query);
 		// The pair being asked about is left out: flipping or re-stating this very link must
 		// not read as one more parent arriving.
 		const parents = facts.parentEdges.filter(
 			(edge) =>
-				edge.childId === child && !joins({ a: edge.parentId, b: edge.childId }, subjectId, targetId)
+				edge.childId === child &&
+				(edge.kind ?? BIOLOGICAL_PARENT_KIND) === parentKind &&
+				!joins({ a: edge.parentId, b: edge.childId }, subjectId, targetId)
 		);
-		if (parents.length >= MAX_PARENTS) return { reason: 'parentsComplete', personId: child };
+		if (parents.length >= max) return { reason: 'parentsComplete', personId: child, parentKind };
 	}
 
 	return null;

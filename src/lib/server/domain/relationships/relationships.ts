@@ -5,6 +5,7 @@ import type { Viewer } from '../../access/visibility';
 import type { RelationshipCategory } from '../../../relationships/categories';
 import { relationshipPair, type Endpoints } from '../../../relationships/endpoints';
 import { GENERATION_TYPE_KEYS } from '../../../relationships/type-keys';
+import type { ParentKind } from '../../../relationships/parent-kinds';
 import {
 	parseRelationshipDetails,
 	type RelationshipDetails,
@@ -113,6 +114,7 @@ export interface StoredRelationship {
 	fromContactId: string;
 	toContactId: string;
 	typeId: string;
+	parentKind: ParentKind | null;
 }
 
 /** The new type of a link and the direction it is stored in once it carries that type. */
@@ -232,7 +234,7 @@ export async function createRelationship(
 ): Promise<string> {
 	const type = await deps.types.getType(viewer, input.typeId);
 	if (!type) throw new InvalidRelationshipTypeError(phrase('errors.relationshipType.gone'));
-	const details = parseRelationshipDetails(input, todayFor(deps.clock));
+	const details = parseRelationshipDetails(input, type.key, todayFor(deps.clock));
 
 	const { fromContactId, toContactId } = relationshipPair(
 		input.fromContactId,
@@ -261,7 +263,10 @@ export async function createRelationship(
 		// Whose profile this was entered from, where the caller said; the stored `from` end
 		// otherwise, which is the same person for every asymmetric type.
 		input.perspectiveContactId ?? fromContactId,
-		{ former: details.status === FORMER_RELATIONSHIP_STATUS }
+		{
+			former: details.status === FORMER_RELATIONSHIP_STATUS,
+			parentKind: details.parentKind ?? undefined
+		}
 	);
 
 	const now = deps.clock.now();

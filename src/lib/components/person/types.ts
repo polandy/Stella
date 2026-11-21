@@ -1,7 +1,8 @@
 import type { CardPhoto } from '#lib/people/photo-card.js';
 import type { GlimpsePhoto } from '#lib/immich/strip.js';
 import type { RelationshipCategory } from '#lib/relationships/categories.js';
-import type { Exclusion } from '#lib/relationships/exclusions.js';
+import type { ANY_PARENT_KIND, Exclusion } from '#lib/relationships/exclusions.js';
+import type { ParentKind } from '#lib/relationships/parent-kinds.js';
 import type { RelationshipTypeOption } from '#lib/relationships/type-options.js';
 import type { ActionData, PageData } from '../../../routes/(app)/contacts/[id]/$types';
 
@@ -33,7 +34,8 @@ export type ExclusionOf = (
 	option: { type: { key: string; category: RelationshipCategory }; side: 'forward' | 'reverse' },
 	targetId: string | null | undefined,
 	exceptId?: string | null,
-	former?: boolean
+	former?: boolean,
+	parentKind?: ParentKind | typeof ANY_PARENT_KIND
 ) => Exclusion | null;
 
 /** A photo on the Photos card — a gallery photo or one from Immich — with where it lives. */

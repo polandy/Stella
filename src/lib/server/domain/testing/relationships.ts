@@ -32,6 +32,7 @@ export function someTie(
 		description: null,
 		sinceDate: null,
 		untilDate: null,
+		parentKind: fields.typeKey === 'parent_child' ? 'biological' : null,
 		status: 'current',
 		...fields
 	};

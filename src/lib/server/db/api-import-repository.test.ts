@@ -304,6 +304,7 @@ describe('the import API adapter', () => {
 					fromContactId: 'c-x',
 					toContactId: 'c-carl',
 					typeId: 'parent_child',
+					parentKind: 'biological',
 					createdBy: U1
 				},
 				{
@@ -312,6 +313,7 @@ describe('the import API adapter', () => {
 					fromContactId: 'c-y',
 					toContactId: 'c-carl',
 					typeId: 'parent_child',
+					parentKind: 'biological',
 					createdBy: U1
 				}
 			])

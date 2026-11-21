@@ -57,12 +57,12 @@ test('gives a new person both parents in one go, with one toast', async ({ page 
 
 	const form = await openRelationshipForm(page);
 	await chooseType(form, 'Child of');
-	await expect(hints(form)).toHaveText('Up to two parents.');
+	await expect(hints(form)).toHaveText('Up to two parents of this kind.');
 	await pickPerson(form.getByLabel('Person'), mother);
 	await pickPerson(form.getByLabel('Person'), father);
 	await expect(chip(form, mother)).toBeVisible();
 	await expect(chip(form, father)).toBeVisible();
-	await expect(hints(form)).toHaveText('Two parents — that is the limit for Child of.');
+	await expect(hints(form)).toHaveText('Two parents of this kind — that is the limit.');
 
 	await form.getByRole('button', { name: 'Add 2 links' }).click();
 	await expect(storedRow(page, mother)).toContainText(/Parent|Mother|Father/);
@@ -115,7 +115,7 @@ test('lets someone with one parent take only one more', async ({ page }) => {
 
 	const form = await openRelationshipForm(page);
 	await chooseType(form, 'Child of');
-	await expect(hints(form)).toHaveText('One more parent: one is on record already.');
+	await expect(hints(form)).toHaveText('One more parent of this kind: one is on record already.');
 
 	await pickPerson(form.getByLabel('Person'), father);
 	await expect(chip(form, father)).toBeVisible();
@@ -123,7 +123,7 @@ test('lets someone with one parent take only one more', async ({ page }) => {
 	const search = form.getByLabel('Person');
 	await expect(search).toBeDisabled();
 	await expect(search).toHaveAttribute('placeholder', 'No more for this type');
-	await expect(hints(form)).toHaveText('Two parents — that is the limit for Child of.');
+	await expect(hints(form)).toHaveText('Two parents of this kind — that is the limit.');
 	await expect(form.getByTestId('person-search-chip')).toHaveCount(1);
 	await expect(chip(form, uncle)).toHaveCount(0);
 	await expect(form.getByRole('button', { name: 'Add', exact: true })).toBeEnabled();

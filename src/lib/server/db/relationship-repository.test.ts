@@ -41,6 +41,7 @@ function newRelationship(id: string, fromContactId: string, toContactId: string,
 		description: null,
 		sinceDate: null,
 		untilDate: null,
+		parentKind: typeId === 'parent_child' ? ('biological' as const) : null,
 		status: CURRENT_RELATIONSHIP_STATUS,
 		createdBy: U1,
 		createdAt: 0,
@@ -90,6 +91,7 @@ describe('exists / insert', () => {
 			description: null,
 			sinceDate: null,
 			untilDate: null,
+			parentKind: 'biological',
 			status: CURRENT_RELATIONSHIP_STATUS,
 			createdBy: U1,
 			createdAt: 0,
@@ -231,6 +233,7 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 			description: null,
 			sinceDate: null,
 			untilDate: null,
+			parentKind: 'biological',
 			status: CURRENT_RELATIONSHIP_STATUS,
 			createdBy: U1,
 			createdAt: 0,
@@ -245,6 +248,7 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 			description: 'quiet',
 			sinceDate: null,
 			untilDate: null,
+			parentKind: null,
 			status: CURRENT_RELATIONSHIP_STATUS,
 			createdBy: U2,
 			createdAt: 0,
@@ -263,6 +267,7 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 				description: 'she raised him alone',
 				sinceDate: '1994-03-02',
 				untilDate: '1999-12-31',
+				parentKind: 'foster',
 				status: CURRENT_RELATIONSHIP_STATUS,
 				retype: null
 			},
@@ -274,6 +279,7 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 			note: 'she raised him alone',
 			sinceDate: '1994-03-02',
 			untilDate: '1999-12-31',
+			parentKind: 'foster',
 			status: 'current'
 		});
 	});
@@ -283,6 +289,7 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 			description: 'changed',
 			sinceDate: null,
 			untilDate: null,
+			parentKind: null,
 			status: CURRENT_RELATIONSHIP_STATUS,
 			retype: null
 		};
@@ -313,7 +320,8 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 			id: 'rel-open',
 			fromContactId: 'bettina',
 			toContactId: 'hans',
-			typeId: 'parent_child'
+			typeId: 'parent_child',
+			parentKind: 'biological'
 		});
 		expect(await repo.findVisibleTo(viewerU1, 'rel-hidden')).toBeNull();
 		// The owner of the private endpoint may, so this is scoping and not a blanket refusal.
@@ -330,6 +338,7 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 				description: null,
 				sinceDate: null,
 				untilDate: null,
+				parentKind: null,
 				status: CURRENT_RELATIONSHIP_STATUS,
 				retype: {
 					endpoints: { fromContactId: 'hans', toContactId: 'bettina' },
@@ -355,6 +364,7 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 				description: 'unchanged type',
 				sinceDate: null,
 				untilDate: null,
+				parentKind: 'biological',
 				status: CURRENT_RELATIONSHIP_STATUS,
 				retype: null
 			},
@@ -379,6 +389,7 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 					description: null,
 					sinceDate: null,
 					untilDate: null,
+					parentKind: 'biological',
 					status: CURRENT_RELATIONSHIP_STATUS,
 					retype: null
 				},
@@ -455,6 +466,7 @@ describe('a generation claimed both ways', () => {
 					description: null,
 					sinceDate: null,
 					untilDate: null,
+					parentKind: typeId === 'parent_child' ? ('biological' as const) : null,
 					status: CURRENT_RELATIONSHIP_STATUS,
 					retype: { endpoints: { fromContactId: 'hans', toContactId: 'bettina' }, typeId }
 				},

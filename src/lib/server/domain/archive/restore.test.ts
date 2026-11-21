@@ -470,6 +470,17 @@ function fullHousehold(): HouseholdSnapshot {
 					status: 'current',
 					created_by: 'u-1',
 					created_at: EXPORTED
+				},
+				{
+					id: 'r-2',
+					household_id: 'h-1',
+					from_contact_id: 'c-hans',
+					to_contact_id: 'c-rosa',
+					type_id: 'parent_child',
+					parent_kind: 'adoptive',
+					status: 'current',
+					created_by: 'u-1',
+					created_at: EXPORTED
 				}
 			],
 			activity_log: [
@@ -683,6 +694,7 @@ describe('the round trip', () => {
 			'note',
 			'since_date',
 			'until_date',
+			'parent_kind',
 			'status',
 			'created_at'
 		],
@@ -843,7 +855,7 @@ describe('an archive that does not add up', () => {
 			archived(bent((s) => s.tables.relationship_type.splice(0, 1))),
 			target()
 		);
-		expect(rowsOf(plan, 'relationship')).toEqual([]);
+		expect(rowsOf(plan, 'relationship').map((row) => row.type_id)).toEqual(['parent_child']);
 		expect(plan.warnings).toContainEqual({ code: 'relationshipUnknownType' });
 	});
 
@@ -858,7 +870,7 @@ describe('an archive that does not add up', () => {
 			),
 			target()
 		);
-		expect(rowsOf(plan, 'relationship')).toHaveLength(1);
+		expect(rowsOf(plan, 'relationship')).toHaveLength(2);
 	});
 
 	// An archive written before the status column meant anything carries no status at all, and

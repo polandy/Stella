@@ -41,6 +41,8 @@ export const relationships: RelationshipsMessages = {
 	'relationships.blocked.alreadyRomantic': (p) => `schon mit ${p.name} zusammen`,
 	'relationships.blocked.romanticTaken': (p) => `${p.name} ist schon mit ${p.partner} zusammen`,
 	'relationships.blocked.parentsComplete': (p) => `${p.name} hat schon ${p.max} Elternteile`,
+	'relationships.blocked.adoptiveParentsComplete': (p) =>
+		`${p.name} hat schon ${p.max} Adoptivelternteile`,
 
 	'relationships.status.current': 'aktuell',
 	'relationships.status.former': 'ehemalig',
@@ -53,6 +55,18 @@ export const relationships: RelationshipsMessages = {
 	'relationships.role.child.male': 'Sohn',
 	'relationships.role.child.female': 'Tochter',
 	'relationships.role.child.neutral': 'Kind',
+	'relationships.role.adoptive-parent.male': 'Adoptivvater',
+	'relationships.role.adoptive-parent.female': 'Adoptivmutter',
+	'relationships.role.adoptive-parent.neutral': 'Adoptivelternteil',
+	'relationships.role.adoptive-child.male': 'Adoptivsohn',
+	'relationships.role.adoptive-child.female': 'Adoptivtochter',
+	'relationships.role.adoptive-child.neutral': 'Adoptivkind',
+	'relationships.role.foster-parent.male': 'Pflegevater',
+	'relationships.role.foster-parent.female': 'Pflegemutter',
+	'relationships.role.foster-parent.neutral': 'Pflegeelternteil',
+	'relationships.role.foster-child.male': 'Pflegesohn',
+	'relationships.role.foster-child.female': 'Pflegetochter',
+	'relationships.role.foster-child.neutral': 'Pflegekind',
 	'relationships.role.partner.male': 'Partner',
 	'relationships.role.partner.female': 'Partnerin',
 	'relationships.role.partner.neutral': 'Partner',
@@ -165,5 +179,17 @@ export const relationships: RelationshipsMessages = {
 	'relationships.towardsYou.cares_for.forward': 'Deine Betreuungsperson',
 	'relationships.towardsYou.cares_for.reverse': 'Von dir betreut',
 	'relationships.towardsYou.other.forward': 'Verbunden mit dir',
-	'relationships.towardsYou.other.reverse': 'Verbunden mit dir'
+	'relationships.towardsYou.other.reverse': 'Verbunden mit dir',
+	'relationships.parentKindLabel': 'Art',
+	'relationships.parentKind.biological': 'Leiblich',
+	'relationships.parentKind.adoptive': 'Adoptiv',
+	'relationships.parentKind.foster': 'Pflege',
+	'relationships.parentKind.step': 'Stief',
+	'relationships.parentKindHint.biological': 'Höchstens zwei leibliche Eltern.',
+	'relationships.parentKindHint.adoptive':
+		'Höchstens zwei Adoptiveltern, getrennt von den leiblichen gezählt.',
+	'relationships.parentKindHint.foster':
+		'Mehrere Pflegefamilien nacheinander sind möglich; Seit und Bis sagen, wann.',
+	'relationships.parentKindHint.step':
+		'Nur nötig, wenn die Partnerschaft zum Elternteil fehlt oder beendet ist; sonst leitet Stella den Stiefelternteil selbst ab.'
 };

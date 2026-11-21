@@ -4,6 +4,7 @@ import {
 	PARTNER_TYPE_KEYS,
 	SIBLING_TYPE_KEY
 } from '../relationships/type-keys';
+import type { ParentKind } from '../relationships/parent-kinds';
 import type { KinPerson, KinshipGraph, Pair, ParentEdge, PartnerEdge } from './kinship';
 
 /*
@@ -21,6 +22,8 @@ export interface KinshipLinkRow {
 	status: string;
 	/** The day the link began, where entered; kept for partner links only. */
 	sinceDate?: string | null;
+	/** A parent link's kind; biological when unsaid. */
+	parentKind?: ParentKind | null;
 }
 
 /**
@@ -37,7 +40,11 @@ export function kinshipGraphOf(people: KinPerson[], rows: readonly KinshipLinkRo
 		// Every visible pair counts as stored, so an existing link is never re-derived.
 		storedPairs.push({ a: row.fromId, b: row.toId });
 		if (row.key === PARENT_CHILD_TYPE_KEY)
-			parentEdges.push({ parentId: row.fromId, childId: row.toId });
+			parentEdges.push({
+				parentId: row.fromId,
+				childId: row.toId,
+				kind: row.parentKind ?? undefined
+			});
 		else if (row.key === SIBLING_TYPE_KEY) siblingEdges.push({ a: row.fromId, b: row.toId });
 		else if (PARTNER_TYPE_KEYS.includes(row.key)) {
 			// The link stays on record either way; `former` only stops the derivation.

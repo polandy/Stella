@@ -34,7 +34,9 @@ export const RelationshipAddSchema = v.object({
 	description: optionalText,
 	sinceDate: optionalText,
 	untilDate: optionalText,
-	status: optionalText
+	status: optionalText,
+	/** A parent link's kind; absent from an older build, which means biological. */
+	parentKind: optionalText
 });
 
 /**
@@ -57,6 +59,8 @@ export const RelationshipAddManySchema = v.object({
 	/** Copied onto each link; editable on its own row afterwards. */
 	description: optionalText,
 	untilDate: optionalText,
+	/** A parent link's kind; absent from an older build, which means biological. */
+	parentKind: optionalText,
 	/** At least one; a since day the form worked out per pair, or null for none. */
 	links: v.pipe(v.array(v.object({ targetId: nonEmpty, sinceDate: optionalText })), v.minLength(1))
 });

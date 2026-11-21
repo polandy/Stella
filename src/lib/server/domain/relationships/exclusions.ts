@@ -10,6 +10,7 @@ import {
 	type ExclusionReason
 } from '../../../relationships/exclusions';
 import { relationshipRowLabel } from '../../../relationships/labels';
+import type { ParentKind } from '../../../relationships/parent-kinds';
 import type { Viewer } from '../../access/visibility';
 import type { RelationshipTieReads, RelationshipType, RelationshipView } from './relationships';
 import type { KinshipGraphReads } from './suggestion-review';
@@ -44,10 +45,12 @@ const PHRASE_FOR_REASON: Record<ExclusionReason, (e: Exclusion, nameOf: NameOf) 
 			partner: exclusion.partnerId ? nameOf(exclusion.partnerId) : ''
 		}),
 	parentsComplete: (exclusion, nameOf) =>
-		phrase('errors.relationship.parentsComplete', {
-			name: nameOf(exclusion.personId),
-			max: MAX_PARENTS
-		})
+		phrase(
+			exclusion.parentKind === 'adoptive'
+				? 'errors.relationship.adoptiveParentsComplete'
+				: 'errors.relationship.parentsComplete',
+			{ name: nameOf(exclusion.personId), max: MAX_PARENTS }
+		)
 };
 
 /** A tie that cannot hold beside the ties already on record (docs/dev/02 §2.4). */
@@ -119,7 +122,8 @@ export function exclusionFactsFrom(
 			.map((edge) => ({ a: edge.a, b: edge.b, sinceDate: edge.sinceDate ?? null })),
 		parentEdges: graph.parentEdges.map((edge) => ({
 			parentId: edge.parentId,
-			childId: edge.childId
+			childId: edge.childId,
+			kind: edge.kind
 		}))
 	};
 }
@@ -147,7 +151,7 @@ export async function guardExclusions(
 	endpoints: Endpoints,
 	type: RelationshipType,
 	perspectiveContactId: string,
-	claim: { exceptId?: string; former?: boolean } = {}
+	claim: { exceptId?: string; former?: boolean; parentKind?: ParentKind } = {}
 ): Promise<void> {
 	const fromPerspective = perspectiveContactId === endpoints.fromContactId;
 	const targetId = fromPerspective ? endpoints.toContactId : endpoints.fromContactId;
@@ -158,7 +162,8 @@ export async function guardExclusions(
 		type: { key: type.key, category: type.category },
 		side: fromPerspective ? 'forward' : 'reverse',
 		exceptId: claim.exceptId,
-		former: claim.former
+		former: claim.former,
+		parentKind: claim.parentKind
 	});
 	if (exclusion) {
 		throw new RelationshipExcludedError(exclusion, nameOf);

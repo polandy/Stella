@@ -199,6 +199,9 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   icon-only **+** for *Add relationship* (`Section`'s `iconAdd`; the form opens under the
   header), and a framed **⋯** (`MenuButton`, `look="button"`) with **How are we connected?**,
   **Check relationships** and **Open in the graph**.
+- While the add or edit form's type is *Parent of* or *Child of* it shows the parent kind as a
+  segmented pill (`ParentKindField`: *Biological · Adoptive · Foster · Step*, a radio group with
+  a legend) and one hint line on the chosen kind, before the description field (docs/dev/02 §2.4).
 - *How are we connected?* opens a person picker in the card — the same one every other "which
   person?" question on the page uses — with *Trace it* and *Cancel*, and hands both ends to
   the explorer, which traces the chain on arrival. The identity card's ⋯ opens the same picker.

@@ -91,6 +91,7 @@ export function writeImportPlan(tx: Db, plan: ImportPlan): ImportCounts {
 					fromContactId: r.fromContactId,
 					toContactId: r.toContactId,
 					typeId: r.typeId,
+					parentKind: r.parentKind,
 					note: r.description,
 					createdBy: r.createdBy,
 					createdAt: r.createdAt,

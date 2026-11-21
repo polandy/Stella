@@ -179,6 +179,7 @@ function fullHousehold(): HouseholdSnapshot {
 					note: 'married in Thun',
 					since_date: '1980-06-01',
 					until_date: '1985-01-01',
+					parent_kind: null,
 					status: 'current',
 					created_by: 'u-1',
 					created_at: NOW
@@ -353,6 +354,19 @@ describe('a person', () => {
 });
 
 describe('the household around them', () => {
+	it('carries a parent link’s kind', () => {
+		const household = fullHousehold();
+		household.tables.relationship[0] = {
+			...household.tables.relationship[0],
+			type_id: 'parent_child',
+			parent_kind: 'foster'
+		};
+		expect(buildArchiveDocument(household, NOW).relationships[0]).toMatchObject({
+			type: 'parent_child',
+			parent_kind: 'foster'
+		});
+	});
+
 	it('keeps relationships as their own list, both ends named by id', () => {
 		expect(doc().relationships).toEqual([
 			{

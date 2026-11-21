@@ -287,7 +287,16 @@ describe('removeRelationships', () => {
 describe('editRelationship', () => {
 	const edit = { relationshipId: 'r1', description: 'since school', status: 'former' };
 	const saving = (update: RelationshipRepository['updateVisibleTo']) =>
-		relating({ updateVisibleTo: update });
+		relating({
+			findVisibleTo: async (_v, id) => ({
+				id,
+				fromContactId: 'anna',
+				toContactId: 'ben',
+				typeId: 'friend',
+				parentKind: null
+			}),
+			updateVisibleTo: update
+		});
 
 	it('saves the specifics and returns to the card', async () => {
 		const saved: unknown[] = [];

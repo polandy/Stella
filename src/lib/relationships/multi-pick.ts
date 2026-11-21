@@ -1,5 +1,6 @@
 import { likelyCoParent } from '../suggestions/rules/links';
-import { MAX_PARENTS, type ExclusionFacts } from './exclusions';
+import type { ExclusionFacts } from './exclusions';
+import { BIOLOGICAL_PARENT_KIND, maxParentsOf, type ParentKind } from './parent-kinds';
 import { sinceDateFromBirth, type BirthDated, type KinChoice } from './since';
 import { PARENT_CHILD_TYPE_KEY, PARTNER_TYPE_KEYS } from './type-keys';
 import type { RelationshipSide } from './type-options';
@@ -28,21 +29,29 @@ const PARTNERS_AT_ONCE = 1;
  * the picked people the viewed person's parents, so only the free parent slots are on offer;
  * "Parent of" caps each child on their own, which the per-person exclusion already says.
  */
-export function pickCap(choice: CapChoice | null, parentsAlreadyOnRecord: number): number | null {
+export function pickCap(
+	choice: CapChoice | null,
+	parentsAlreadyOnRecord: number,
+	parentKind: ParentKind = BIOLOGICAL_PARENT_KIND
+): number | null {
 	if (!choice) return null;
 	if (PARTNER_TYPE_KEYS.includes(choice.type.key)) return PARTNERS_AT_ONCE;
-	if (choice.type.key === PARENT_CHILD_TYPE_KEY && choice.side === 'reverse') {
-		return Math.max(0, MAX_PARENTS - parentsAlreadyOnRecord);
+	const max = maxParentsOf(parentKind);
+	if (choice.type.key === PARENT_CHILD_TYPE_KEY && choice.side === 'reverse' && max !== null) {
+		return Math.max(0, max - parentsAlreadyOnRecord);
 	}
 	return null;
 }
 
-/** How many parents the household recorded for `childId`, as far as the viewer can see. */
+/** How many parents of `parentKind` the household recorded for `childId`, as far as the viewer can see. */
 export function parentsOnRecord(
 	facts: Pick<ExclusionFacts, 'parentEdges'>,
-	childId: string
+	childId: string,
+	parentKind: ParentKind = BIOLOGICAL_PARENT_KIND
 ): number {
-	return facts.parentEdges.filter((edge) => edge.childId === childId).length;
+	return facts.parentEdges.filter(
+		(edge) => edge.childId === childId && (edge.kind ?? BIOLOGICAL_PARENT_KIND) === parentKind
+	).length;
 }
 
 /**

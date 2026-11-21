@@ -55,6 +55,8 @@ export const relationships = {
 		`${p.name} is already with ${p.partner}`,
 	'relationships.blocked.parentsComplete': (p: { name: string; max: number }) =>
 		`${p.name} already has ${p.max} parents`,
+	'relationships.blocked.adoptiveParentsComplete': (p: { name: string; max: number }) =>
+		`${p.name} already has ${p.max} adoptive parents`,
 
 	'relationships.status.current': 'current',
 	'relationships.status.former': 'former',
@@ -71,6 +73,18 @@ export const relationships = {
 	'relationships.role.child.male': 'Son',
 	'relationships.role.child.female': 'Daughter',
 	'relationships.role.child.neutral': 'Child',
+	'relationships.role.adoptive-parent.male': 'Adoptive father',
+	'relationships.role.adoptive-parent.female': 'Adoptive mother',
+	'relationships.role.adoptive-parent.neutral': 'Adoptive parent',
+	'relationships.role.adoptive-child.male': 'Adopted son',
+	'relationships.role.adoptive-child.female': 'Adopted daughter',
+	'relationships.role.adoptive-child.neutral': 'Adopted child',
+	'relationships.role.foster-parent.male': 'Foster father',
+	'relationships.role.foster-parent.female': 'Foster mother',
+	'relationships.role.foster-parent.neutral': 'Foster parent',
+	'relationships.role.foster-child.male': 'Foster son',
+	'relationships.role.foster-child.female': 'Foster daughter',
+	'relationships.role.foster-child.neutral': 'Foster child',
 	'relationships.role.partner.male': 'Partner',
 	'relationships.role.partner.female': 'Partner',
 	'relationships.role.partner.neutral': 'Partner',
@@ -184,7 +198,20 @@ export const relationships = {
 	'relationships.towardsYou.cares_for.forward': 'Your carer',
 	'relationships.towardsYou.cares_for.reverse': 'Someone you look after',
 	'relationships.towardsYou.other.forward': 'Connected to you',
-	'relationships.towardsYou.other.reverse': 'Connected to you'
+	'relationships.towardsYou.other.reverse': 'Connected to you',
+	// A parent link's kind (docs/dev/02 §2.4), with what each one means in the tree.
+	'relationships.parentKindLabel': 'Kind',
+	'relationships.parentKind.biological': 'Biological',
+	'relationships.parentKind.adoptive': 'Adoptive',
+	'relationships.parentKind.foster': 'Foster',
+	'relationships.parentKind.step': 'Step',
+	'relationships.parentKindHint.biological': 'At most two biological parents.',
+	'relationships.parentKindHint.adoptive':
+		'At most two adoptive parents, counted apart from the biological ones.',
+	'relationships.parentKindHint.foster':
+		'Several foster families in turn are fine; Since and Until say when.',
+	'relationships.parentKindHint.step':
+		'Only needed when the partnership to the parent is missing or over; otherwise Stella works the step-parent out itself.'
 };
 
 /** The key set every translation of this area has to provide. */
