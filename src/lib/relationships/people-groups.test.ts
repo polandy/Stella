@@ -74,6 +74,15 @@ describe('groupPeople', () => {
 		]);
 	});
 
+	it('ranks a foster sibling with the siblings, before the wider family', () => {
+		const groups = groupPeople([
+			row('cousin', 'family', 'cousin'),
+			row('foster', 'family', 'foster-sibling'),
+			row('brother', 'family', 'sibling')
+		]);
+		expect(ids(groups[0].rows)).toEqual(['brother', 'foster', 'cousin']);
+	});
+
 	it('lists a former tie after the current ones of its group', () => {
 		const groups = groupPeople([
 			row('ex', 'romantic', 'spouse', 'former'),
