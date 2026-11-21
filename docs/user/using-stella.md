@@ -884,8 +884,8 @@ pick Bert, and press **Add 2 links**. Three children of Anna are one go too — 
 and the picker keeps listing the family, or take everyone it found with *Add all*. The kind,
 the status and the "how they connect" text go to everyone you picked; the since day is worked
 out for each pair, so three children each start on their own birthday (*Use one date for all*
-folds them into one). The kind decides how many people fit: one partner, and two parents minus
-the ones already on record. Somebody who cannot be linked that way is marked in red with the
+folds them into one). The kind decides how many people fit: one partner, and two parents of a
+kind minus the ones of that kind already on record. Somebody who cannot be linked that way is marked in red with the
 reason underneath, and nothing is saved until you remove them — Stella never saves the others
 and quietly leaves one out. One **Undo** on the toast takes the whole batch back.
 
@@ -895,6 +895,16 @@ Brunner-Keller**, *Markus Brunner's partner*. Tap it and she joins as a second c
 and nothing changes. Stella keeps quiet when the partner came along after the child was born
 (fill in the *Since* day of the partnership and the child's birthday, and it can tell), when
 there are several partners, or when the child already has two parents.
+
+A parent link has a kind of its own. While the link is *Parent of* or *Child of*, the form
+shows **Biological · Adoptive · Foster · Step** (*Leiblich · Adoptiv · Pflege · Stief*) —
+biological unless you pick another, and every parent link from before counts as biological.
+A child has at most two biological and two adoptive parents, counted apart; foster and step
+parents have no limit, since one foster family can follow another — give each its *Since* and
+*Until* day. The profile then names the person by the kind: *Adoptive mother*, *Foster son*,
+*Stepfather*, and a past placement reads *Foster mother · 2015–2018*. A step-parent only needs
+writing down when the partnership to the parent is missing or over; otherwise Stella works the
+step-parent out itself. Editing a parent link lets you change its kind the same way.
 
 ### What cannot hold
 
@@ -909,7 +919,8 @@ a line saying why**: somebody with a partnership that still holds gets no second
 possible — already with Carl") unless the new partnership is marked **former** — an ex can
 always be added —, a pair that is already a couple gets no second kind of
 partnership, with the link in the way named as it reads on the page you are on ("Not possible —
-already Partner of Bert" — change that link instead), and nobody gets a third parent.
+already Partner of Bert" — change that link instead), and nobody gets a third biological or a
+third adoptive parent.
 
 Family links themselves are never in each other's way. A godparent is often the grandfather
 too, so write down both — Stella takes two kinship links about the same two people as two

@@ -220,10 +220,12 @@ export const contact: ContactMessages = {
 	'contact.relationships.addSomeoneFirst':
 		'Lege zuerst eine weitere Person an, dann kannst du sie hier verknüpfen.',
 	'contact.relationships.parentsRoom': (p) =>
-		p.count >= 2 ? 'Bis zu zwei Eltern.' : 'Noch ein Elternteil: einer ist schon erfasst.',
+		p.count >= 2
+			? 'Bis zu zwei Eltern dieser Art.'
+			: 'Noch ein Elternteil dieser Art: einer ist schon erfasst.',
 	'contact.relationships.parentsOnRecord':
-		'Zwei Eltern sind schon erfasst – mehr sind bei „Kind von“ nicht möglich.',
-	'contact.relationships.parentsFull': 'Zwei Eltern – mehr sind bei „Kind von“ nicht möglich.',
+		'Zwei Eltern dieser Art sind schon erfasst – mehr sind nicht möglich.',
+	'contact.relationships.parentsFull': 'Zwei Eltern dieser Art – mehr sind nicht möglich.',
 	'contact.relationships.partnerFull': 'Eine Person – eine Partnerschaft ist zu zweit.',
 	'contact.relationships.capFullPlaceholder': 'Mehr geht bei diesem Typ nicht',
 	'contact.relationships.overCap': (p) =>
