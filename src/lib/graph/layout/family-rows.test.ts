@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'bun:test';
 import { familyTreeLayout } from './family-tree';
-import type { SizeOf } from './geometry';
+import { defaultSizeOf, type SizeOf } from './geometry';
 import { barSpans, crossingBars } from './tree-lines';
 import {
 	brunnerKeller,
 	brunnerKellerWidened,
+	loneParentOfCouple,
 	pollari,
 	pollariSizeOf,
 	twoFamilies,
@@ -26,7 +27,7 @@ describe('arrangeFamily', () => {
 		const crossings = (model: GraphModel) => {
 			const { positions } = familyTreeLayout(model, measured);
 			const members = new Set(model.nodes.map((n) => n.id));
-			return crossingBars(barSpans(model.edges, positions, members));
+			return crossingBars(barSpans(model.edges, positions, members, measured));
 		};
 
 		for (const [name, model] of Object.entries({
@@ -40,9 +41,9 @@ describe('arrangeFamily', () => {
 				// for every order the people can arrive in, since a map grows from whoever it is
 				// centred on.
 				const { positions } = familyTreeLayout(model);
-				expect(barSpans(model.edges, positions, new Set(positions.keys())).length).toBeGreaterThan(
-					1
-				);
+				expect(
+					barSpans(model.edges, positions, new Set(positions.keys()), defaultSizeOf).length
+				).toBeGreaterThan(1);
 				const orders = model.nodes.flatMap((_, k) => {
 					const rotated = [...model.nodes.slice(k), ...model.nodes.slice(0, k)];
 					return [rotated, [...rotated].reverse()];
@@ -64,7 +65,7 @@ describe('arrangeFamily', () => {
 			it(`in ${name}`, () => {
 				const { positions, routes } = familyTreeLayout(model, measured);
 				const members = new Set(positions.keys());
-				const spans = barSpans(model.edges, positions, members);
+				const spans = barSpans(model.edges, positions, members, measured);
 				// Every drop to an only child is a single straight line: no bar at all.
 				const onlyChildren = model.edges.filter((e) => {
 					if (e.typeKey !== 'parent_child') return false;
@@ -157,6 +158,30 @@ describe('arrangeFamily', () => {
 			]);
 			expect(widened).toEqual([]);
 		});
+	});
+
+	describe('stands a lone parent’s children on that parent’s outer side', () => {
+		// The owner's screenshot: Sebi and Steve entered under Francesco alone, beside his wife.
+		const arrivals = loneParentOfCouple.nodes.flatMap((_, k) => {
+			const rotated = [
+				...loneParentOfCouple.nodes.slice(k),
+				...loneParentOfCouple.nodes.slice(0, k)
+			];
+			return [rotated, [...rotated].reverse()];
+		});
+		for (const nodes of arrivals) {
+			it(`arriving as ${nodes.map((n) => n.id).join(',')}`, () => {
+				const model = { ...loneParentOfCouple, nodes };
+				const { positions } = familyTreeLayout(model, pollariSizeOf);
+				const x = (id: string) => positions.get(id)!.x;
+				const spans = barSpans(model.edges, positions, new Set(positions.keys()), pollariSizeOf);
+				const outerEdge = x('francesco') - pollariSizeOf('francesco').width / 2;
+
+				expect(x('francesco')).toBeLessThan(x('wingkam'));
+				expect(Math.max(x('sebi'), x('steve'))).toBeLessThanOrEqual(outerEdge);
+				expect(crossingBars(spans)).toBe(0);
+			});
+		}
 	});
 
 	describe('keeps its order when a filter takes lines away', () => {

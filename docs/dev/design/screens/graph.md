@@ -24,7 +24,9 @@ card (§5.5.2); its styling is §5.8.
   ending in *former links hidden*.
 - **Tree** draws the family as a paper family tree (§5.8): partner bars, one drop per couple to
   a bar just over their children — a former couple stays side by side on a dashed bar, the drop
-  leaving from its middle, and the role under the name says *Wife · former* — right angles throughout, each person's role towards the centre
+  leaving from its middle, and the role under the name says *Wife · former*; children entered
+  under one of the two alone stand on that parent's outer side, their bar leaving from the
+  parent's outer edge — right angles throughout, each person's role towards the centre
   under their name instead of names on the lines — Labels starts off in the tree and its switch
   turns the names on there as anywhere, each on its child's own drop — the centre softly
   lit, and everyone outside the family on a shelf beneath, set off by a thin rule and a quiet
@@ -137,6 +139,11 @@ Loose cousins stand at the row end rather than amid it because a line along the 
 two people reads as a siblings' bar: drawn over a whole family, it said a cousin was the
 siblings' sister. Their role under the name already says *Cousin*, so the line can wait for a
 tap; the worded plus names the real gap, the aunt or uncle nobody entered.
+
+Children entered under one parent of a couple stand on that parent's outer side because their
+bar dropped from under the parent, right beside the couple's own drop: two bars ran along one
+stretch under the couple, and nobody could tell whose children were whose. The tree does not
+guess the missing parent: the child may be a half-sibling.
 
 The export draws the tree again on a core of its own rather than photographing the screen, so
 the reader's map neither moves nor turns light, and a private person left out leaves no gap. A

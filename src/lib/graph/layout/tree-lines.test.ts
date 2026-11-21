@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { familyTreeLayout, TREE_SPACING } from './family-tree';
 import { DEFAULT_NODE_SIZE, type Point, type Route } from './geometry';
-import { barSpans, TREE_LINES, treeRoutes } from './tree-lines';
+import { barSpans, crossingBars, TREE_LINES, treeRoutes } from './tree-lines';
 import type { GraphEdge, GraphModel, GraphNode } from '../model/types';
 
 /*
@@ -163,7 +163,7 @@ describe('treeRoutes', () => {
 		// One bar: every line runs along it at the same height.
 		const heights = new Set(edges.map((e) => routes.get(e.id)!.waypoints.at(-1)!.y));
 		expect(heights.size).toBe(1);
-		const spans = barSpans(edges, positions, new Set(positions.keys()));
+		const spans = barSpans(edges, positions, new Set(positions.keys()), size);
 		expect(spans.map(({ left, right }) => ({ left, right }))).toEqual([{ left: -100, right: 240 }]);
 	});
 
@@ -176,7 +176,7 @@ describe('treeRoutes', () => {
 		]);
 		const edges = [parentOf('otto', 'bert'), parentOf('rosa', 'bert')];
 
-		expect(barSpans(edges, positions, new Set(positions.keys()))).toHaveLength(2);
+		expect(barSpans(edges, positions, new Set(positions.keys()), size)).toHaveLength(2);
 	});
 
 	it('joins a couple’s children on one bar, with a short drop to each', () => {
@@ -222,6 +222,50 @@ describe('treeRoutes', () => {
 
 		expect(route.sourceEnd).toBeUndefined();
 		expect(route.waypoints[0].x).toBe(positions.get('carl')!.x);
+	});
+
+	describe('a lone parent standing in a couple', () => {
+		// Otto and Rosa married; Bert theirs, Kai entered under Otto alone, on Otto's outer side.
+		const positions = new Map<string, Point>([
+			['otto', { x: 0, y: 0 }],
+			['rosa', { x: 140, y: 0 }],
+			['kai', { x: -150, y: ROW }],
+			['bert', { x: 70, y: ROW }]
+		]);
+		const edges = [
+			spouses('otto', 'rosa'),
+			parentOf('otto', 'bert'),
+			parentOf('rosa', 'bert'),
+			parentOf('otto', 'kai')
+		];
+		const members = new Set(positions.keys());
+
+		it('drops from the parent’s outer edge, away from the partner, out past the name', () => {
+			const route = treeRoutes(edges, positions, members, size, ROW).get('otto-parent_child-kai')!;
+			const edge = -DEFAULT_NODE_SIZE.width / 2;
+
+			expect(route.sourceEnd).toBeUndefined();
+			expect(route.waypoints.slice(0, 2)).toEqual([
+				{ x: edge, y: 0 },
+				{ x: edge, y: ROW - TREE_LINES.above }
+			]);
+			expect(isRightAngled(pathOf(edges[3], route, positions))).toBe(true);
+		});
+
+		it('shares no stretch with the couple’s bar', () => {
+			const spans = barSpans(edges, positions, members, size);
+
+			expect(spans).toHaveLength(2);
+			expect(crossingBars(spans)).toBe(0);
+		});
+
+		it('counts a bar reaching back under the couple as a crossing', () => {
+			// Kai moved in under Otto: his bar runs back past Otto's edge towards the couple's drop.
+			const under = new Map([...positions, ['kai', { x: -20, y: ROW }]]);
+			const spans = barSpans(edges, under, members, size);
+
+			expect(crossingBars(spans)).toBe(1);
+		});
 	});
 
 	it('runs a stored sibling link along the bar the siblings already hang from', () => {
