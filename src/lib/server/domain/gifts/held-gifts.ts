@@ -103,6 +103,7 @@ export async function convertHeldGifts(deps: ConvertHeldGiftsDeps): Promise<Held
 			groupId: null,
 			...NO_GIVER,
 			storedAt: null,
+			value: null,
 			hiddenFromRecipient: false,
 			createdAt: note.createdAt,
 			updatedAt: note.updatedAt
@@ -124,6 +125,7 @@ export async function convertHeldGifts(deps: ConvertHeldGiftsDeps): Promise<Held
 				groupId: null,
 				...NO_GIVER,
 				storedAt: null,
+				value: null,
 				hiddenFromRecipient: false,
 				createdAt: touch.createdAt,
 				updatedAt: touch.updatedAt

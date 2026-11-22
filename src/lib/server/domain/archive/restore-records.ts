@@ -1,5 +1,6 @@
 import { webLink } from '../../../links/web-link';
 import { hasGiftDay, isGiftState, isOpenGift, type GiftState } from '../../../gifts/gifts';
+import { storedValueOf } from '../../../gifts/value';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
 import { dayOfInstant } from '../../../dates/today';
 import { whenColumns, whenFromOutside } from '../../../when/when';
@@ -270,6 +271,7 @@ export function planPersonRecords(
 				...giver,
 				// A place only means something while the gift waits to be handed over.
 				stored_at: state === 'bought' ? str(giftRow, 'stored_at') : null,
+				value: storedValueOf(giftRow.value),
 				// Checked against the archive's groups by `planGiftGroups`.
 				group_id: str(giftRow, 'group'),
 				...stamps(giftRow)

@@ -1,0 +1,1 @@
+ALTER TABLE `gift` ADD `value` integer;

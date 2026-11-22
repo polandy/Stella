@@ -21,6 +21,26 @@ const added = {
 	visibility: 'shared'
 };
 
+const edited = { ...added, giftId: 'g-1' };
+
+describe('a gift command and its value (§2.25.16)', () => {
+	it('still takes a command written before values existed, as none', () => {
+		expect(v.parse(GiftAddSchema, { ...added }).value).toBeUndefined();
+	});
+
+	it('takes a whole number, zero, or null to clear it', () => {
+		for (const value of [45, 0, null]) {
+			expect(v.parse(GiftEditSchema, { ...edited, value }).value).toBe(value);
+		}
+	});
+
+	it('refuses a fraction, a negative, a string and a number past nine digits', () => {
+		for (const value of [12.5, -3, '45', 1_000_000_000]) {
+			expect(v.safeParse(GiftAddSchema, { ...added, value }).success).toBe(false);
+		}
+	});
+});
+
 describe('a gift command and its when', () => {
 	it('still takes a command written before whens existed', () => {
 		expect(v.parse(GiftAddSchema, added).when).toBeUndefined();

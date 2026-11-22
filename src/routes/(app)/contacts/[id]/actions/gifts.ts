@@ -17,6 +17,7 @@ import {
 	occasionOf,
 	boughtOf,
 	surpriseOf,
+	valueOf,
 	visibilityOf,
 	whenOf,
 	type GiftCommand,
@@ -53,6 +54,7 @@ export const giftActions = {
 			{
 				...fromFormData(GiftAddSchema, form),
 				...visibilityOf(form),
+				...valueOf(form),
 				occasion: occasionOf(form),
 				when: whenOf(form),
 				...giversOf(form)
@@ -76,6 +78,7 @@ export const giftActions = {
 				...fromFormData(GiftAddSchema, form),
 				state: 'idea',
 				...visibilityOf(form),
+				...valueOf(form),
 				occasion: null,
 				when: whenOf(form),
 				giver: { contactId: event.params.id }
@@ -94,6 +97,7 @@ export const giftActions = {
 			{
 				...fromFormData(GiftEditSchema, form),
 				...visibilityOf(form),
+				...valueOf(form),
 				occasion: occasionOf(form),
 				when: whenOf(form)
 			},

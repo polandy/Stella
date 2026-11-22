@@ -51,6 +51,7 @@ function build() {
 		seedDemo: raw.SEED_DEMO,
 		logFormat: raw.LOG_FORMAT,
 		debugPages: raw.DEBUG_PAGES,
+		giftCurrency: raw.GIFT_CURRENCY.trim(),
 		updateCheck: raw.UPDATE_CHECK,
 		updateFeedUrl: raw.UPDATE_FEED_URL,
 		immich: readImmichConfig(raw),

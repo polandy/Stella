@@ -318,3 +318,42 @@ describe('addGiftBy', () => {
 		});
 	});
 });
+
+describe('the value of a gift (§2.25.16)', () => {
+	const edit = (services: FakeServices, fields: Record<string, string>) =>
+		answerOf(
+			actions.editGift(
+				routeEvent({
+					services,
+					params: { id: 'anna' },
+					form: formOf({ giftId: 'g1', title: 'Teapot', visibility: 'shared', ...fields })
+				})
+			)
+		);
+	const editing = (edits: Record<string, unknown>[]) =>
+		commanding({
+			'gift.edit': async (_actor, payload) => {
+				edits.push(payload as Record<string, unknown>);
+				return { giftId: 'g1' };
+			}
+		});
+
+	it('sends a whole number, clears it when blank, and leaves it alone when the form has none', async () => {
+		const edits: Record<string, unknown>[] = [];
+		const services = editing(edits);
+		await edit(services, { value: "1'250" });
+		await edit(services, { value: '' });
+		await edit(services, {});
+		expect(edits.map((e) => e.value)).toEqual([1250, null, undefined]);
+	});
+
+	it('refuses what is no whole number, under the field', async () => {
+		const edits: Record<string, unknown>[] = [];
+		expect(await edit(editing(edits), { value: '12.50' })).toMatchObject({
+			kind: 'fail',
+			status: 400,
+			data: { giftRowError: { giftId: 'g1', message: t('errors.gift.badValue') } }
+		});
+		expect(edits).toEqual([]);
+	});
+});

@@ -1,5 +1,6 @@
 import * as v from 'valibot';
 import { ADDABLE_GIFT_STATES } from '../gifts/gifts';
+import { MAX_VALUE } from '../gifts/value';
 import { GIFT_WHEN_KINDS } from '../gifts/idea-when';
 import { optionalWhenOf, whenSchemaOf } from '../when/schema';
 import { ISO_DAY, nonEmpty, optionalText, requiredText, visibility } from './payload-fields';
@@ -20,7 +21,11 @@ const giftContent = {
 	occasion: optionalText,
 	visibility,
 	/** Kept from the member whose own person it is for (§2.25.10); left out, nobody is. */
-	hiddenFromRecipient: v.optional(v.boolean())
+	hiddenFromRecipient: v.optional(v.boolean()),
+	/** What it was worth, whole units (§2.25.16); absent on an older command, null clears it. */
+	value: v.optional(
+		v.nullable(v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(MAX_VALUE)))
+	)
 };
 
 const giftWhen = optionalWhenOf(GIFT_WHEN_KINDS);

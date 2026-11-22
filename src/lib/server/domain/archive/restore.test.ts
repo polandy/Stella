@@ -623,6 +623,7 @@ describe('the round trip', () => {
 			'giver_is_household',
 			'giver_left_name',
 			'stored_at',
+			'value',
 			'created_at'
 		],
 		todo: [
@@ -1215,6 +1216,24 @@ describe('an archive that does not add up', () => {
 		);
 		expect(rowsOf(plan, 'gift').find((g) => g.id === 'g-idea')?.stored_at).toBeNull();
 		expect(rowsOf(plan, 'gift').find((g) => g.id === 'g-bought')?.stored_at).toBe('attic, box 3');
+	});
+
+	it('restores what a gift was worth only as a whole, non-negative number (§2.25.16)', () => {
+		const plan = planRestore(
+			deps(),
+			archived(
+				bent((s) => {
+					s.tables.gift[0]!.value = 45;
+					s.tables.gift[1]!.value = -3;
+					s.tables.gift[2]!.value = 12.5;
+				})
+			),
+			target()
+		);
+		const values = rowsOf(plan, 'gift').map((g) => [g.id, g.value]);
+		expect(values).toContainEqual(['g-idea', 45]);
+		expect(values).toContainEqual(['g-bought', null]);
+		expect(values).toContainEqual(['g-given', null]);
 	});
 
 	it('restores a gift from an archive written before givers as given by nobody', () => {

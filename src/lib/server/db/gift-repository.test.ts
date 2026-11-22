@@ -31,6 +31,7 @@ function gift(over: Partial<Gift>): Gift {
 		id: 'g',
 		...NO_GIVER,
 		storedAt: null,
+		value: null,
 		contactId: 'c-shared',
 		createdBy: U1,
 		visibility: 'shared',
@@ -184,6 +185,15 @@ describe('createDrizzleGiftRepository', () => {
 		expect((await repo.findVisibleTo(viewerU1, 'c-shared', 'g-1'))?.storedAt).toBe('Estrich');
 		await repo.update(gift({ id: 'g-1', state: 'idea', storedAt: null }));
 		expect((await repo.findVisibleTo(viewerU1, 'c-shared', 'g-1'))?.storedAt).toBeNull();
+	});
+
+	it('keeps what a gift was worth, whole, and changes or clears it on update (§2.25.16)', async () => {
+		await repo.insert(gift({ id: 'g-1', state: 'given', value: 45 }));
+		expect((await repo.findVisibleTo(viewerU1, 'c-shared', 'g-1'))?.value).toBe(45);
+		await repo.update(gift({ id: 'g-1', state: 'given', value: 0 }));
+		expect((await repo.findVisibleTo(viewerU1, 'c-shared', 'g-1'))?.value).toBe(0);
+		await repo.update(gift({ id: 'g-1', state: 'given', value: null }));
+		expect((await repo.findVisibleTo(viewerU1, 'c-shared', 'g-1'))?.value).toBeNull();
 	});
 
 	describe('listStoredPlacesVisibleTo', () => {

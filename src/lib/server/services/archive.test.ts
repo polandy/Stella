@@ -14,6 +14,7 @@ import * as schema from '../db/schema';
 import { exportHousehold, serialiseDocument } from '../domain/archive/archive';
 import { importArchive } from '../domain/archive/import';
 import { addGiftGroup } from '../domain/gifts/gift-groups';
+import { addGift } from '../domain/gifts/gifts';
 import { createContact } from '../domain/contacts/create-contact';
 import type { IdGenerator } from '../id';
 import { createFileMediaStore } from '../media/file-store';
@@ -157,6 +158,48 @@ describe('createArchiveServices', () => {
 		);
 		expect(back?.group.title).toBe('Puzzle');
 		expect(back?.gifts.map((g) => g.groupId)).toEqual([groupId, groupId]);
+	});
+
+	it('brings back what a gift was worth, a free gift included (§2.25.16)', async () => {
+		const archive = createArchiveServices(wiring);
+		const gifts = createGiftServices({
+			db,
+			clock,
+			ids,
+			contacts: createDrizzleContactRepository(db)
+		});
+		const contactId = await addPerson('Mia');
+		const gift = (title: string, value: number | null) =>
+			addGift(gifts.giftDeps, actorOf(admin), {
+				contactId,
+				state: 'idea',
+				title,
+				note: null,
+				url: null,
+				givenOn: null,
+				occasion: null,
+				visibility: 'shared',
+				value
+			});
+		await gift('Puzzle', 45);
+		await gift('Card', 0);
+		await gift('Flowers', null);
+		const exported = await exportHousehold(archive.archiveDeps, actorOf(admin));
+		db.delete(schema.gift).run();
+
+		await importArchive(
+			archive.importArchiveDeps,
+			actorOf(admin),
+			{ documentText: serialiseDocument(exported.document), media: new Map() },
+			'en'
+		);
+
+		const back = db.select().from(schema.gift).all();
+		expect(back.map((g) => [g.title, g.value]).sort()).toEqual([
+			['Card', 0],
+			['Flowers', null],
+			['Puzzle', 45]
+		]);
 	});
 });
 

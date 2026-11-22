@@ -100,6 +100,11 @@ DEBUG_PAGES=false                             # serves the workbench pages under
                                               # them (they are diagnostics and untranslated), and with this off
                                               # the routes answer 404 (docs/dev/05 §5.7).
 
+# --- Gifts ---
+GIFT_CURRENCY=CHF                             # what a gift's value (docs/dev/02 §2.25.16) is counted in: one plain
+                                              # string appended to the amount. Empty shows the number alone. Changing
+                                              # it renames every amount; nothing is converted.
+
 # --- Release check (on by default) ---
 UPDATE_CHECK=true                             # Settings → About says when a newer Stella has been released;
                                               # the server asks GitHub at most once a day, sends nothing about the
