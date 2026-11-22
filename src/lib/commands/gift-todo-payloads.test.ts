@@ -78,6 +78,20 @@ describe('a gift and who gives it (docs/dev/02 §2.25.12)', () => {
 		expect(v.safeParse(GiftAddSchema, { ...added, giver: 'Sandra' }).success).toBe(false);
 	});
 
+	it('carries those giving beside the first, or none: an older command has none', () => {
+		const together = [{ contactId: 'marco' }, { household: true as const }];
+		expect(
+			v.parse(GiftAddSchema, { ...added, giver: { contactId: 'sandra' }, coGivers: together })
+				.coGivers
+		).toEqual(together);
+		expect(v.parse(GiftAddSchema, added).coGivers).toBeUndefined();
+		expect(v.safeParse(GiftAddSchema, { ...added, coGivers: [null] }).success).toBe(false);
+		const assigned = { contactId: 'hilde', giftId: 'g-1', giver: { contactId: 'sandra' } };
+		expect(v.parse(GiftAssignSchema, { ...assigned, coGivers: together }).coGivers).toEqual(
+			together
+		);
+	});
+
 	it('assigns a giver, or frees the gift with none; the when and the surprise are optional', () => {
 		const freed = { contactId: 'hilde', giftId: 'g-1', giver: null };
 		expect(v.parse(GiftAssignSchema, freed)).toEqual(freed);

@@ -168,10 +168,32 @@ describe('assignGift on the card (§2.25.12)', () => {
 		await assign(services, { giver: '' });
 		await assign(services, { giver: 'sandra', free: 'on' });
 		expect(sent).toEqual([
-			{ contactId: 'anna', giftId: 'g1', giver: { contactId: 'sandra' } },
-			{ contactId: 'anna', giftId: 'g1', giver: { household: true } },
-			{ contactId: 'anna', giftId: 'g1', giver: null },
-			{ contactId: 'anna', giftId: 'g1', giver: null }
+			{ contactId: 'anna', giftId: 'g1', giver: { contactId: 'sandra' }, coGivers: [] },
+			{ contactId: 'anna', giftId: 'g1', giver: { household: true }, coGivers: [] },
+			{ contactId: 'anna', giftId: 'g1', giver: null, coGivers: [] },
+			{ contactId: 'anna', giftId: 'g1', giver: null, coGivers: [] }
+		]);
+	});
+
+	it('gives it to several together: the first posted giver, the others beside', async () => {
+		const sent: unknown[] = [];
+		const services = assigning(sent);
+		await answerOf(
+			actions.assignGift(
+				routeEvent({
+					services,
+					params: { id: 'anna' },
+					form: formOf({ giftId: 'g1', giver: ['sandra', 'marco'] })
+				})
+			)
+		);
+		expect(sent).toEqual([
+			{
+				contactId: 'anna',
+				giftId: 'g1',
+				giver: { contactId: 'sandra' },
+				coGivers: [{ contactId: 'marco' }]
+			}
 		]);
 	});
 

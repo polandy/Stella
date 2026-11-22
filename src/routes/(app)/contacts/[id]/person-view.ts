@@ -13,7 +13,7 @@ import {
 } from '#lib/server/domain/dates/important-dates.js';
 import type { GraphModel } from '#lib/graph/model/types.js';
 import type { Gift, GivenGift } from '#lib/server/domain/gifts/gifts.js';
-import { giverViewOf } from '#lib/gifts/giver.js';
+import { giverViewOf, type SingleGiverView } from '#lib/gifts/giver.js';
 import type { Plan } from '#lib/server/domain/plans/plans.js';
 import type { Todo } from '#lib/server/domain/todos/todos.js';
 import type { MentionedIn } from '#lib/server/domain/mentions/mentioned-in.js';
@@ -126,7 +126,8 @@ export function giftView(gift: Gift, ctx: PersonViewContext) {
 }
 
 /** A gift the person gives, as the card's *Gives* tab lists it: for whom, and when (§2.25.12). */
-export function givenGiftView(gift: GivenGift) {
+export function givenGiftView(gift: GivenGift, giverId: string) {
+	const giver = giverViewOf(gift);
 	return {
 		id: gift.id,
 		contactId: gift.contactId,
@@ -138,9 +139,14 @@ export function givenGiftView(gift: GivenGift) {
 		givenOn: gift.givenOn,
 		occasion: gift.occasion,
 		/** Kept from the member it is for (§2.25.10), so only the others see this row. */
-		hiddenFromRecipient: gift.hiddenFromRecipient
+		hiddenFromRecipient: gift.hiddenFromRecipient,
+		/** Who gives it with them, when several do — never the person themselves (§2.25.12). */
+		withOthers: giver.kind === 'several' ? giver.givers.filter((one) => !isGiver(one, giverId)) : []
 	};
 }
+
+const isGiver = (one: SingleGiverView, contactId: string) =>
+	one.kind === 'person' && one.contactId === contactId;
 
 /**
  * An outing idea as the Outings card shows it (docs/dev/02 §2.27): who noted it and who fixed it

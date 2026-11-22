@@ -124,6 +124,11 @@ export function buildArchiveDocument(
 	const entries = groupBy(t('journal_entry'), 'contact_id');
 	const interactions = groupBy(t('interaction'), 'contact_id');
 	const gifts = groupBy(t('gift'), 'contact_id');
+	// The givers beside a gift's first, in the order they were named (§2.25.12).
+	const coGivers = groupBy(
+		[...t('gift_co_giver')].sort((a, b) => Number(a.position) - Number(b.position)),
+		'gift_id'
+	);
 	const todos = groupBy(t('todo'), 'contact_id');
 	const plans = groupBy(t('activity_idea'), 'contact_id');
 	const galleryPhotos = groupBy(
@@ -318,6 +323,13 @@ export function buildArchiveDocument(
 					giver: text(g, 'giver_contact_id'),
 					giver_is_household: flag(g, 'giver_is_household'),
 					giver_left_name: text(g, 'giver_left_name'),
+					co_givers: coGivers.has(id(g))
+						? coGivers
+								.get(id(g))!
+								.map((c) =>
+									present({ giver: text(c, 'contact_id'), left_name: text(c, 'left_name') })
+								)
+						: null,
 					stored_at: text(g, 'stored_at'),
 					group: text(g, 'group_id'),
 					author: text(g, 'created_by'),

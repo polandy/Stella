@@ -1,6 +1,7 @@
 import { TranslatableError } from '../../../i18n/translatable';
 import { phrase, type Phrase } from '../../../i18n/phrase';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
+import type { StoredCoGiver } from '../../../gifts/giver';
 import { hasGiftDay, type GiftState, type GiverChoice } from '../../../gifts/gifts';
 import type { PartialDate } from '../../../dates/partial-date';
 import { todayFor } from '../../../dates/today';
@@ -74,10 +75,12 @@ interface GiftRecord {
 export interface StoredGiver {
 	/** A person gives it. */
 	giverContactId: string | null;
-	/** *Wir*: the household itself, said outright; never together with a person. */
+	/** *Wir*: the household itself, said outright; with people, they all sit in `coGivers`. */
 	giverIsHousehold: boolean;
 	/** The name of a giver whose record was deleted since; written by that delete alone. */
 	giverLeftName: string | null;
+	/** The givers beside the first, in the order they were named (several giving together). */
+	coGivers: StoredCoGiver[];
 }
 
 /** A gift as stored and as read back. */
@@ -93,7 +96,8 @@ export const NO_GIVER = {
 	giverContactId: null,
 	giverIsHousehold: false,
 	giverLeftName: null,
-	giverName: null
+	giverName: null,
+	coGivers: []
 } as const satisfies StoredGiver & Pick<Gift, 'giverName'>;
 
 /** A given or received gift: one with a day, as the story shows it. */
@@ -198,6 +202,8 @@ export interface AddGiftInput extends GiftContent {
 	state: Exclude<GiftState, 'bought'>;
 	/** Who gives it; absent or null for *us*, and never asked of a gift received. */
 	giver?: GiverChoice | null;
+	/** Those giving with the first, in the order named; ignored where nobody gives. */
+	coGivers?: GiverChoice[];
 }
 
 export interface EditGiftInput extends GiftContent {
@@ -271,23 +277,44 @@ function checkedContent(state: GiftState, content: GiftContent) {
 }
 
 /**
- * The giver as stored: a person the actor can see who is not the one the gift is for, or the
- * household. A gift received came from its person, so it names nobody.
+ * The givers as stored: people the actor can see who are not the one the gift is for, or the
+ * household, one or several together. The household, where named, is the first and every person
+ * sits beside it; else the first person gives and the rest sit beside them. A gift received came
+ * from its person, so it names nobody.
  */
 export async function giverOf(
 	deps: Pick<GiftDeps, 'contacts'>,
 	actor: GiftActor,
 	gift: Pick<Gift, 'contactId' | 'state'>,
-	choice: GiverChoice | null | undefined
+	choice: GiverChoice | null | undefined,
+	together: readonly GiverChoice[] = []
 ): Promise<StoredGiver & Pick<Gift, 'giverName'>> {
 	if (!choice || gift.state === 'received') return NO_GIVER;
-	if ('household' in choice) return { ...NO_GIVER, giverIsHousehold: true };
-	if (choice.contactId === gift.contactId) {
-		throw new InvalidGiftError(phrase('errors.gift.giverIsRecipient'));
+	const people: { id: string; displayName: string }[] = [];
+	let household = false;
+	for (const one of [choice, ...together]) {
+		if ('household' in one) {
+			household = true;
+			continue;
+		}
+		if (one.contactId === gift.contactId) {
+			throw new InvalidGiftError(phrase('errors.gift.giverIsRecipient'));
+		}
+		if (people.some((seen) => seen.id === one.contactId)) continue;
+		const found = await deps.contacts.findByIdVisibleTo(viewerOf(actor), one.contactId);
+		if (!found) throw new InvalidGiftError(phrase('errors.gift.giverGone'));
+		people.push(found);
 	}
-	const giver = await deps.contacts.findByIdVisibleTo(viewerOf(actor), choice.contactId);
-	if (!giver) throw new InvalidGiftError(phrase('errors.gift.giverGone'));
-	return { ...NO_GIVER, giverContactId: giver.id, giverName: giver.displayName };
+	// With the household, it gives first and every person sits beside it.
+	const first = household ? undefined : people[0];
+	const rest = household ? people : people.slice(1);
+	return {
+		...NO_GIVER,
+		giverIsHousehold: household,
+		giverContactId: first?.id ?? null,
+		giverName: first?.displayName ?? null,
+		coGivers: rest.map((one) => ({ contactId: one.id, name: one.displayName, leftName: null }))
+	};
 }
 
 /** Whether a gift is kept from the person it is for (`keptFromPerson`). */
@@ -349,7 +376,7 @@ export async function addGift(
 		whenCheckedOn: null,
 		groupId: null,
 		storedAt: null,
-		...(await giverOf(deps, author, input, input.giver)),
+		...(await giverOf(deps, author, input, input.giver, input.coGivers)),
 		createdAt: now,
 		updatedAt: now
 	});

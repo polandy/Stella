@@ -26,9 +26,14 @@ const giftContent = {
 const giftWhen = optionalWhenOf(GIFT_WHEN_KINDS);
 
 /** Who gives a gift (§2.25.12): a person, or the household itself; null or absent, *us*. */
-const giver = v.nullable(
-	v.union([v.object({ contactId: nonEmpty }), v.object({ household: v.literal(true) })])
-);
+const giverChoice = v.union([
+	v.object({ contactId: nonEmpty }),
+	v.object({ household: v.literal(true) })
+]);
+const giver = v.nullable(giverChoice);
+
+/** Those giving with the first (§2.25.12), in the order named; absent on a command from before. */
+const coGivers = v.optional(v.array(giverChoice));
 
 /** A gift noted on a person: an idea, or one given or received (docs/dev/02 §2.25). */
 export const GiftAddSchema = v.object({
@@ -36,7 +41,8 @@ export const GiftAddSchema = v.object({
 	state: v.picklist(ADDABLE_GIFT_STATES),
 	...giftContent,
 	when: giftWhen,
-	giver: v.optional(giver)
+	giver: v.optional(giver),
+	coGivers
 });
 
 /** An open idea or a bought gift *vergeben* — or freed with none — for when it is meant (§2.25.12). */
@@ -44,6 +50,7 @@ export const GiftAssignSchema = v.object({
 	contactId: nonEmpty,
 	giftId: nonEmpty,
 	giver,
+	coGivers,
 	when: giftWhen,
 	hiddenFromRecipient: v.optional(v.boolean())
 });

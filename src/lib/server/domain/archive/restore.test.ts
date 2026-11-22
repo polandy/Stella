@@ -230,6 +230,11 @@ function fullHousehold(): HouseholdSnapshot {
 					created_at: EXPORTED
 				}
 			],
+			// Julia and a deleted giver gave the slippers with the household (§2.25.12).
+			gift_co_giver: [
+				{ gift_id: 'g-given', position: 0, contact_id: 'c-rosa', left_name: null },
+				{ gift_id: 'g-given', position: 1, contact_id: null, left_name: 'Ruth' }
+			],
 			todo: [
 				{
 					id: 't-open',
@@ -598,6 +603,7 @@ describe('the round trip', () => {
 			'created_at'
 		],
 		interaction_participant: ['interaction_id', 'contact_id'],
+		gift_co_giver: ['gift_id', 'position', 'contact_id', 'left_name'],
 		gift: [
 			'id',
 			'contact_id',
@@ -1249,6 +1255,44 @@ describe('an archive that does not add up', () => {
 		expect(byId.get('g-idea')?.giver_contact_id).toBeNull();
 		expect(byId.get('g-given')?.giver_contact_id).toBeNull();
 		expect(byId.get('g-given')?.giver_is_household).toBe(1);
+	});
+
+	it('restores the givers beside the first in the order named, as the people the archive has', () => {
+		const plan = planRestore(
+			deps(),
+			archived(
+				bent((s) => {
+					s.tables.gift_co_giver = [
+						{ gift_id: 'g-given', position: 5, contact_id: 'c-rosa', left_name: null },
+						// Not in the archive, never the person it is for, and the same one twice: all let go.
+						{ gift_id: 'g-given', position: 6, contact_id: 'c-gone', left_name: null },
+						{ gift_id: 'g-given', position: 7, contact_id: 'c-hans', left_name: null },
+						{ gift_id: 'g-given', position: 8, contact_id: 'c-rosa', left_name: null },
+						{ gift_id: 'g-given', position: 9, contact_id: null, left_name: 'Ruth' },
+						// The first giver, named again.
+						{ gift_id: 'g-bought', position: 0, contact_id: 'c-rosa', left_name: null }
+					];
+				})
+			),
+			target()
+		);
+		expect(rowsOf(plan, 'gift_co_giver')).toEqual([
+			{ gift_id: 'g-given', position: 0, contact_id: 'c-rosa', left_name: null },
+			{ gift_id: 'g-given', position: 1, contact_id: null, left_name: 'Ruth' }
+		]);
+	});
+
+	it('restores no givers beside the first of a gift received, or of one the archive lost', () => {
+		const plan = planRestore(
+			deps(),
+			archived(
+				bent((s) => {
+					s.tables.gift[2]!.state = 'received';
+				})
+			),
+			target()
+		);
+		expect(rowsOf(plan, 'gift_co_giver')).toEqual([]);
 	});
 
 	it('names nobody as the giver of a gift received', () => {

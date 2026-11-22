@@ -15,7 +15,7 @@
 	import { GIFT_WHEN_KINDS } from '#lib/gifts/idea-when.js';
 	import type { PartialDate } from '#lib/dates/partial-date.js';
 	import type { When } from '#lib/when/when.js';
-	import GiftGiverField from './GiftGiverField.svelte';
+	import GiftGiversField from './GiftGiversField.svelte';
 	import GiftOccasionField from './GiftOccasionField.svelte';
 	import type { GiverChoices } from './types';
 	import { INPUT } from '../ui/inputs';
@@ -105,7 +105,7 @@
 
 {#snippet giverField(label: string)}
 	{#if givers}
-		<GiftGiverField
+		<GiftGiversField
 			{label}
 			ties={givers.ties}
 			household={givers.household}

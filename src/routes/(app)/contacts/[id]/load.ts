@@ -168,7 +168,7 @@ export const load = (async ({ locals, params, url }) => {
 		),
 		// Ideas, given and received gifts (docs/dev/02 §2.25), already visibility-scoped.
 		gifts: read.gifts.map((gift) => giftView(gift, ctx)),
-		gives: read.givenBy.map(givenGiftView),
+		gives: read.givenBy.map((gift) => givenGiftView(gift, contact.id)),
 		keepFrom: read.keepFrom,
 		giftGroups: read.giftGroups.map((found) => giftGroupView(found, ctx)),
 		giftPlaces: read.giftPlaces,

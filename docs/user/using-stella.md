@@ -690,7 +690,11 @@ and a good idea is still there on the birthday it was meant for.
   someone new. The idea then reads *Grandma is giving it*, so nobody buys it twice; choosing
   again moves it on, **Free again** clears it. *+ Idea* can say who gives it right away (under
   *Note or link*), and *+ Given* asks **From** — whom it was from. When the idea is for someone
-  in the household, picking a giver makes it a surprise for them. If you cannot see the giver's
+  in the household, picking a giver makes it a surprise for them. **From** and **Who gives it?**
+  are a person search: Stella lists **Us**, the person's family and your household first, and
+  you can add several people, who give it together. They show as chips (tap the **×** to
+  remove one) and the gift reads *from Julia and Andy*; on Julia's **Gives** tab it says
+  *together with Andy*. Handy to note that your wife gave someone a present as a reminder. If you cannot see the giver's
   person, the idea just says *taken*.
 - Given and received gifts also appear under **Activity** on their day. Ideas never do.
 - An idea can be noted from anywhere: `⌘K` / `Ctrl-K`, **Gift idea for …**, then the person's

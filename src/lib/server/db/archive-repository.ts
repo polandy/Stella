@@ -73,6 +73,11 @@ export const EXPORTED_TABLES: readonly Scoped[] = [
 	{ table: 'gift_group', where: 't.household_id = ?' },
 	// Ideas, given and received gifts (docs/dev/02 §2.25).
 	{ table: 'gift', where: viaContact() },
+	// The givers beside a gift's first (docs/dev/02 §2.25.12).
+	{
+		table: 'gift_co_giver',
+		where: `t.gift_id IN (SELECT g.id FROM gift g JOIN contact c ON c.id = g.contact_id WHERE c.household_id = ?)`
+	},
 	// What the household still owes a person, open or ticked (docs/dev/02 §2.26).
 	{ table: 'todo', where: viaContact() },
 	// What the household wants to do with a person, open, booked or done (docs/dev/02 §2.27).

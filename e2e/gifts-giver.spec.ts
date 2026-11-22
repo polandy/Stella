@@ -18,9 +18,12 @@ function runLetters(): string {
 }
 
 const giftsCard = (page: Page) => page.locator('#section-gifts');
-// A chip's radio is visually hidden; its label is what a finger presses.
-const chip = (scope: Locator, name: string) =>
-	scope.getByTestId('gift-giver').locator('label', { hasText: name });
+/** Finds a giver in the search and adds them; the first match is the one a suggestion puts first. */
+async function pickGiver(scope: Locator, name: string): Promise<void> {
+	const field = scope.getByTestId('gift-giver');
+	await field.getByRole('combobox').fill(name);
+	await field.getByRole('option').filter({ hasText: name }).first().click();
+}
 
 /** A second browser signed in as the household's other member, Nina. */
 async function signInAsNina(browser: Browser): Promise<Page> {
@@ -40,7 +43,7 @@ async function assignTo(page: Page, idea: string, giver: string): Promise<void> 
 	const row = giftsCard(page).getByTestId('gift-ideas').locator('li', { hasText: idea });
 	await row.getByTestId('gift-assign-open').click();
 	const assign = row.getByTestId('gift-assign');
-	await chip(assign, giver).click();
+	await pickGiver(assign, giver);
 	await assign.getByRole('button', { name: 'Assign', exact: true }).click();
 	await expect(row.getByTestId('gift-giver-line')).toHaveText(`${giver} is giving it`);
 }
@@ -76,13 +79,14 @@ test('an idea is given to a person, to the household, freed, and a gift given sa
 	// To a link of theirs, suggested with what they are to each other.
 	await row.getByTestId('gift-assign-open').click();
 	const assign = row.getByTestId('gift-assign');
-	await chip(assign, aunt).click();
+	await pickGiver(assign, aunt);
 	await assign.getByRole('button', { name: 'Assign', exact: true }).click();
 	await expect(row.getByTestId('gift-giver-line')).toHaveText(`${aunt} is giving it`);
 
 	// Moved on to the household, saying whom it replaces.
 	await row.getByRole('button', { name: 'Change giver' }).click();
-	await chip(assign, 'Us').click();
+	await assign.getByRole('button', { name: `Remove ${aunt}` }).click();
+	await pickGiver(assign, 'Us');
 	await expect(assign.getByTestId('gift-assign-replaces')).toContainText(aunt);
 	await assign.getByRole('button', { name: 'Assign', exact: true }).click();
 	await expect(row.getByTestId('gift-giver-line')).toHaveText('We are giving it');
@@ -97,7 +101,7 @@ test('an idea is given to a person, to the household, freed, and a gift given sa
 	await card.getByRole('button', { name: 'Given', exact: true }).click();
 	const form = card.getByTestId('gift-form');
 	await form.getByLabel('What?').fill(kite);
-	await chip(form, aunt).click();
+	await pickGiver(form, aunt);
 	await form.getByRole('button', { name: 'Save' }).click();
 	await expect(card.locator('li', { hasText: kite }).getByTestId('gift-giver-line')).toHaveText(
 		`from ${aunt}`

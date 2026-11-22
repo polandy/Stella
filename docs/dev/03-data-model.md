@@ -662,7 +662,7 @@ may edit, give or remove it; only its author may change its visibility or `hidde
 | when_on | text null | ISO `YYYY-MM-DD`, for `on_date` only |
 | when_checked_on | text null | ISO `YYYY-MM-DD`: the household's day somebody last answered *Still current?*, or chose the time anew (docs/dev/02 §2.25.8); null on a given or received gift |
 | giver_contact_id | text null fk → contact.id | who gives or gave it (docs/dev/02 §2.25.12); never `contact_id`; null on a received gift. No `ON DELETE`: the contact delete moves the name to `giver_left_name` first |
-| giver_is_household | int (0/1) | default 0; 1 is *Wir*, the household itself; 0 whenever `giver_contact_id` is set |
+| giver_is_household | int (0/1) | default 0; 1 is *Wir*, the household itself, named first when it gives with people (they sit in `gift_co_giver`); 0 whenever `giver_contact_id` is set |
 | giver_left_name | text null | the display name a deleted giver left; cleared once someone else gives it |
 | stored_at | text null | where a bought gift waits (*attic, box 3*, docs/dev/02 §2.25.9); written by *Bought…*, cleared on *Not bought yet*; kept but not shown once given, so its place is still offered |
 | group_id | text null fk → gift_group.id | the idea for several people it was noted with (§2.25.11); null for most. No `ON DELETE`: SQLite cannot add `SET NULL` to an existing table's column, so a group is unlinked from its gifts before it is removed (ADR-134) |
@@ -677,6 +677,21 @@ received gifts (newest `given_on`, then `created_at`) come from it; on `(giver_c
 for what a person gives. The giver's name is read through the access layer
 (`giverNameVisibleTo`), null when the reader may not see them. Exported and restored with
 the person (§2.15), repointed by a merge.
+
+### gift_co_giver
+The people who give a gift together with its first giver (docs/dev/02 §2.25.12): Julia and Andy to
+Hilde. Replaced whole whenever the gift's givers are written; read in one batch with the gift.
+
+| column | type | notes |
+|---|---|---|
+| gift_id | text fk → gift.id | cascade delete; part of the primary key |
+| position | int | the order named, from 0; part of the primary key |
+| contact_id | text null fk → contact.id | who gives it too; null once they were deleted. No `ON DELETE`: the contact delete moves the name to `left_name` first |
+| left_name | text null | the display name a deleted giver left |
+
+Indexed on `contact_id` for what a person gives together with others. A person appears once per
+gift, never as the gift's first giver nor its recipient. Names are read through the access layer
+(`giverNameVisibleTo`), exported with the gift and restored with it (§2.15), repointed by a merge.
 
 ### activity_idea
 Something the household wants to do with one person (docs/dev/02 §2.27): *the zoo*, *a concert*.

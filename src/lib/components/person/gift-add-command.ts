@@ -1,6 +1,6 @@
 import type { JsonCommand } from '#lib/commands/commands.js';
 import {
-	giverFromForm,
+	giversFromForm,
 	isAddableGiftState,
 	occasionFromForm,
 	visibilityFromForm
@@ -44,7 +44,9 @@ export function giftAddCommand(
 			occasion: occasionFromForm(text(formData, 'occasionChoice'), text(formData, 'occasionText')),
 			...visibilityFromForm(text(formData, 'visibility')),
 			// What was received came from its person (§2.25.12).
-			giver: state === 'received' ? null : giverFromForm(text(formData, 'giver')),
+			...(state === 'received'
+				? { giver: null, coGivers: [] }
+				: giversFromForm(formData.getAll('giver').map(String))),
 			...when
 		},
 		issuedAt

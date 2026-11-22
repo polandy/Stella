@@ -7,6 +7,8 @@ import {
 	isOpenGift,
 	occasionFromForm,
 	giverFromForm,
+	giversFromForm,
+	giverIdsOf,
 	HOUSEHOLD_GIVER,
 	OTHER_OCCASION,
 	visibilityFromForm
@@ -93,6 +95,38 @@ describe('visibilityFromForm', () => {
 		expect(visibilityFromForm('everyone')).toEqual({
 			visibility: 'shared',
 			hiddenFromRecipient: false
+		});
+	});
+});
+
+describe('giverIdsOf (§2.25.12)', () => {
+	it('names who gives it as the field posts them: people by id, the household as itself', () => {
+		expect(giverIdsOf({ kind: 'none' })).toEqual([]);
+		expect(giverIdsOf({ kind: 'unseen' })).toEqual([]);
+		expect(giverIdsOf({ kind: 'person', contactId: 'sandra', name: 'Sandra' })).toEqual(['sandra']);
+		expect(
+			giverIdsOf({
+				kind: 'several',
+				givers: [
+					{ kind: 'household' },
+					{ kind: 'person', contactId: 'marco', name: 'Marco' },
+					{ kind: 'left', name: 'Ruth' }
+				]
+			})
+		).toEqual([HOUSEHOLD_GIVER, 'marco']);
+	});
+});
+
+describe('giversFromForm (§2.25.12)', () => {
+	it('reads nobody when nothing, or only blanks, was posted', () => {
+		expect(giversFromForm([])).toEqual({ giver: null, coGivers: [] });
+		expect(giversFromForm(['', ' '])).toEqual({ giver: null, coGivers: [] });
+	});
+
+	it('reads the first as the giver and the rest beside them, in the order posted', () => {
+		expect(giversFromForm(['sandra', '', HOUSEHOLD_GIVER, 'marco'])).toEqual({
+			giver: { contactId: 'sandra' },
+			coGivers: [{ household: true }, { contactId: 'marco' }]
 		});
 	});
 });

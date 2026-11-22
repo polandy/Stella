@@ -52,7 +52,12 @@ export type MergeSettlement =
 	/** One open idea per person in a group (ADR-134): the merged record's duplicate leaves it. */
 	| 'unlink-merged-duplicate-group-ideas'
 	/** A gift the one gave the other would come from its own person; it names no giver then. */
-	| 'drop-givers-of-own-gifts';
+	| 'drop-givers-of-own-gifts'
+	/**
+	 * Once both moved, a person may stand twice among a gift's givers, or beside the first who is
+	 * now the same person, or for their own gift: each is named once and never for themselves.
+	 */
+	| 'drop-repeated-co-givers';
 
 export type MergeStep =
 	| { kind: 'repoint'; table: string; column: string; onConflict: MergeConflictRule }
@@ -108,6 +113,9 @@ export const MERGE_PLAN: readonly MergeStep[] = [
 	// Who gives a gift follows the survivor too (§2.25.12).
 	repoint('gift', 'giver_contact_id', 'cannot-collide'),
 	settle('drop-givers-of-own-gifts', 'gift'),
+	// The givers beside the first follow the survivor as well.
+	repoint('gift_co_giver', 'contact_id', 'cannot-collide'),
+	settle('drop-repeated-co-givers', 'gift_co_giver'),
 	repoint('todo', 'contact_id', 'cannot-collide'),
 	repoint('activity_idea', 'contact_id', 'cannot-collide'),
 	repoint('photo', 'contact_id', 'cannot-collide'),

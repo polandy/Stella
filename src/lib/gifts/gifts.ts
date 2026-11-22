@@ -1,4 +1,5 @@
 import { surpriseFromForm } from '../surprise/surprise';
+import type { GiverView, SingleGiverView } from './giver';
 
 /*
  * The words a gift is made of (docs/dev/02 §2.25). Pure and client-safe, so the form, the command's
@@ -79,6 +80,25 @@ export type GiverChoice = { contactId: string } | { household: true };
 
 /** What the giver field posts for the household itself; anything else non-empty is a person's id. */
 export const HOUSEHOLD_GIVER = 'household';
+
+/** The posted ids of those a gift is given by, for the giver field to start with. A gone or unseen giver has none. */
+export function giverIdsOf(view: GiverView): string[] {
+	const idOf = (one: SingleGiverView) =>
+		one.kind === 'person' ? [one.contactId] : one.kind === 'household' ? [HOUSEHOLD_GIVER] : [];
+	if (view.kind === 'none') return [];
+	return view.kind === 'several' ? view.givers.flatMap(idOf) : idOf(view);
+}
+
+/** Those giving, as the giver field posted them (one value each): the first, and the rest beside. */
+export function giversFromForm(posted: readonly (string | null)[]): {
+	giver: GiverChoice | null;
+	coGivers: GiverChoice[];
+} {
+	const [giver = null, ...coGivers] = posted
+		.map(giverFromForm)
+		.filter((choice): choice is GiverChoice => choice !== null);
+	return { giver, coGivers };
+}
 
 /** The giver the form chose; empty is nobody, so *us*. */
 export function giverFromForm(posted: string | null): GiverChoice | null {

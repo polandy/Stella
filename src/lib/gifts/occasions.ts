@@ -72,8 +72,12 @@ export function occasionTally(gifts: readonly Pick<OccasionGift, 'state' | 'give
 	};
 }
 
-/** Whether the household hands it over itself (D17): *Besorgt…* then, else *Erledigt*. */
+/**
+ * Whether the household hands it over itself (D17): *Besorgt…* then, else *Erledigt*. Several
+ * giving together hand it over once one of them is ours.
+ */
 export function handsOver(giver: GiverView, householdGivers: ReadonlySet<string>): boolean {
 	if (giver.kind === 'none' || giver.kind === 'household') return true;
+	if (giver.kind === 'several') return giver.givers.some((one) => handsOver(one, householdGivers));
 	return giver.kind === 'person' && householdGivers.has(giver.contactId);
 }

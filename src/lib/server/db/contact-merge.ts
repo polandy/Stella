@@ -196,6 +196,17 @@ const SETTLEMENTS: Record<MergeSettlement, (tx: Db, merging: Merging) => void> =
 			.set({ giverContactId: null })
 			.where(and(eq(gift.contactId, keepId), eq(gift.giverContactId, keepId)))
 			.run(),
+	'drop-repeated-co-givers': (tx) =>
+		tx.run(sql`delete from gift_co_giver where contact_id is not null and (
+			contact_id = (select contact_id from gift where gift.id = gift_co_giver.gift_id)
+			or contact_id = (select giver_contact_id from gift where gift.id = gift_co_giver.gift_id)
+			or exists (
+				select 1 from gift_co_giver earlier
+				where earlier.gift_id = gift_co_giver.gift_id
+					and earlier.contact_id = gift_co_giver.contact_id
+					and earlier.position < gift_co_giver.position
+			)
+		)`),
 	'turn-merged-cuts': (tx, { mergedId }) => keepUnwornCuts(tx, mergedId, { evenWorn: true })
 };
 

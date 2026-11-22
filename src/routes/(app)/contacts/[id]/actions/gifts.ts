@@ -13,7 +13,7 @@ import { say } from '#lib/server/i18n/say.js';
 import {
 	applyGiftCommand,
 	textOf,
-	giverOf,
+	giversOf,
 	occasionOf,
 	boughtOf,
 	surpriseOf,
@@ -55,7 +55,7 @@ export const giftActions = {
 				...visibilityOf(form),
 				occasion: occasionOf(form),
 				when: whenOf(form),
-				giver: giverOf(form)
+				...giversOf(form)
 			},
 			'giftError'
 		);
@@ -127,7 +127,7 @@ export const giftActions = {
 			'gift.assign',
 			{
 				...fromFormData(GiftAssignSchema, form),
-				giver: giverOf(form),
+				...giversOf(form),
 				when: whenOf(form),
 				hiddenFromRecipient: surpriseOf(form)
 			},

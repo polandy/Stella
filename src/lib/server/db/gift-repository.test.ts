@@ -332,6 +332,73 @@ describe('createDrizzleGiftRepository', () => {
 		});
 	});
 
+	describe('several givers', () => {
+		beforeEach(() => {
+			db.insert(schema.contact)
+				.values([
+					{ id: 'c-a', householdId: H, createdBy: U1, displayName: 'Ada' },
+					{ id: 'c-b', householdId: H, createdBy: U1, displayName: 'Bo' }
+				])
+				.run();
+		});
+
+		const together = (names: [string, string][]) =>
+			names.map(([contactId, name]) => ({ contactId, name, leftName: null }));
+
+		it('reads the givers beside the first back in the order they were stored', async () => {
+			await repo.insert(
+				gift({
+					id: 'g-1',
+					giverContactId: 'c-a',
+					coGivers: together([
+						['c-b', 'Bo'],
+						['c-priv', 'P']
+					])
+				})
+			);
+			const read = await repo.findVisibleTo(viewerU1, 'c-shared', 'g-1');
+			expect(read).toMatchObject({
+				giverName: 'Ada',
+				coGivers: [
+					{ contactId: 'c-b', name: 'Bo' },
+					{ contactId: 'c-priv', name: 'P' }
+				]
+			});
+		});
+
+		it('gives a giver out of the viewer’s sight no name, though the gift stays whole', async () => {
+			await repo.insert(
+				gift({ id: 'g-1', giverContactId: 'c-a', coGivers: together([['c-priv', 'P']]) })
+			);
+			const read = await repo.findVisibleTo(viewerU2, 'c-shared', 'g-1');
+			expect(read?.coGivers).toEqual([{ contactId: 'c-priv', name: null, leftName: null }]);
+		});
+
+		it('replaces the givers beside the first on update, and drops them with the gift', async () => {
+			await repo.insert(
+				gift({ id: 'g-1', giverContactId: 'c-a', coGivers: together([['c-b', 'Bo']]) })
+			);
+			const stored = (await repo.findVisibleTo(viewerU1, 'c-shared', 'g-1'))!;
+			await repo.update({ ...stored, coGivers: [] });
+			expect((await repo.findVisibleTo(viewerU1, 'c-shared', 'g-1'))?.coGivers).toEqual([]);
+
+			await repo.update({ ...stored, coGivers: together([['c-b', 'Bo']]) });
+			await repo.remove('g-1');
+			expect(db.select().from(schema.giftCoGiver).all()).toEqual([]);
+		});
+
+		it('lists a gift on the *Schenkt* tab of each of its givers, first or beside', async () => {
+			await repo.insert(
+				gift({ id: 'g-1', giverContactId: 'c-a', coGivers: together([['c-b', 'Bo']]) })
+			);
+			await repo.insert(gift({ id: 'g-2', giverContactId: 'c-b' }));
+			expect((await repo.listGivenByVisibleTo(viewerU1, 'c-a')).map((g) => g.id)).toEqual(['g-1']);
+			const bos = await repo.listGivenByVisibleTo(viewerU1, 'c-b');
+			expect(bos.map((g) => g.id).sort()).toEqual(['g-1', 'g-2']);
+			expect(bos.find((g) => g.id === 'g-1')?.coGivers).toEqual(together([['c-b', 'Bo']]));
+		});
+	});
+
 	describe('listGivenByVisibleTo', () => {
 		beforeEach(() => {
 			db.insert(schema.contact)

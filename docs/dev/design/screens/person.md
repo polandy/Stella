@@ -398,13 +398,16 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   giving it* (German *Sandra schenkt*), *We are giving it*, *taken* (*vergeben*) on an open gift;
   *from Sandra*, *from us* on a given one. Beside *Mark as given…* an outlined *Assign…*
   (*Vergeben…*; *Change giver* once one is set) opens a sunken box like *Mark as given…*: *Who is
-  giving “Puzzle”?*, the giver chips — the person's links with what they are (*Sandra · Aunt*),
-  *Us*, the household — in the occasion chips' look, the person search with *+ New person* below
-  them, *Already with Sandra – this replaces it.* when the choice moves it, *For which occasion?*
+  giving “Puzzle”?*, a person search (`GiftGiversField`, `PersonSearchSelect` with `multiple`)
+  whose first list entries are *Us*, the person's links and the household, with *+ New person*
+  below; each person chosen stays a chip with a × and the search stays open, so several can give
+  it together, with one muted line *Given together…* once there are two. *Already with Sandra –
+  this replaces it.* when the choice moves it, *For which occasion?*
   (`WhenPicker`), for its author on a member's gift *Keep it from Hilde* with its tick at the
   right, then a ghost *Free again* (once given to someone), *Cancel* and the filled *Assign*,
-  disabled until a chip is chosen. *+ Idea* has the same chips as *Who is giving it?* under
-  *Note or link*, *+ Given* as *From*. Designed in the owner-approved gifts study (§9–15); its
+  disabled until someone is chosen. *+ Idea* has the same field as *Who is giving it?* under
+  *Note or link*, *+ Given* as *From*. A given gift's row reads *from Julia and Andy*; on
+  Julia's *Gives* tab a subtle line adds *together with Andy*. Designed in the owner-approved gifts study (§9–15); its
   sheet is built as this inline box.
 - *Bought…* (*Besorgt…*, bag icon) on an idea the household hands over itself, a one-tap *Done*
   (*Erledigt*) on anyone else's (docs/dev/02 §2.25.9, D17). *Bought…* opens the same sunken box:

@@ -4,14 +4,14 @@
 	import FormError from '#lib/components/ui/FormError.svelte';
 	import WhenPicker from '#lib/components/ui/WhenPicker.svelte';
 	import type { PartialDate } from '#lib/dates/partial-date.js';
-	import { HOUSEHOLD_GIVER } from '#lib/gifts/gifts.js';
+	import { giverIdsOf } from '#lib/gifts/gifts.js';
 	import { GIFT_WHEN_KINDS } from '#lib/gifts/idea-when.js';
 	import type { GiverView } from '#lib/gifts/giver.js';
 	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import { reveal } from '#lib/motion/motion.svelte.js';
 	import type { When } from '#lib/when/when.js';
 	import type { SubmitFunction } from '$app/forms';
-	import GiftGiverField from './GiftGiverField.svelte';
+	import GiftGiversField from './GiftGiversField.svelte';
 	import type { GiverChoices } from './types';
 
 	/*
@@ -43,22 +43,17 @@
 		$props();
 
 	const t = useI18n().t;
+
 	// svelte-ignore state_referenced_locally
-	let giver = $state(
-		gift.giver.kind === 'person'
-			? gift.giver.contactId
-			: gift.giver.kind === 'household'
-				? HOUSEHOLD_GIVER
-				: ''
-	);
+	let giver = $state(giverIdsOf(gift.giver));
 	// svelte-ignore state_referenced_locally
 	let kept = $state(gift.giver.kind === 'none' ? true : gift.hiddenFromRecipient);
 	const asksSurprise = $derived(
-		gift.mine && gift.visibility === 'shared' && recipient !== null && giver !== ''
+		gift.mine && gift.visibility === 'shared' && recipient !== null && giver.length > 0
 	);
 	/** Whom it was given to before, when the choice moves it on. */
 	const replaces = $derived(
-		gift.giver.kind === 'person' && giver !== gift.giver.contactId ? gift.giver.name : null
+		gift.giver.kind === 'person' && !giver.includes(gift.giver.contactId) ? gift.giver.name : null
 	);
 </script>
 
@@ -72,8 +67,8 @@
 >
 	<h3 class="text-sm font-semibold text-fg">{t('gifts.assign.title', { title: gift.title })}</h3>
 	<input type="hidden" name="giftId" value={gift.id} />
-	<GiftGiverField
-		bind:value={giver}
+	<GiftGiversField
+		bind:values={giver}
 		label={t('gifts.giver.who')}
 		ties={givers.ties}
 		household={givers.household}
@@ -113,6 +108,8 @@
 		<Button variant="ghost" size="sm" type="button" onclick={onCancel}>
 			{t('common.cancel')}
 		</Button>
-		<Button variant="primary" size="sm" disabled={giver === ''}>{t('gifts.assign.save')}</Button>
+		<Button variant="primary" size="sm" disabled={giver.length === 0}
+			>{t('gifts.assign.save')}</Button
+		>
 	</div>
 </form>

@@ -1,7 +1,7 @@
 import { dayLabel, type DateLanguage } from '../dates/labels';
 import type { Translate } from '../i18n/translate';
 import { isGiftOccasionPreset, type GiftState } from './gifts';
-import type { GiverView } from './giver';
+import type { GiverView, SingleGiverView } from './giver';
 import type { NextOccasion } from './idea-list';
 import { whenChip } from '../when/labels';
 import type { When } from '../when/when';
@@ -67,10 +67,43 @@ export function nextOccasionLabel(lang: DateLanguage, next: NextOccasion): strin
 export function giverLabel(t: Translate, giver: GiverView, state: GiftState): string | null {
 	if (giver.kind === 'none' || state === 'received') return null;
 	const tense = state === 'given' ? 'gave' : 'gives';
+	if (giver.kind === 'several') {
+		return t(`gifts.giver.${tense}.several`, {
+			names: joinNames(
+				t,
+				giver.givers.map((one) => namePart(t, one, tense))
+			)
+		});
+	}
 	if (giver.kind === 'person' || giver.kind === 'left') {
 		return t(`gifts.giver.${tense}.person`, { name: giver.name });
 	}
 	return t(`gifts.giver.${tense}.${giver.kind}`);
+}
+
+/** *Together with Andy*, on the row of one who gives it with others; null when they give it alone. */
+export function togetherLabel(t: Translate, others: readonly SingleGiverView[]): string | null {
+	if (others.length === 0) return null;
+	return t('gifts.gives.with', {
+		names: joinNames(
+			t,
+			others.map((one) => namePart(t, one, 'gave'))
+		)
+	});
+}
+
+/** One of several givers as it reads inside *Julia und Andy*: the household as *wir* or *uns*. */
+function namePart(t: Translate, giver: SingleGiverView, tense: 'gave' | 'gives'): string {
+	if (giver.kind === 'person' || giver.kind === 'left') return giver.name;
+	return t(`gifts.giver.part.${tense}.${giver.kind}`);
+}
+
+/** *A*, *A und B*, *A, B und C*. */
+function joinNames(t: Translate, names: string[]): string {
+	const last = names[names.length - 1] ?? '';
+	return names.length < 2
+		? last
+		: t('gifts.giver.and', { head: names.slice(0, -1).join(', '), last });
 }
 
 const DAY_MS = 86_400_000;

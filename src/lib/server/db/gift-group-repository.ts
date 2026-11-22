@@ -6,6 +6,7 @@ import type { GiftGroup, GiftGroupRepository, VisibleGiftGroup } from '../domain
 import { birthOf } from '../../when/resolve';
 import { whenColumns, whenOfColumns } from '../../when/when';
 import { columnsFor, giftOf, giftRow } from './gift-repository';
+import { withCoGivers } from './gift-co-givers';
 import type * as schema from './schema';
 import { contact, gift, giftGroup } from './schema';
 
@@ -54,12 +55,16 @@ export function createDrizzleGiftGroupRepository(
 			.all()
 			.map(groupOf);
 		return groups.flatMap((group) => {
-			const gifts = rows
-				.filter((row) => row.groupId === group.id)
-				.map(({ birthDate, birthDatePrecision, ...row }) => ({
-					...giftOf(row),
-					birth: birthOf({ birthDate, birthDatePrecision })
-				}));
+			const gifts = withCoGivers(
+				db,
+				viewer,
+				rows
+					.filter((row) => row.groupId === group.id)
+					.map(({ birthDate, birthDatePrecision, ...row }) => ({
+						...giftOf(row),
+						birth: birthOf({ birthDate, birthDatePrecision })
+					}))
+			);
 			return gifts.length > 0 ? [{ group, gifts }] : [];
 		});
 	}
