@@ -11,13 +11,11 @@ Move once Kit supports it, and drop the ignore.
 ## Gifts: givers, occasions and stock (owner study 2026-11, ADR-140)
 
 PR 1, the giver on a gift, PR 2, the card by occasion with *Erledigt* / *Besorgt…* and
-`stored_at`, PR 3, *Nachtragen…*, and PR 4, `/gifts` by occasion (docs/dev/02 §2.25.6, §2.25.9, §2.25.13, §2.25.14), are done. The rest, one PR each, in order:
+`stored_at`, PR 3, *Nachtragen…*, PR 4, `/gifts` by occasion, and PR 5, the giver's *Schenkt* tab (docs/dev/02 §2.25.6, §2.25.9, §2.25.13–§2.25.15), are done. The rest, one PR each, in order:
 
 - **The rest of the card**: *Für jemand anderen…* on a bought gift (D22); *Verschenkt* with a
   giver takes the occasion's day as its default, the story line says *Bekommen von Sandra*, and
   *Already given* names the giver.
-- **The giver's *Schenkt* tab** on every person, with *+ Tomy schenkt…* and a brief line. Its access
-  test: a gift kept from its recipient stays hidden in every read by giver.
 - **Stock** (`gift_stock`, `stock.assign`), its own ADR.
 - **Share ideas…**: free ideas exclude *Wir* and procured ones.
 - **Home and calendar wording**: *Ready:* only ours, done gifts leave the feed.

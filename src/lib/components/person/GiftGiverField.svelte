@@ -20,11 +20,14 @@
 		/** The person's links, then the household, as `giverSuggestions` ordered them. */
 		ties: readonly GiverSuggestion[];
 		household: readonly GiverSuggestion[];
-		/** Everyone the search may find; the person the gift is for is left out. */
+		/** Everyone the search may find. */
 		people: SelectablePerson[];
+		/** The one person the search leaves out: whoever the gift is for, or whoever gives it. */
 		recipientId: string;
 		/** A choice is needed: a pressed chip stays pressed. */
 		required?: boolean;
+		/** Offer *Us*; off where the field picks a recipient, not a giver. */
+		withHousehold?: boolean;
 		onchange?: (value: string) => void;
 	}
 	let {
@@ -36,6 +39,7 @@
 		people,
 		recipientId,
 		required = false,
+		withHousehold = true,
 		onchange
 	}: Props = $props();
 
@@ -50,7 +54,7 @@
 	const chips = $derived([
 		...ties,
 		...found.filter((person) => !suggested.has(person.id)),
-		{ id: HOUSEHOLD_GIVER, name: t('gifts.giver.we'), hint: null },
+		...(withHousehold ? [{ id: HOUSEHOLD_GIVER, name: t('gifts.giver.we'), hint: null }] : []),
 		...household
 	]);
 	// A giver already set but suggested nowhere — on an edit — still shows as theirs.

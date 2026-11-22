@@ -332,6 +332,69 @@ describe('createDrizzleGiftRepository', () => {
 		});
 	});
 
+	describe('listGivenByVisibleTo', () => {
+		beforeEach(() => {
+			db.insert(schema.contact)
+				.values([
+					{ id: 'c-giver', householdId: H, createdBy: U1, displayName: 'Giver' },
+					{ id: 'c-u2', householdId: H, createdBy: U1, displayName: 'Two' }
+				])
+				.run();
+			db.update(schema.user).set({ selfContactId: 'c-u2' }).where(eq(schema.user.id, U2)).run();
+		});
+
+		it('reads what the person gives and to whom, open ones and earlier ones, newest noted first', async () => {
+			await repo.insert(gift({ id: 'old', giverContactId: 'c-giver', createdAt: 1 }));
+			await repo.insert(
+				gift({ id: 'new', giverContactId: 'c-giver', contactId: 'c-u2', createdAt: 2 })
+			);
+			await repo.insert(
+				gift({
+					id: 'was',
+					giverContactId: 'c-giver',
+					state: 'given',
+					givenOn: '2025-12-24',
+					createdAt: 3
+				})
+			);
+			await repo.insert(gift({ id: 'else', giverContactId: 'c-u2' }));
+			await repo.insert(gift({ id: 'none' }));
+
+			const gives = await repo.listGivenByVisibleTo(viewerU1, 'c-giver');
+			expect(gives.map((g) => [g.id, g.contactName])).toEqual([
+				['was', 'S'],
+				['new', 'Two'],
+				['old', 'S']
+			]);
+		});
+
+		it('keeps a gift hidden from its recipient hidden in the giver’s tab too', async () => {
+			await repo.insert(
+				gift({
+					id: 'surprise',
+					giverContactId: 'c-giver',
+					contactId: 'c-u2',
+					hiddenFromRecipient: true
+				})
+			);
+			expect((await repo.listGivenByVisibleTo(viewerU2, 'c-giver')).map((g) => g.id)).toEqual([]);
+			expect((await repo.listGivenByVisibleTo(viewerU1, 'c-giver')).map((g) => g.id)).toEqual([
+				'surprise'
+			]);
+		});
+
+		it('reads only what the viewer may see: no private gift of another, none on a hidden person', async () => {
+			await repo.insert(gift({ id: 'shared', giverContactId: 'c-giver' }));
+			await repo.insert(
+				gift({ id: 'theirs', giverContactId: 'c-giver', visibility: 'private', createdBy: U1 })
+			);
+			await repo.insert(gift({ id: 'on-hidden', giverContactId: 'c-giver', contactId: 'c-priv' }));
+			expect((await repo.listGivenByVisibleTo(viewerU2, 'c-giver')).map((g) => g.id)).toEqual([
+				'shared'
+			]);
+		});
+	});
+
 	describe('in the calendar feed', () => {
 		// Christmas 2026 is 90 days off on 25 September: every idea below is near.
 		const near = { when: { kind: 'on_date', on: '2026-12-24' } } as const;

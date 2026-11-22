@@ -6,6 +6,7 @@ import { fakeGifts } from './gifts.fixture';
 import {
 	addGift,
 	InvalidGiftError,
+	listGiftsGivenBy,
 	markGiftGiven,
 	type AddGiftInput,
 	type GiftDeps
@@ -212,5 +213,34 @@ describe('membersOwnPeopleOf', () => {
 		own.set('andy-self', 'andy');
 		own.set('julia-self', 'julia');
 		expect(await membersOwnPeopleOf(deps, JULIA)).toEqual(['andy-self', 'julia-self']);
+	});
+});
+
+const ANDY_VIEWER = { id: 'andy', householdId: 'h1' };
+const JULIA_VIEWER = { id: 'julia', householdId: 'h1' };
+
+describe('listGiftsGivenBy', () => {
+	it('lists what a person gives, a child too, to anyone', async () => {
+		await note({ contactId: 'sandra', title: 'Candle', giver: { contactId: TOMY } });
+		await note({ contactId: 'marco', title: 'Card', giver: { contactId: TOMY } });
+		await note({ contactId: TOMY, title: 'Not his', giver: { contactId: 'sandra' } });
+
+		const gives = await listGiftsGivenBy(deps, ANDY_VIEWER, TOMY);
+		expect(gives.map((g) => g.title).sort()).toEqual(['Candle', 'Card']);
+	});
+
+	it('keeps a gift hidden from its recipient hidden from them in the giver’s list', async () => {
+		own.set('sandra', 'julia');
+		await note({
+			contactId: 'sandra',
+			title: 'Candle',
+			giver: { contactId: TOMY },
+			hiddenFromRecipient: true
+		});
+
+		expect(await listGiftsGivenBy(deps, JULIA_VIEWER, TOMY)).toEqual([]);
+		expect((await listGiftsGivenBy(deps, ANDY_VIEWER, TOMY)).map((g) => g.title)).toEqual([
+			'Candle'
+		]);
 	});
 });

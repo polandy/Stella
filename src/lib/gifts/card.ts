@@ -22,31 +22,44 @@ export function splitIdeas<T extends IdeaTiming>(
 	return { open, waiting };
 }
 
-/** The card's tabs: open ideas, what was given, what was received. */
-export type GiftTab = 'ideas' | 'given' | 'received';
+/** The card's tabs: open ideas, what was given, what was received, what the person gives others. */
+export type GiftTab = 'ideas' | 'given' | 'received' | 'gives';
 
 /** One tab and the count its label carries, if any. */
 export interface GiftTabEntry {
 	tab: GiftTab;
-	/** Only *Ideas* counts — how many are still open; a zero says nothing and is left off. */
+	/** *Ideas* and *Gives* count what is still open; a zero says nothing and is left off. */
 	count: number | null;
 }
 
 /**
  * The tabs to show. *Received* stays away until something was received: most people never
  * give the household a present anyone notes down, and an empty third tab only takes room.
+ * *Gives* is on every person, children too, for it carries *+ Tomy gives…* (§2.25.12).
  */
 export function giftTabs(counts: {
 	ideas: number;
 	given: number;
 	received: number;
+	gives: number;
 }): GiftTabEntry[] {
 	const tabs: GiftTabEntry[] = [
 		{ tab: 'ideas', count: counts.ideas > 0 ? counts.ideas : null },
 		{ tab: 'given', count: null }
 	];
 	if (counts.received > 0) tabs.push({ tab: 'received', count: null });
+	tabs.push({ tab: 'gives', count: counts.gives > 0 ? counts.gives : null });
 	return tabs;
+}
+
+/** What a person gives others: still to give first, then *Earlier* — the order the server sent. */
+export function splitGives<T extends { state: string }>(
+	gives: readonly T[]
+): { open: T[]; earlier: T[] } {
+	const open: T[] = [];
+	const earlier: T[] = [];
+	for (const gift of gives) (gift.state === 'given' ? earlier : open).push(gift);
+	return { open, earlier };
 }
 
 /** The gifts of one year, under its divider. */

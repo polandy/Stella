@@ -15,6 +15,15 @@ export const gifts = {
 	'gifts.tab.ideas': 'Ideas',
 	'gifts.tab.given': 'Given',
 	'gifts.tab.received': 'Received',
+	'gifts.tab.gives': 'Gives',
+	'gifts.gives.hint': (p: { name: string }) =>
+		`What ${p.name} gives whom, and what was given before.`,
+	'gifts.gives.add': (p: { name: string }) => `${p.name} gives…`,
+	'gifts.gives.none': (p: { name: string }) => `${p.name} is not giving anything right now.`,
+	'gifts.gives.for': (p: { name: string }) => `for ${p.name}`,
+	'gifts.gives.earlier': 'Earlier',
+	'gifts.gives.kept': (p: { name: string }) => `Kept from ${p.name}`,
+	'gifts.gives.forWhom': 'For whom?',
 	'gifts.ideas.empty': (p: { name: string }) =>
 		`Got an idea for ${p.name}? Note it here, and it is here when the day comes.`,
 	'gifts.given.empty': 'Nothing given yet.',

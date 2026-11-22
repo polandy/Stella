@@ -3,14 +3,11 @@
 	import { deviceDay, writersDay } from '#lib/dates/today.js';
 	import { afterNavigate } from '$app/navigation';
 	import Button from '#lib/components/ui/Button.svelte';
-	import KeptItem from '#lib/components/pwa/KeptItem.svelte';
 	import Section from '#lib/components/ui/Section.svelte';
 	import Tabs from '#lib/components/ui/Tabs.svelte';
 	import { cardShape } from '#lib/people/empty-cards.js';
 	import { datesEditorPath } from '#lib/people/identity-card.js';
 	import { sectionAnchor } from '#lib/people/sections.js';
-	import { giverSuggestions } from '#lib/gifts/giver-suggestions.js';
-	import { relationshipRowLabel } from '#lib/relationships/labels.js';
 	import { asksForGiftIdea, byYear, giftTabs, splitIdeas, type GiftTab } from '#lib/gifts/card.js';
 	import type { AddableGiftState } from '#lib/gifts/gifts.js';
 	import { useI18n } from '#lib/i18n/context.svelte.js';
@@ -22,7 +19,11 @@
 	import { savedEnhance } from '#lib/undo/saved.js';
 	import { birthOf } from '#lib/when/resolve.js';
 	import { giftAddCommand } from './gift-add-command';
+	import { giverChoicesOf } from './giver-choices';
 	import GiftForm from './GiftForm.svelte';
+	import GiftGives from './GiftGives.svelte';
+	import GiftGivesForm from './GiftGivesForm.svelte';
+	import GiftsKept from './GiftsKept.svelte';
 	import GiftsMenu from './GiftsMenu.svelte';
 	import GiftGroupPanel from '#lib/components/gifts/GiftGroupPanel.svelte';
 	import GiftRecordSheet from '#lib/components/gifts/GiftRecordSheet.svelte';
@@ -30,13 +31,12 @@
 	import { alsoFor, opensGiftGroup } from '#lib/gifts/group-panel.js';
 	import GiftIdeas from './GiftIdeas.svelte';
 	import GiftRow from './GiftRow.svelte';
-	import type { GiverChoices, GroupLink, PersonForm, PersonPageData } from './types';
+	import type { GroupLink, PersonForm, PersonPageData } from './types';
 
 	/*
-	 * The Gifts card (docs/dev/02 §2.25): open ideas, what was given and what was received, one tab
-	 * each — *Received* only once there is one. *+ Idea* is the card's own button, *+ Given* sits
-	 * beside it, *+ Received* waits in the ⋯ menu. With nothing noted the card is one line
-	 * (docs/dev/05 §5.5), and *+ Given* joins *+ Received* in the menu so the line stays one line.
+	 * The Gifts card (docs/dev/02 §2.25): ideas, given, received and what the person gives, one tab
+	 * each. *+ Idea* is the card's own button, *+ Given* sits beside it, the rest waits in the ⋯ menu;
+	 * with nothing noted the card is one line (docs/dev/05 §5.5) and *+ Given* joins the menu.
 	 */
 	let { data, form }: { data: PersonPageData; form: PersonForm } = $props();
 
@@ -75,25 +75,16 @@
 	const given = $derived(shown.filter((g) => g.state === 'given'));
 	const received = $derived(shown.filter((g) => g.state === 'received'));
 	const tabs = $derived(
-		giftTabs({ ideas: ideas.open.length, given: given.length, received: received.length })
+		giftTabs({
+			ideas: ideas.open.length,
+			given: given.length,
+			received: received.length,
+			gives: data.gives.length
+		})
 	);
 
 	// Whom *Wer schenkt?* offers: the person's living links, then the household (§2.25.12).
-	const givers = $derived.by((): GiverChoices => {
-		const may = new Set(data.giverTieIds);
-		const ties = data.relationships
-			.filter((rel) => may.has(rel.otherContactId))
-			.map((rel) => ({
-				id: rel.otherContactId,
-				name: rel.otherDisplayName,
-				hint: relationshipRowLabel(t, rel)
-			}));
-		return {
-			...giverSuggestions(c.id, ties, data.householdGivers),
-			people: data.people,
-			recipientId: c.id
-		};
-	});
+	const givers = $derived(giverChoicesOf(data, t));
 
 	// Whose gifts the household hands over itself, *besorgt* rather than *erledigt* (D17).
 	const householdGiverIds = $derived(new Set(data.householdGivers.map((giver) => giver.id)));
@@ -109,16 +100,16 @@
 				isKept(item, 'gift.add') && item.command.payload.contactId === c.id
 		)
 	);
-	const holdsSomething = $derived(shown.length > 0 || kept.length > 0);
+	const holdsSomething = $derived(shown.length > 0 || kept.length > 0 || data.gives.length > 0);
 	const line = $derived(cardShape('gifts', holdsSomething) === 'line');
 
 	// Which form the card's one form slot holds; *+ Idea* is its own button, so it is the rest.
 	let open = $state(false);
-	let adding = $state<AddableGiftState>('idea');
+	let adding = $state<AddableGiftState | 'gives'>('idea');
 	$effect(() => {
 		if (!open) adding = 'idea';
 	});
-	function startAdding(kind: AddableGiftState, close?: () => void) {
+	function startAdding(kind: AddableGiftState | 'gives', close?: () => void) {
 		close?.();
 		adding = kind;
 		open = true;
@@ -213,22 +204,13 @@
 			name={c.displayName}
 			onAdd={startAdding}
 			onRecord={(close) => startRecording(null, close)}
+			onGives={(close) => startAdding('gives', close)}
 		/>
 	{/snippet}
 
-	{#if kept.length > 0}
-		<ul class="mb-3 flex flex-col gap-2" data-testid="kept-gifts">
-			{#each kept as item (item.command.id)}
-				<li>
-					<KeptItem {item}>
-						<p class="mt-1 text-fg">{item.command.payload.title}</p>
-					</KeptItem>
-				</li>
-			{/each}
-		</ul>
-	{/if}
+	<GiftsKept {kept} />
 
-	{#if shown.length > 0}
+	{#if shown.length > 0 || data.gives.length > 0}
 		<Tabs
 			tabs={tabs.map((entry) => entry.tab)}
 			chosen={current}
@@ -266,6 +248,8 @@
 					places={data.giftPlaces}
 					onRecord={(on) => startRecording(on)}
 				/>
+			{:else if current === 'gives'}
+				<GiftGives gives={data.gives} name={c.displayName} {today} />
 			{:else}
 				{@const list = current === 'given' ? given : received}
 				{#if list.length === 0}
@@ -316,19 +300,30 @@
 	{#snippet editor()}
 		<!-- A fresh form per kind: what an idea folds away, a given gift asks for. -->
 		{#key adding}
-			<GiftForm
-				kind={adding}
-				gifts={shown}
-				heading={t(HEADING[adding], { name: c.displayName })}
-				action="?/addGift"
-				submit={keepGift}
-				{today}
-				{birth}
-				{estimateHref}
-				canChooseVisibility
-				recipient={data.recipientIsMember ? c.displayName : null}
-				{givers}
-			/>
+			{#if adding === 'gives'}
+				<GiftGivesForm
+					giver={{ id: c.id, name: c.displayName }}
+					{givers}
+					keepFrom={data.keepFrom}
+					{today}
+					onSaved={() => ((tab = 'gives'), closeAdding())}
+					onCancel={closeAdding}
+				/>
+			{:else}
+				<GiftForm
+					kind={adding}
+					gifts={shown}
+					heading={t(HEADING[adding], { name: c.displayName })}
+					action="?/addGift"
+					submit={keepGift}
+					{today}
+					{birth}
+					{estimateHref}
+					canChooseVisibility
+					recipient={data.recipientIsMember ? c.displayName : null}
+					{givers}
+				/>
+			{/if}
 		{/key}
 	{/snippet}
 </Section>

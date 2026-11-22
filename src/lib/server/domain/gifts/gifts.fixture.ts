@@ -63,6 +63,12 @@ export function fakeGifts(
 				.filter((g) => (g.state === 'idea' || g.state === 'bought') && visible(viewer, g))
 				.map((g) => ({ ...g, contactName: g.contactId, avatarPhotoId: null, birth: birthOf() }));
 		},
+		async listGivenByVisibleTo(viewer, giverId) {
+			return [...rows.values()]
+				.filter((g) => g.giverContactId === giverId && visible(viewer, g))
+				.sort((a, b) => b.createdAt - a.createdAt)
+				.map((g) => ({ ...g, contactName: g.contactId }));
+		},
 		async listBoughtVisibleTo(viewer, contactIds) {
 			return [...rows.values()]
 				.filter(

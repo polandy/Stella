@@ -672,6 +672,10 @@ and a good idea is still there on the birthday it was meant for.
   second one is on purpose.
 - **+ Given** records something given earlier, for catching up. **+ Received**, in the card's
   **⋯** menu, records a present *from* them; the **Received** tab appears once there is one.
+- **Gives.** Every person's Gifts card, a child's too, has a **Gives** tab: what they give
+  whom, open ideas first and **Earlier** below. **Tomy gives…** in the **⋯** menu notes a new
+  one: say what, for whom, and optionally when. A present for someone in the household is a
+  surprise for them: it stays out of their sight here too, and the others see *Kept from Mama*.
 - Each gift says who noted it. The pencil changes it, the cross removes it (with *Undo* for a
   few seconds). Anyone who can see a gift can change it or mark it given — only the person who
   noted it can make it private.

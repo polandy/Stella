@@ -246,6 +246,17 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 			);
 		},
 
+		async listGivenByVisibleTo(viewer, giverId) {
+			return db
+				.select({ ...columnsFor(viewer), contactName: contact.displayName })
+				.from(gift)
+				.innerJoin(contact, eq(gift.contactId, contact.id))
+				.where(and(eq(gift.giverContactId, giverId), giftVisibleTo(viewer, gift)))
+				.orderBy(desc(gift.createdAt))
+				.all()
+				.map(giftOf);
+		},
+
 		async listBoughtVisibleTo(viewer, contactIds) {
 			if (contactIds.length === 0) return [];
 			return db

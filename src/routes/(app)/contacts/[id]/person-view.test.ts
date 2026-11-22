@@ -12,6 +12,7 @@ import {
 	fieldView,
 	galleryPhotoView,
 	giftView,
+	givenGiftView,
 	todoView,
 	circleNamesIn,
 	mentionedInView,
@@ -167,6 +168,44 @@ describe('giftView', () => {
 
 	it('marks the viewer’s own gift, which only they may make private', () => {
 		expect(giftView(gift({ createdBy: VIEWER }), context()).mine).toBe(true);
+	});
+});
+
+describe('givenGiftView', () => {
+	it('says what is given, to whom and for when, without the giver’s own fields', () => {
+		const view = givenGiftView({
+			id: 'g-1',
+			...NO_GIVER,
+			giverContactId: 'c-tomy',
+			storedAt: 'attic',
+			contactId: 'c-sandra',
+			contactName: 'Sandra',
+			createdBy: 'user-2',
+			visibility: 'shared',
+			state: 'bought',
+			title: 'Candle',
+			note: 'Beeswax',
+			url: null,
+			givenOn: null,
+			occasion: null,
+			when: { kind: 'later' },
+			whenCheckedOn: null,
+			groupId: null,
+			hiddenFromRecipient: true,
+			createdAt: 1,
+			updatedAt: 2
+		});
+		expect(view).toEqual({
+			id: 'g-1',
+			contactId: 'c-sandra',
+			contactName: 'Sandra',
+			state: 'bought',
+			title: 'Candle',
+			when: { kind: 'later' },
+			givenOn: null,
+			occasion: null,
+			hiddenFromRecipient: true
+		});
 	});
 });
 

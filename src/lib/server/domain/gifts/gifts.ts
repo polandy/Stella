@@ -102,6 +102,9 @@ export type DatedGift = Gift & { state: 'given' | 'received'; givenOn: string };
 /** An open idea with the person it is for, as the household's list shows it (docs/dev/02 §2.25.6). */
 export type OpenIdea = Gift & { contactName: string; avatarPhotoId: string | null };
 
+/** A gift with whom it is for, as the giver's *Gives* tab lists it (docs/dev/02 §2.25.15). */
+export type GivenGift = Gift & { contactName: string };
+
 /** An open idea read with its person's birth date, so whether it still waits can be told. */
 export type IdeaWithBirth<T extends Pick<Gift, 'when'>> = T & { birth: PartialDate | null };
 
@@ -138,6 +141,11 @@ export interface GiftRepository {
 	 * browses — an archived person's ideas stay on their page only (docs/dev/02 §2.25.6).
 	 */
 	listOpenIdeasVisibleTo(viewer: Viewer): Promise<IdeaWithBirth<OpenIdea>[]>;
+	/**
+	 * What `giverId` gives, to anyone, newest noted first: through the gift's own visibility, so
+	 * a gift kept from its recipient never shows by its giver either (§2.25.15).
+	 */
+	listGivenByVisibleTo(viewer: Viewer, giverId: string): Promise<GivenGift[]>;
 	/** As `listOpenIdeasVisibleTo`, with the bought ones too: what *Nachtragen…* may tick (§2.25.14). */
 	listPlannedVisibleTo(viewer: Viewer): Promise<IdeaWithBirth<OpenIdea>[]>;
 	/**
@@ -444,6 +452,15 @@ export async function listGiftsForContact(
 	contactId: string
 ): Promise<Gift[]> {
 	return deps.gifts.listForContactVisibleTo(viewer, contactId);
+}
+
+/** The gifts a person gives, as the viewer may see them (§2.25.15). */
+export async function listGiftsGivenBy(
+	deps: Pick<GiftDeps, 'gifts'>,
+	viewer: Viewer,
+	giverId: string
+): Promise<GivenGift[]> {
+	return deps.gifts.listGivenByVisibleTo(viewer, giverId);
 }
 
 /** Whether an open idea still waits for its time, so only its person's card shows it (§2.25.8). */

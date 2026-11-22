@@ -12,7 +12,7 @@ import {
 	type ImportantDate
 } from '#lib/server/domain/dates/important-dates.js';
 import type { GraphModel } from '#lib/graph/model/types.js';
-import type { Gift } from '#lib/server/domain/gifts/gifts.js';
+import type { Gift, GivenGift } from '#lib/server/domain/gifts/gifts.js';
 import { giverViewOf } from '#lib/gifts/giver.js';
 import type { Plan } from '#lib/server/domain/plans/plans.js';
 import type { Todo } from '#lib/server/domain/todos/todos.js';
@@ -122,6 +122,23 @@ export function giftView(gift: Gift, ctx: PersonViewContext) {
 		storedAt: gift.state === 'bought' ? gift.storedAt : null,
 		/** When it was noted, shown on an idea; given and received gifts show their day. */
 		createdAt: gift.createdAt
+	};
+}
+
+/** A gift the person gives, as the card's *Gives* tab lists it: for whom, and when (§2.25.12). */
+export function givenGiftView(gift: GivenGift) {
+	return {
+		id: gift.id,
+		contactId: gift.contactId,
+		contactName: gift.contactName,
+		state: gift.state,
+		title: gift.title,
+		/** When an open one is meant for (§2.25.8); null on a given one. */
+		when: gift.when,
+		givenOn: gift.givenOn,
+		occasion: gift.occasion,
+		/** Kept from the member it is for (§2.25.10), so only the others see this row. */
+		hiddenFromRecipient: gift.hiddenFromRecipient
 	};
 }
 

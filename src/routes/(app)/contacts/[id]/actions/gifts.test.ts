@@ -257,3 +257,42 @@ describe('the visibility choice on the card (§2.25.10)', () => {
 		]);
 	});
 });
+
+describe('addGiftBy', () => {
+	const give = (services: FakeServices, fields: Record<string, string>) =>
+		answerOf(
+			actions.addGiftBy(routeEvent({ services, params: { id: 'tomy' }, form: formOf(fields) }))
+		);
+
+	it('notes an idea on the person it is for, with the page’s person as its giver', async () => {
+		const added: unknown[] = [];
+		const services = commanding({
+			'gift.add': async (_actor, payload) => {
+				added.push(payload);
+				return { giftId: 'g1' };
+			}
+		});
+		expect(await give(services, { title: 'Candle', for: 'sandra', visibility: 'shared' })).toEqual({
+			kind: 'redirect',
+			status: 303,
+			location: '/contacts/tomy#section-gifts'
+		});
+		expect(added).toMatchObject([
+			{
+				contactId: 'sandra',
+				state: 'idea',
+				title: 'Candle',
+				giver: { contactId: 'tomy' },
+				visibility: 'shared'
+			}
+		]);
+	});
+
+	it('asks for the recipient when none was chosen', async () => {
+		expect(await give(commanding({}), { title: 'Candle' })).toEqual({
+			kind: 'fail',
+			status: 400,
+			data: { giftError: t('errors.gift.needRecipient') }
+		});
+	});
+});
