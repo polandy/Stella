@@ -25,6 +25,8 @@
 		givers: GiverChoices;
 		householdGivers: ReadonlySet<string>;
 		places: string[];
+		/** Opens *Record given…* on a passed occasion's day (docs/dev/02 §2.25.14). */
+		onRecord: (on: string) => void;
 	}
 	let {
 		open,
@@ -41,7 +43,8 @@
 		groupOf,
 		givers,
 		householdGivers,
-		places
+		places,
+		onRecord
 	}: Props = $props();
 
 	const i18n = useI18n();
@@ -89,6 +92,16 @@
 					</span>
 				{/if}
 			</h3>
+			{#if group.on !== null && group.on < today}
+				<p class="mt-1.5 text-xs text-fg-muted" data-testid="gift-occasion-over">
+					{t('gifts.record.over', { occasion: heading.title })}
+					<button
+						type="button"
+						class="font-medium text-primary underline-offset-2 hover:underline"
+						onclick={() => group.on && onRecord(group.on)}>{t('gifts.record.overLink')}</button
+					>
+				</p>
+			{/if}
 			{#if openOnes.length > 0}{@render rows(openOnes, 'gift-ideas')}{/if}
 			{#if boughtOnes.length > 0}
 				<div class="opacity-70">{@render rows(boughtOnes, 'gift-ready')}</div>

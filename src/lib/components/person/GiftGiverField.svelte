@@ -14,6 +14,8 @@
 	interface Props {
 		/** The posted choice: a person's id, `HOUSEHOLD_GIVER`, or empty for nobody. */
 		value?: string;
+		/** The field the choice posts as; one per row where a form holds several. */
+		name?: string;
 		label: string;
 		/** The person's links, then the household, as `giverSuggestions` ordered them. */
 		ties: readonly GiverSuggestion[];
@@ -27,6 +29,7 @@
 	}
 	let {
 		value = $bindable(''),
+		name = 'giver',
 		label,
 		ties,
 		household,
@@ -81,7 +84,7 @@
 			>
 				<input
 					type="radio"
-					name="giver"
+					{name}
 					value={chip.id}
 					checked={value === chip.id}
 					onclick={() => toggle(chip.id)}
@@ -91,13 +94,13 @@
 				{chip.name}{#if chip.hint}<span class="text-fg-subtle"> · {chip.hint}</span>{/if}
 			</label>
 		{/each}
-		{#if !known}<input type="hidden" name="giver" {value} />{/if}
+		{#if !known}<input type="hidden" {name} {value} />{/if}
 	</div>
 	<label for={searchId} class="sr-only">{t('gifts.giver.search')}</label>
 	<PersonSearchSelect
 		id={searchId}
 		people={searchable}
-		name="giverSearch"
+		name="{name}Search"
 		bind:selectedIds={picked}
 		onPick={pick}
 		allowCreate

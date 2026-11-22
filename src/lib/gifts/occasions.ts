@@ -22,7 +22,10 @@ export interface OccasionGroup<T> {
 }
 
 /** The day a gift is for, if its when names one: a set age, a Christmas, a date. */
-function dayOf(gift: OccasionGift, birth: PartialDate | null): string | null {
+export function occasionDayOf(
+	gift: Pick<OccasionGift, 'when'>,
+	birth: PartialDate | null
+): string | null {
 	const when = gift.when;
 	if (when === null) return null;
 	if (when.kind !== 'at_age' && when.kind !== 'christmas_at_age' && when.kind !== 'on_date') {
@@ -36,14 +39,15 @@ export function byOccasion<T extends OccasionGift>(
 	gifts: readonly T[],
 	birth: PartialDate | null
 ): OccasionGroup<T>[] | null {
-	if (!gifts.some((gift) => isAssigned(gift.giver) || dayOf(gift, birth) !== null)) return null;
+	if (!gifts.some((gift) => isAssigned(gift.giver) || occasionDayOf(gift, birth) !== null))
+		return null;
 	const groups = new Map<string | null, OccasionGroup<T>>();
 	const ordered = [
 		...gifts.filter((gift) => gift.state !== 'bought'),
 		...gifts.filter((gift) => gift.state === 'bought')
 	];
 	for (const gift of ordered) {
-		const on = dayOf(gift, birth);
+		const on = occasionDayOf(gift, birth);
 		const group = groups.get(on);
 		if (group) group.gifts.push(gift);
 		else groups.set(on, { on, when: on === null ? null : gift.when, gifts: [gift] });

@@ -146,6 +146,11 @@ export const errors: ErrorsMessages = {
 		'Für diesen Zeitpunkt passt die Idee für niemanden. Wähle einen anderen.',
 	'errors.gift.couldNotSave': 'Das Geschenk konnte nicht gespeichert werden.',
 	'errors.gift.badWhen': 'Bitte wähle, wann die Idee gelten soll.',
+	'errors.gift.record.nothing': 'Hake ein Geschenk an oder trag eines ein.',
+	'errors.gift.record.needRecipient': 'Wähle bei jedem Geschenk, für wen es war.',
+	'errors.gift.record.needGiver': 'Ein Geschenk an uns braucht die Person, von der es kam.',
+	'errors.gift.record.stopped': (p: { saved: number; reason: string }) =>
+		`${p.saved} eingetragen, dann ging eines nicht: ${p.reason}`,
 	'errors.when.needsBirthYear': 'Für ein Alter braucht es das Geburtsjahr oder eine Schätzung.',
 	'errors.when.birthdayPassed': 'Dieser Geburtstag ist vorbei. Wähle einen späteren.',
 	'errors.when.christmasPassed': 'Dieses Weihnachten ist vorbei. Wähle ein späteres Alter.',

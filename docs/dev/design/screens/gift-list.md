@@ -8,7 +8,10 @@ the household at once, and to tick off what they bought without opening each per
 ### Rules
 
 - **`/gifts`** heads with *Gift ideas*, the count *6 open* beside it, and one line on what the
-  page is. Mockup: https://claude.ai/artifact/4rJm5QVbU85KWvC17mVybU
+  page is. At the heading's right, the secondary button *Record given…* opens the Gifts card's
+  sheet for everyone (docs/dev/02 §2.25.14). There, each row's *For* is a person search or the
+  *Us (household)* chip. *From* offers *Us* and the search only. A row for us that has no person
+  under *From* shows a `bg-warning-soft` line until it gets one. Mockup: https://claude.ai/artifact/4rJm5QVbU85KWvC17mVybU
 - One card per person (`bg-card`, `shadow-card`): `Avatar`, the name as a link to their Gifts
   card, *2 ideas* to the right, and under the name a chip with the next occasion, *Birthday in
   3 days · 2 Nov* (*today* and *tomorrow* in words), behind the calendar icon for a birthday and

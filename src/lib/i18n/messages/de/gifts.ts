@@ -171,5 +171,34 @@ export const gifts: GiftsMessages = {
 	'gifts.assign.occasion': 'Zu welchem Anlass?',
 	'gifts.assign.keep': (p) => `Vor ${p.name} geheim halten`,
 	'gifts.assign.free': 'Wieder frei',
-	'gifts.assign.save': 'Vergeben'
+	'gifts.assign.save': 'Vergeben',
+
+	'gifts.record.open': 'Nachtragen…',
+	'gifts.record.menu': 'Mehrere nachtragen…',
+	'gifts.record.menuHint': (p) => `Was ${p.name} zu einem Anlass bekommen hat, auf einmal`,
+	'gifts.record.title': 'Geschenke nachtragen',
+	'gifts.record.titleFor': (p) => `Geschenke nachtragen für ${p.name}`,
+	'gifts.record.intro':
+		'Was zu einem Anlass geschenkt wurde, auf einmal. Steht danach in derselben Geschichte wie alles andere.',
+	'gifts.record.occasion': 'Anlass',
+	'gifts.record.otherDay': 'Anderer Tag…',
+	'gifts.record.day': 'Tag',
+	'gifts.record.on': (p) => `Am ${p.day}.`,
+	'gifts.record.planned': 'Geplant für diesen Anlass',
+	'gifts.record.plannedFor': (p) => `für ${p.name}`,
+	'gifts.record.wasGiven': (p) => `„${p.title}“ wurde geschenkt`,
+	'gifts.record.also': 'Außerdem geschenkt',
+	'gifts.record.what': 'Was wurde geschenkt?',
+	'gifts.record.whatPlaceholder': 'Was?',
+	'gifts.record.for': 'Für',
+	'gifts.record.forUs': 'Uns (Haushalt)',
+	'gifts.record.forSearch': 'Wem?',
+	'gifts.record.needGiver': 'Für „Uns“ braucht es eine Person bei „Von“.',
+	'gifts.record.becomesReceived': (p) => `Wird bei ${p.name} unter „Bekommen“ eingetragen.`,
+	'gifts.record.addRow': 'Zeile',
+	'gifts.record.save': (p) => `${p.count} eintragen`,
+	'gifts.record.done': (p) =>
+		`${p.count} ${p.count === 1 ? 'Geschenk' : 'Geschenke'} zu ${p.occasion} nachgetragen`,
+	'gifts.record.over': (p) => `${p.occasion} ist vorbei.`,
+	'gifts.record.overLink': 'Nachtragen…'
 };

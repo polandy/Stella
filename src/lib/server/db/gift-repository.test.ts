@@ -315,6 +315,23 @@ describe('createDrizzleGiftRepository', () => {
 		});
 	});
 
+	describe('listPlannedVisibleTo', () => {
+		it('reads the open and the bought gifts, never a given or received one', async () => {
+			await repo.insert(gift({ id: 'idea', createdAt: 1 }));
+			await repo.insert(gift({ id: 'bought', state: 'bought', createdAt: 2 }));
+			await repo.insert(gift({ id: 'given', state: 'given', givenOn: '2024-12-24' }));
+			await repo.insert(
+				gift({ id: 'private', state: 'bought', visibility: 'private', createdBy: U2 })
+			);
+
+			const planned = await repo.listPlannedVisibleTo(viewerU1);
+			expect(planned.map((g) => [g.id, g.contactName])).toEqual([
+				['bought', 'S'],
+				['idea', 'S']
+			]);
+		});
+	});
+
 	describe('in the calendar feed', () => {
 		// Christmas 2026 is 90 days off on 25 September: every idea below is near.
 		const near = { when: { kind: 'on_date', on: '2026-12-24' } } as const;
