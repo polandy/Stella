@@ -204,6 +204,7 @@ export const gifts = {
 	'gifts.giver.and': (p: { head: string; last: string }) => `${p.head} and ${p.last}`,
 	'gifts.giver.who': 'Who is giving it?',
 	'gifts.giver.we': 'Us',
+	'gifts.giver.me': 'Me',
 	'gifts.giver.search': 'Someone else…',
 	'gifts.giver.find': 'Search a person…',
 	'gifts.giver.searchMore': 'Add another person…',

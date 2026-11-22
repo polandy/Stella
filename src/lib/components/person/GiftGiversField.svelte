@@ -72,15 +72,25 @@
 		description: null,
 		avatarPhotoId: null
 	});
-	/** *Wir*, then the suggestions in their order, then everyone else: the list's first entries. */
+	/** *Me*, then *Us*, then the suggestions in their order, then everyone else: the list's first entries. */
 	const options = $derived.by(() => {
 		const searchable = people.filter((person) => person.id !== recipientId);
+		const myself = searchable.find((person) => person.id === selfContactId);
 		const byId = new Map(searchable.map((person) => [person.id, person]));
 		const first = [...ties, ...household]
 			.map((suggestion) => byId.get(suggestion.id))
-			.filter((person) => person !== undefined);
+			.filter((person) => person !== undefined)
+			.filter((person) => person.id !== selfContactId);
 		const suggested = new Set(first.map((person) => person.id));
-		return [us, ...first, ...searchable.filter((person) => !suggested.has(person.id))];
+		const rest = searchable.filter(
+			(person) => !suggested.has(person.id) && person.id !== selfContactId
+		);
+		return [
+			...(myself ? [{ ...myself, displayName: t('gifts.giver.me') }] : []),
+			us,
+			...first,
+			...rest
+		];
 	});
 </script>
 
