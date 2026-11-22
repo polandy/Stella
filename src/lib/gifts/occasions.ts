@@ -58,7 +58,7 @@ export function byOccasion<T extends OccasionGift>(
 }
 
 /** A group's head count: *2 done · 1 taken · 1 free*. */
-export function occasionTally(gifts: readonly OccasionGift[]): {
+export function occasionTally(gifts: readonly Pick<OccasionGift, 'state' | 'giver'>[]): {
 	done: number;
 	assigned: number;
 	free: number;

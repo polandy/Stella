@@ -12,12 +12,21 @@ the household at once, and to tick off what they bought without opening each per
   sheet for everyone (docs/dev/02 §2.25.14). There, each row's *For* is a person search or the
   *Us (household)* chip. *From* offers *Us* and the search only. A row for us that has no person
   under *From* shows a `bg-warning-soft` line until it gets one. Mockup: https://claude.ai/artifact/4rJm5QVbU85KWvC17mVybU
+- Under the intro the pill `Tabs` *By person* · *By occasion* (docs/dev/02 §2.25.6), the choice
+  kept per member in this browser (`listViewPreference`). The waiting toggle belongs to *By
+  person* only. *By occasion* is one `bg-card` per day, soonest first: the heading with its
+  nearness (`occasionHeading`) and the tally *1 done · 2 assigned · 1 free* at the right, then a
+  block per recipient (`Avatar`, the name as a link to their Gifts card, their tally) over rows
+  of `GiftStateMark`, title and the giver's phrase or *still free*; bought rows at `opacity-70`.
+  A passed day carries *… is over. Record what was given…*. The rows have no buttons: the card
+  is where a gift changes. With nothing planned: `EmptyState`, *Nothing planned for an occasion
+  yet.*
 - One card per person (`bg-card`, `shadow-card`): `Avatar`, the name as a link to their Gifts
   card, *2 ideas* to the right, and under the name a chip with the next occasion, *Birthday in
   3 days · 2 Nov* (*today* and *tomorrow* in words), behind the calendar icon for a birthday and
   the gift for Christmas. Within 30 days the chip is `bg-warning-soft`, otherwise neutral.
 - Cards in the order of their occasion (docs/dev/02 §2.25.6); the rows inside as on the Gifts card,
-  each with *Bought* and *Mark as given…* (`IdeaListRow`) — a bought idea leaves the list as a
+  each naming its giver (*Sandra is giving it*) and with *Bought* and *Mark as given…* (`IdeaListRow`) — a bought idea leaves the list as a
   given one does, with the same *Undo* — and *hidden from Hilde* on a surprise, and an idea's time as its `WhenChip` — *· in 34
   days* while it comes near, `bg-warning-soft` and *· passed* once its occasion went by. An idea
   still waiting for its time is folded away (docs/dev/02 §2.25.8): under the intro a small

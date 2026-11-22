@@ -41,10 +41,20 @@ describe('openIdeaView', () => {
 			when: null,
 			whenState: null,
 			hiddenFromRecipient: false,
+			giver: { kind: 'none' },
 			mine: false,
 			notedBy: 'Sandra',
 			group: null
 		});
+	});
+
+	it('carries who gives it, nameless when the viewer may not see them', () => {
+		expect(openIdeaView({ ...idea, giverIsHousehold: true }, 'u-1', names).giver).toEqual({
+			kind: 'household'
+		});
+		expect(
+			openIdeaView({ ...idea, giverContactId: 'c-9', giverName: null }, 'u-1', names).giver
+		).toEqual({ kind: 'unseen' });
 	});
 
 	it('names everyone else a group’s idea is for, linked to its panel (§2.25.11)', () => {
