@@ -717,7 +717,14 @@ and a good idea is still there on the birthday it was meant for.
   given…** works right there; the idea leaves the list, and *Undo* in the message brings it
   back for a few seconds. Ideas for later are folded away there too: **Show 3 ideas for later**
   under the heading brings them in, dimmed below the others, and **Hide the ideas for later**
-  folds them again. Stella remembers your choice on this device.
+  folds them again. Stella remembers your choice on this device. An idea someone has taken on
+  says who is giving it.
+- The same page reads **By occasion** too (the switch under the heading, remembered on this
+  device): the days soonest first, *Christmas 2026* on top, and under each day every person who
+  gets something, a child or an adult — who gives what, what is still free, and what is already
+  done or bought, with a count for each person and for the day. It is for the question *is
+  everyone covered?*. Nothing is changed there; tap a name to open that person's Gifts card. On
+  a day that went by, **Record what was given…** opens *Nachtragen…* for it.
 - When their birthday or another date comes up on Home, the number of open ideas is right
   there under their name.
 - **Search everything** finds a gift by what it is or by its note — *Fotobuch* finds the photo

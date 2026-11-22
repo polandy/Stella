@@ -7,8 +7,9 @@ import { systemClock } from '#lib/server/clock.js';
 import { upcomingDates } from '#lib/server/domain/dates/upcoming.js';
 import { readGiftGroups } from '#lib/server/domain/gifts/gift-group-follow-up.js';
 import { listOpenIdeas } from '#lib/server/domain/gifts/gifts.js';
-import { listPassedPlanned } from '#lib/server/domain/gifts/planned.js';
+import { listPlanned, passedOf } from '#lib/server/domain/gifts/planned.js';
 import { giverViewOf } from '#lib/gifts/giver.js';
+import { occasionOverview } from '#lib/gifts/occasion-overview.js';
 import type { PlannedGift } from '#lib/gifts/record-given.js';
 import { authorNames } from '#lib/server/domain/household/members.js';
 import { applyGiftCommand, boughtOf, occasionOf, textOf } from '../_shared/gift-commands';
@@ -27,9 +28,9 @@ const BIRTHDAY_HORIZON_DAYS = 366;
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const viewer = requireViewer(locals);
-	const [ideas, passed, dateSources, nameOfAuthor] = await Promise.all([
+	const [ideas, planned, dateSources, nameOfAuthor] = await Promise.all([
 		listOpenIdeas(locals.services.gifts.giftDeps, viewer),
-		listPassedPlanned(locals.services.gifts.giftDeps, viewer),
+		listPlanned(locals.services.gifts.giftDeps, viewer),
 		locals.services.records.importantDates.listSourcesVisibleTo(viewer),
 		authorNames(locals.services.household.memberDeps, viewer.householdId)
 	]);
@@ -49,7 +50,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		today,
 		viewerId: viewer.id,
 		// What *Nachtragen…* may tick: the planned gifts whose day went by (§2.25.14).
-		planned: passed.map((gift): PlannedGift => ({
+		planned: passedOf(planned, today).map((gift): PlannedGift => ({
 			id: gift.id,
 			contactId: gift.contactId,
 			contactName: gift.contactName,
@@ -59,6 +60,20 @@ export const load: PageServerLoad = async ({ locals }) => {
 			when: gift.when,
 			on: gift.on
 		})),
+		// Every recipient under each occasion, bought ones too (§2.25.6).
+		occasions: occasionOverview(
+			planned.map((gift) => ({
+				id: gift.id,
+				contactId: gift.contactId,
+				contactName: gift.contactName,
+				avatarPhotoId: gift.avatarPhotoId,
+				title: gift.title,
+				state: gift.state,
+				on: gift.on,
+				giver: giverViewOf(gift),
+				hiddenFromRecipient: gift.hiddenFromRecipient
+			}))
+		),
 		groups: ideaListGroups(
 			ideas.map((idea) => openIdeaView(idea, viewer.id, nameOfAuthor, groups)),
 			ahead,

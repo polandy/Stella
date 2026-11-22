@@ -1,12 +1,19 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import { onMount } from 'svelte';
+	import OccasionOverview from '#lib/components/gifts/OccasionOverview.svelte';
 	import GiftRecordSheet from '#lib/components/gifts/GiftRecordSheet.svelte';
 	import IdeaListRow from '#lib/components/gifts/IdeaListRow.svelte';
 	import Button from '#lib/components/ui/Button.svelte';
 	import Avatar from '#lib/components/ui/Avatar.svelte';
 	import EmptyState from '#lib/components/ui/EmptyState.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';
+	import Tabs from '#lib/components/ui/Tabs.svelte';
+	import {
+		listViewPreference,
+		type ListView,
+		type ListViewPreference
+	} from '#lib/gifts/list-view-preference.js';
 	import { foldWaiting } from '#lib/gifts/idea-list.js';
 	import { nextOccasionLabel } from '#lib/gifts/labels.js';
 	import { waitingPreference, type WaitingPreference } from '#lib/gifts/waiting-preference.js';
@@ -47,6 +54,20 @@
 			// Merely reading `localStorage` throws where storage is blocked; they stay hidden.
 		}
 	});
+	let view = $state<ListView>('person');
+	let viewPreference: ListViewPreference | undefined;
+	onMount(() => {
+		try {
+			viewPreference = listViewPreference(localStorage, data.viewerId);
+			view = viewPreference.load();
+		} catch {
+			// As above: it stays by person.
+		}
+	});
+	function chooseView(next: ListView) {
+		view = next;
+		viewPreference?.save(next);
+	}
 	function toggleWaiting() {
 		showWaiting = !showWaiting;
 		preference?.save(showWaiting);
@@ -78,6 +99,11 @@
 
 	// *Record given…* for everyone (§2.25.14): whom each row is for is chosen on the row.
 	let recording = $state(false);
+	let recordStart = $state<string | null>(null);
+	function record(on: string | null) {
+		recordStart = on;
+		recording = true;
+	}
 
 	const rowError = (giftId: string) =>
 		form?.giftRowError?.giftId === giftId ? form.giftRowError.message : null;
@@ -101,12 +127,24 @@
 				size="sm"
 				type="button"
 				icon="gift"
-				onclick={() => (recording = true)}
+				onclick={() => record(null)}
 				data-testid="gift-record-open">{t('gifts.record.open')}</Button
 			>
 		</div>
 		<p class="text-sm text-fg-muted">{t('gifts.list.intro')}</p>
-		{#if hasWaiting}
+		<Tabs
+			tabs={['person', 'occasion'] as const}
+			chosen={view}
+			onchoose={chooseView}
+			label={t('gifts.list.view')}
+			idPrefix="gift-list-view"
+			panel="gift-list-panel"
+			class="mt-1"
+			testid="gift-list-view"
+		>
+			{#snippet content(which)}{t(`gifts.list.view.${which}`)}{/snippet}
+		</Tabs>
+		{#if hasWaiting && view === 'person'}
 			<button
 				type="button"
 				class="mt-1 inline-flex items-center gap-1 self-start text-xs font-semibold tracking-wide text-fg-subtle uppercase hover:text-fg"
@@ -122,61 +160,78 @@
 		{/if}
 	</header>
 
-	{#if groups.length}
-		{#each groups as group (group.contactId)}
-			<section
-				class="rounded-app bg-card p-4 shadow-card"
-				aria-labelledby="gift-list-{group.contactId}"
-				data-testid="gift-list-group"
-			>
-				<div class="flex items-center gap-3">
-					<Avatar
-						id={group.contactId}
-						name={group.contactName}
-						avatarPhotoId={group.avatarPhotoId}
-					/>
-					<div class="min-w-0 flex-1">
-						<h2 id="gift-list-{group.contactId}" class="font-semibold break-words text-fg">
-							<a href={contactSectionPath(group.contactId, 'gifts')} class="hover:underline"
-								>{group.contactName}</a
-							>
-						</h2>
-						<p
-							class="mt-0.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs {group
-								.next.daysUntil <= SOON_DAYS
-								? 'bg-warning-soft font-medium text-fg'
-								: 'bg-bg-sunken text-fg-muted'}"
-							data-testid="gift-list-next"
-						>
-							<Icon name={group.next.kind === 'birthday' ? 'calendar' : 'gift'} size={11} />
-							{nextOccasionLabel(i18n, group.next)}
-						</p>
-					</div>
-					<span class="shrink-0 text-xs text-fg-muted"
-						>{t('gifts.list.ideas', { count: group.ideas.length })}</span
-					>
-				</div>
-				<ul class="mt-2">
-					{#each group.ideas as idea (idea.id)}
-						<IdeaListRow
-							{idea}
-							next={group.next}
-							today={data.today}
-							error={rowError(idea.id)}
-							onSending={(giftId) => sending.add(giftId)}
-							onSettled={settled}
+	<div
+		id="gift-list-panel"
+		role="tabpanel"
+		aria-labelledby="gift-list-view-{view}"
+		class="flex flex-col gap-4"
+	>
+		{#if view === 'occasion'}
+			{#if data.occasions.length}
+				<OccasionOverview occasions={data.occasions} today={data.today} onRecord={record} />
+			{:else}
+				<EmptyState
+					icon="idea"
+					title={t('gifts.list.occasionsEmpty')}
+					hint={t('gifts.list.occasionsEmptyHint')}
+				/>
+			{/if}
+		{:else if groups.length}
+			{#each groups as group (group.contactId)}
+				<section
+					class="rounded-app bg-card p-4 shadow-card"
+					aria-labelledby="gift-list-{group.contactId}"
+					data-testid="gift-list-group"
+				>
+					<div class="flex items-center gap-3">
+						<Avatar
+							id={group.contactId}
+							name={group.contactName}
+							avatarPhotoId={group.avatarPhotoId}
 						/>
-					{/each}
-				</ul>
-			</section>
-		{/each}
-	{:else if hasWaiting}
-		<p class="py-2 text-sm text-fg-muted" data-testid="gift-list-all-waiting">
-			{t('gifts.list.allWaiting')}
-		</p>
-	{:else}
-		<EmptyState icon="idea" title={t('gifts.list.empty')} hint={t('gifts.list.emptyHint')} />
-	{/if}
+						<div class="min-w-0 flex-1">
+							<h2 id="gift-list-{group.contactId}" class="font-semibold break-words text-fg">
+								<a href={contactSectionPath(group.contactId, 'gifts')} class="hover:underline"
+									>{group.contactName}</a
+								>
+							</h2>
+							<p
+								class="mt-0.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs {group
+									.next.daysUntil <= SOON_DAYS
+									? 'bg-warning-soft font-medium text-fg'
+									: 'bg-bg-sunken text-fg-muted'}"
+								data-testid="gift-list-next"
+							>
+								<Icon name={group.next.kind === 'birthday' ? 'calendar' : 'gift'} size={11} />
+								{nextOccasionLabel(i18n, group.next)}
+							</p>
+						</div>
+						<span class="shrink-0 text-xs text-fg-muted"
+							>{t('gifts.list.ideas', { count: group.ideas.length })}</span
+						>
+					</div>
+					<ul class="mt-2">
+						{#each group.ideas as idea (idea.id)}
+							<IdeaListRow
+								{idea}
+								next={group.next}
+								today={data.today}
+								error={rowError(idea.id)}
+								onSending={(giftId) => sending.add(giftId)}
+								onSettled={settled}
+							/>
+						{/each}
+					</ul>
+				</section>
+			{/each}
+		{:else if hasWaiting}
+			<p class="py-2 text-sm text-fg-muted" data-testid="gift-list-all-waiting">
+				{t('gifts.list.allWaiting')}
+			</p>
+		{:else}
+			<EmptyState icon="idea" title={t('gifts.list.empty')} hint={t('gifts.list.emptyHint')} />
+		{/if}
+	</div>
 </main>
 
 <GiftRecordSheet
@@ -185,7 +240,7 @@
 	birth={null}
 	today={data.today}
 	planned={data.planned}
-	start={null}
+	start={recordStart}
 	people={data.people}
 	ties={[]}
 	household={[]}

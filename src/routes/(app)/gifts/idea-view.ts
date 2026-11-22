@@ -1,4 +1,5 @@
 import type { OpenIdea } from '#lib/server/domain/gifts/gifts.js';
+import { giverViewOf } from '#lib/gifts/giver.js';
 import { alsoFor, giftGroupPanelPath } from '#lib/gifts/group-panel.js';
 import { authorLabel } from '#lib/story/author.js';
 import type { WhenState } from '#lib/when/state.js';
@@ -34,6 +35,7 @@ export function openIdeaView(
 		when: idea.when,
 		whenState: idea.whenState,
 		hiddenFromRecipient: idea.hiddenFromRecipient,
+		giver: giverViewOf(idea),
 		mine,
 		notedBy: mine ? null : authorLabel(false, nameOfAuthor(idea.createdBy)),
 		group: group

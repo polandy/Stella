@@ -93,6 +93,13 @@ export const gifts = {
 	'gifts.list.waitingToggle': (p: { count: number }) =>
 		p.count === 1 ? '1 idea for later' : `${p.count} ideas for later`,
 	'gifts.list.allWaiting': 'Nothing due yet. Every idea waits for later.',
+	// By person or by occasion (§2.25.6).
+	'gifts.list.view': 'View',
+	'gifts.list.view.person': 'By person',
+	'gifts.list.view.occasion': 'By occasion',
+	'gifts.list.occasionsEmpty': 'Nothing planned for an occasion yet.',
+	'gifts.list.occasionsEmptyHint':
+		'Give an idea a day or a giver on a person’s Gifts card, and it shows up here.',
 	'gifts.list.empty': 'No open gift ideas.',
 	'gifts.list.emptyHint': 'Note one on a person’s Gifts card, and it shows up here.',
 
