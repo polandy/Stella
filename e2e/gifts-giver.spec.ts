@@ -21,6 +21,8 @@ const giftsCard = (page: Page) => page.locator('#section-gifts');
 /** Finds a giver in the search and adds them; the first match is the one a suggestion puts first. */
 async function pickGiver(scope: Locator, name: string): Promise<void> {
 	const field = scope.getByTestId('gift-giver');
+	const change = field.getByTestId('gift-giver-change');
+	if (await change.isVisible()) await change.click();
 	await field.getByRole('combobox').fill(name);
 	await field.getByRole('option').filter({ hasText: name }).first().click();
 }

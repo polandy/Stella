@@ -209,6 +209,13 @@ export const gifts = {
 	'gifts.giver.searchMore': 'Add another person…',
 	'gifts.giver.together':
 		'Given together; the gift stays as a reminder on each giver’s card, under Gives.',
+	'gifts.giver.line.us': 'From us',
+	'gifts.giver.line.me': 'From me',
+	'gifts.giver.line.named': (p: { names: string }) => `From ${p.names}`,
+	'gifts.giver.line.default': 'Default',
+	'gifts.giver.line.change': 'Change',
+	'gifts.giver.line.reset': 'Back to default',
+	'gifts.giver.line.optional': 'Optional; several can give together.',
 	'gifts.form.from': 'From',
 	'gifts.assign.open': 'Assign…',
 	'gifts.assign.change': 'Change giver',

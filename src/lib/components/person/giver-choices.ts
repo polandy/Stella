@@ -16,6 +16,7 @@ export function giverChoicesOf(data: PersonPageData, t: Translate): GiverChoices
 	return {
 		...giverSuggestions(data.contact.id, ties, data.householdGivers),
 		people: data.people,
-		recipientId: data.contact.id
+		recipientId: data.contact.id,
+		selfContactId: data.user.selfContactId
 	};
 }

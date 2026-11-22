@@ -57,4 +57,6 @@ export interface GiverChoices {
 	people: SelectablePerson[];
 	/** The person the gifts are for, never their own giver. */
 	recipientId: string;
+	/** The viewer's own person, when they have one: alone as giver it reads *From me*. */
+	selfContactId: string | null;
 }

@@ -189,6 +189,13 @@ export const gifts: GiftsMessages = {
 	'gifts.giver.searchMore': 'Weitere Person hinzufügen…',
 	'gifts.giver.together':
 		'Gemeinsam geschenkt; bleibt als Erinnerung auf der Karte jeder schenkenden Person, unter „Schenkt“.',
+	'gifts.giver.line.us': 'Von uns',
+	'gifts.giver.line.me': 'Von mir',
+	'gifts.giver.line.named': (p: { names: string }) => `Von ${p.names}`,
+	'gifts.giver.line.default': 'Standard',
+	'gifts.giver.line.change': 'Ändern',
+	'gifts.giver.line.reset': 'Zurück auf Standard',
+	'gifts.giver.line.optional': 'Optional; auch mehrere können gemeinsam schenken.',
 	'gifts.form.from': 'Von',
 	'gifts.assign.open': 'Vergeben…',
 	'gifts.assign.change': 'Schenker ändern',

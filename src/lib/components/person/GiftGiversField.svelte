@@ -1,6 +1,6 @@
 <script lang="ts">
 	import PersonSearchSelect from '#lib/components/people/PersonSearchSelect.svelte';
-	import { HOUSEHOLD_GIVER } from '#lib/gifts/gifts.js';
+	import { givenFromWho, HOUSEHOLD_GIVER } from '#lib/gifts/gifts.js';
 	import type { GiverSuggestion } from '#lib/gifts/giver-suggestions.js';
 	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import type { SelectablePerson } from '#lib/people/select.js';
@@ -25,6 +25,10 @@
 		people: SelectablePerson[];
 		/** The one person the search leaves out: whoever the gift is for. */
 		recipientId: string;
+		/** Own person of the viewer: alone as the giver, the line reads *From me*. */
+		selfContactId?: string | null;
+		/** Quiet by default: a line saying *From us* until someone opens it (a given gift's *Von*). */
+		optional?: boolean;
 		/** Called with each giver just added. */
 		onchange?: (value: string) => void;
 	}
@@ -36,11 +40,27 @@
 		household,
 		people,
 		recipientId,
+		selfContactId = null,
+		optional = false,
 		onchange
 	}: Props = $props();
 
 	const t = useI18n().t;
 	const searchId = $props.id();
+	let changing = $state(false);
+	const open = $derived(!optional || changing);
+
+	const who = $derived(givenFromWho(values, selfContactId));
+	const names = $derived(
+		values
+			.map((id) => options.find((person) => person.id === id)?.displayName)
+			.filter((name) => name !== undefined)
+			.join(', ')
+	);
+	function reset() {
+		values = [];
+		changing = false;
+	}
 
 	/** *Wir* is no person, but the picker lists and chips it like one. */
 	const us = $derived<SelectablePerson>({
@@ -65,20 +85,53 @@
 </script>
 
 <div class="flex flex-col gap-1.5" data-testid="gift-giver">
-	<label for={searchId} class="text-xs font-medium text-fg-muted">{label}</label>
-	<PersonSearchSelect
-		id={searchId}
-		people={options}
-		{name}
-		multiple
-		bind:selectedIds={values}
-		onPick={(person) => onchange?.(person.id)}
-		allowCreate
-		placeholder={values.length > 0 ? t('gifts.giver.searchMore') : t('gifts.giver.find')}
-	/>
-	{#if values.length > 1}
-		<p class="text-xs text-fg-muted" data-testid="gift-giver-together">
-			{t('gifts.giver.together')}
-		</p>
+	{#if optional}
+		<div class="flex min-h-9 items-center justify-between gap-2" data-testid="gift-giver-from">
+			<span class="text-sm text-fg">
+				{who === 'named'
+					? t('gifts.giver.line.named', { names })
+					: t(who === 'me' ? 'gifts.giver.line.me' : 'gifts.giver.line.us')}
+				{#if who === 'us'}
+					<span class="ms-1 text-xs text-fg-subtle">{t('gifts.giver.line.default')}</span>
+				{/if}
+			</span>
+			<span class="flex items-center gap-3">
+				{#if open && values.length > 0}
+					<button type="button" class="text-sm text-primary" onclick={reset}>
+						{t('gifts.giver.line.reset')}
+					</button>
+				{/if}
+				<button
+					type="button"
+					class="text-sm text-primary"
+					aria-expanded={open}
+					onclick={() => (changing = !changing)}
+					data-testid="gift-giver-change"
+				>
+					{t('gifts.giver.line.change')}
+				</button>
+			</span>
+		</div>
 	{/if}
+	<div class="flex flex-col gap-1.5" hidden={!open}>
+		<label for={searchId} class="text-xs font-medium text-fg-muted">
+			{label}{#if optional}<span class="ms-1 font-normal">· {t('gifts.giver.line.optional')}</span
+				>{/if}
+		</label>
+		<PersonSearchSelect
+			id={searchId}
+			people={options}
+			{name}
+			multiple
+			bind:selectedIds={values}
+			onPick={(person) => onchange?.(person.id)}
+			allowCreate
+			placeholder={values.length > 0 ? t('gifts.giver.searchMore') : t('gifts.giver.find')}
+		/>
+		{#if values.length > 1}
+			<p class="text-xs text-fg-muted" data-testid="gift-giver-together">
+				{t('gifts.giver.together')}
+			</p>
+		{/if}
+	</div>
 </div>

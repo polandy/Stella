@@ -8,6 +8,7 @@ import {
 	occasionFromForm,
 	giverFromForm,
 	giversFromForm,
+	givenFromWho,
 	giverIdsOf,
 	HOUSEHOLD_GIVER,
 	OTHER_OCCASION,
@@ -137,5 +138,22 @@ describe('giverFromForm (§2.25.12)', () => {
 		expect(giverFromForm('  ')).toBeNull();
 		expect(giverFromForm(HOUSEHOLD_GIVER)).toEqual({ household: true });
 		expect(giverFromForm('sandra')).toEqual({ contactId: 'sandra' });
+	});
+});
+
+describe('givenFromWho (§2.25.12)', () => {
+	it('says us while nobody is named: the stored default', () => {
+		expect(givenFromWho([], 'c-me')).toBe('us');
+	});
+
+	it('says me only when the own person is the sole giver', () => {
+		expect(givenFromWho(['c-me'], 'c-me')).toBe('me');
+		expect(givenFromWho(['c-me', 'c-andy'], 'c-me')).toBe('named');
+		expect(givenFromWho(['c-andy'], 'c-me')).toBe('named');
+		expect(givenFromWho(['c-andy'], null)).toBe('named');
+	});
+
+	it('names the household when it is chosen on purpose', () => {
+		expect(givenFromWho([HOUSEHOLD_GIVER], 'c-me')).toBe('named');
 	});
 });

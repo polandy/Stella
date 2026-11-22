@@ -406,7 +406,8 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   (`WhenPicker`), for its author on a member's gift *Keep it from Hilde* with its tick at the
   right, then a ghost *Free again* (once given to someone), *Cancel* and the filled *Assign*,
   disabled until someone is chosen. *+ Idea* has the same field as *Who is giving it?* under
-  *Note or link*, *+ Given* as *From*. A given gift's row reads *from Julia and Andy*; on
+  *Note or link*, *+ Given* as one quiet line *From us · Default* with *Change*, which opens the
+  search (*From me* for the own person alone; §2.25.12). A given gift's row reads *from Julia and Andy*; on
   Julia's *Gives* tab a subtle line adds *together with Andy*. Designed in the owner-approved gifts study (§9–15); its
   sheet is built as this inline box.
 - *Bought…* (*Besorgt…*, bag icon) on an idea the household hands over itself, a one-tap *Done*

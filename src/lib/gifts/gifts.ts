@@ -106,3 +106,12 @@ export function giverFromForm(posted: string | null): GiverChoice | null {
 	if (value.length === 0) return null;
 	return value === HOUSEHOLD_GIVER ? { household: true } : { contactId: value };
 }
+
+/** How the *Von* line reads: `us` while nobody is named, `me` for the own person alone, else the names. */
+export function givenFromWho(
+	chosen: readonly string[],
+	selfContactId: string | null
+): 'us' | 'me' | 'named' {
+	if (chosen.length === 0) return 'us';
+	return chosen.length === 1 && chosen[0] === selfContactId ? 'me' : 'named';
+}

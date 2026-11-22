@@ -689,7 +689,7 @@ and a good idea is still there on the birthday it was meant for.
   family and friends first, then your household; **Someone else…** finds anyone else, or adds
   someone new. The idea then reads *Grandma is giving it*, so nobody buys it twice; choosing
   again moves it on, **Free again** clears it. *+ Idea* can say who gives it right away (under
-  *Note or link*), and *+ Given* asks **From** — whom it was from. When the idea is for someone
+  *Note or link*), and *+ Given* shows **From us** quietly, optional: leave it, and nothing is recorded beyond *us*; tap **Change** only when it was someone else (it reads **From me** for your own person alone). When the idea is for someone
   in the household, picking a giver makes it a surprise for them. **From** and **Who gives it?**
   are a person search: Stella lists **Us**, the person's family and your household first, and
   you can add several people, who give it together. They show as chips (tap the **×** to
