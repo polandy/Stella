@@ -38,6 +38,8 @@ export const gifts = {
 	'gifts.form.note': 'Note',
 	'gifts.form.notePlaceholder': 'Size, colour, where they saw it',
 	'gifts.form.link': 'Link',
+	'gifts.form.value': 'Value',
+	'gifts.form.valuePlaceholder': 'What it costs',
 	'gifts.form.on': 'On',
 	'gifts.form.occasion': 'Occasion',
 	'gifts.form.otherOccasion': 'Which occasion?',

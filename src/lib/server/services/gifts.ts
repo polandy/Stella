@@ -1,5 +1,6 @@
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { Clock } from '../clock';
+import type { Config } from '../config';
 import { DEFAULT_LOCALE } from '#lib/i18n/locales.js';
 import { createTranslator } from '#lib/i18n/translate.js';
 import { createDrizzleGiftGroupRepository } from '../db/gift-group-repository';
@@ -34,6 +35,8 @@ export interface GiftServices {
 	giftGroupDeps: GiftGroupDeps;
 	/** The family, homes and circles that form offers at one tap; read-only. */
 	giftGroupShortcutDeps: GroupShortcutDeps;
+	/** What a gift's value is counted in (§2.25.16); empty, the number alone. */
+	currency: string;
 	/**
 	 * Makes gift records of the gifts still held as Monica notes or gift touchpoints (docs/dev/02
 	 * §2.25.4); run at start and after a restore, writing what it did to the server log.
@@ -41,19 +44,31 @@ export interface GiftServices {
 	convertHeldGifts: () => Promise<HeldGiftsReport>;
 }
 
+/** What the gifts context reads of the configuration. */
+export type GiftWiringConfig = Pick<Config, 'giftCurrency'>;
+
 export interface GiftWiring {
 	db: BunSQLiteDatabase<typeof schema>;
 	clock: Clock;
 	ids: IdGenerator;
 	/** Whom a gift may be noted for; the people context owns the repository. */
 	contacts: GiftDeps['contacts'];
+	/** What a gift's value is counted in (§2.25.16), from `GIFT_CURRENCY`. */
+	currency: string;
 }
 
-export function createGiftServices({ db, clock, ids, contacts }: GiftWiring): GiftServices {
+export function createGiftServices({
+	db,
+	clock,
+	ids,
+	contacts,
+	currency
+}: GiftWiring): GiftServices {
 	const gifts = createDrizzleGiftRepository(db);
 	const ownPeople = createDrizzleOwnPersonReads(db);
 	return {
 		gifts,
+		currency,
 		giftDeps: { gifts, ownPeople, contacts, ids, clock },
 		giftGroupDeps: {
 			groups: createDrizzleGiftGroupRepository(db),

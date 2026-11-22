@@ -11,6 +11,7 @@
 	import type { GiverView } from '#lib/gifts/giver.js';
 	import { giverSegments } from '#lib/gifts/labels.js';
 	import type { NextOccasion } from '#lib/gifts/idea-list.js';
+	import { useGiftCurrency } from '#lib/gifts/currency.svelte.js';
 	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import { reveal } from '#lib/motion/motion.svelte.js';
 	import { useRemovals } from '#lib/undo/context.svelte.js';
@@ -35,6 +36,7 @@
 			title: string;
 			note: string | null;
 			url: string | null;
+			value: number | null;
 			visibility: 'shared' | 'private';
 			hiddenFromRecipient: boolean;
 			mine: boolean;
@@ -58,6 +60,7 @@
 	let { idea, next, today, error, onSending, onSettled }: Props = $props();
 
 	const i18n = useI18n();
+	const money = useGiftCurrency();
 	const t = i18n.t;
 	const removals = useRemovals();
 
@@ -100,7 +103,14 @@
 >
 	<GiftStateMark state="idea" />
 	<div class="min-w-0 flex-1">
-		<p class="font-medium break-words text-fg">{idea.title}</p>
+		<p class="font-medium break-words text-fg">
+			{idea.title}{#if idea.value !== null}<span
+					class="font-normal text-fg-muted"
+					data-testid="gift-value"
+				>
+					· {money.label(idea.value)}</span
+				>{/if}
+		</p>
 		{#if idea.when}<WhenChip when={idea.when} state={idea.whenState} {today} />{/if}
 		{#if giver}<p class="text-sm text-fg-muted" data-testid="gift-giver-line">
 				<GiverText segments={giver} />

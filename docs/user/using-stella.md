@@ -754,7 +754,7 @@ concert*, *the lake by bike once she is ten*. What you owe someone belongs in a 
 - **+ Idea** asks *what*, and optionally *when*: some time (the default), a day — *Saturday*,
   *Christmas* and *Birthday* are one tap — a month, the birthday they turn a certain age, or
   from an age on. The ages need a birth year; without one, *Estimate age* takes you to it.
-  A note and a link fit under *Note or link*.
+  A note, a link and what it cost fit under *Note or link* — the value is a whole number in your instance's currency (CHF unless set otherwise) and shows after the title.
 - Ideas come soonest first; those more than about three months away fold under *Later*.
 - **Booked** under an idea means the date is fixed: it stops counting as an open idea but stays
   on the card until it is done. *Not booked* takes that back.

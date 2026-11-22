@@ -203,6 +203,7 @@ describe('toStoryItem, gifts', () => {
 			id: 'g1',
 			...NO_GIVER,
 			storedAt: null,
+			value: null,
 			contactId: 'c1',
 			createdBy: 'user-2',
 			visibility: 'shared',

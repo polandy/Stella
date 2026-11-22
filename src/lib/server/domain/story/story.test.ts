@@ -60,6 +60,7 @@ function present(
 		id,
 		...NO_GIVER,
 		storedAt: null,
+		value: null,
 		contactId: 'c1',
 		createdBy: 'u1',
 		visibility: 'shared',

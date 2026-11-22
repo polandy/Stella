@@ -14,6 +14,7 @@ import type { LayoutServerLoad } from './$types';
  * navigation keeps it; `app:people` is what the shell reloads when its stamp has gone stale.
  * The tags the viewer can see ride along for the `#` list (docs/dev/02 §2.20.2), for the same reason.
  * `immichLibrary` says whether a photo can come from Immich beside an upload (docs/dev/02 §2.24.9).
+ * `giftCurrency` is the one a gift's value is counted in (docs/dev/02 §2.25.16).
  * `timeZone` is the household's — the zone the server runs in (`TZ`, docs/dev/07) — so a page drawn
  * here and come alive in the browser agree on what *Today* is (docs/dev/02 §2.22.2).
  *
@@ -46,6 +47,7 @@ export const load: LayoutServerLoad = async ({ locals, depends }) => {
 		...people,
 		entryTags,
 		immichLibrary: locals.services.immich !== null,
+		giftCurrency: locals.services.gifts.currency,
 		timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
 	};
 };

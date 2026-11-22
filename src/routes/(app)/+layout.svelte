@@ -17,6 +17,7 @@
 	import Toast from '#lib/components/ui/Toast.svelte';
 	import { provideRemovals } from '#lib/undo/context.svelte.js';
 	import { providePending } from '#lib/sync/context.svelte.js';
+	import { provideGiftCurrency } from '#lib/gifts/currency.svelte.js';
 	import { providePeopleContext } from '#lib/people/context.svelte.js';
 	import { createDeviceUnlock } from '#lib/privacy/device-unlock.svelte.js';
 	import { provideVeil } from '#lib/privacy/veil.svelte.js';
@@ -125,6 +126,7 @@
 	const i18n = useI18n();
 	const palettePeople = $derived(withGivenNames(data.people, given.names, i18n.locale));
 	providePeopleContext(() => data.peopleContext);
+	provideGiftCurrency(() => data.giftCurrency);
 	// The member's private entries stay blurred until asked for (docs/dev/02 §2.10.1). A tap shows
 	// one until the page is left; a new page starts blurred again, the five-minute window aside.
 	const veil = provideVeil({

@@ -341,7 +341,7 @@ describe('editGift', () => {
 	it('keeps the value when an edit does not mention it, and changes or clears it when it does (§2.25.16)', async () => {
 		const { giftId } = await addGift(deps, JULIA, { ...idea('Slippers'), value: 45 });
 		expect(gifts.rows.get(giftId)?.value).toBe(45);
-		const edit = { contactId: HILDE, giftId, ...idea('Slippers') };
+		const edit = { ...idea('Slippers'), giftId };
 		await editGift(deps, ANDY, edit);
 		expect(gifts.rows.get(giftId)?.value).toBe(45);
 		await editGift(deps, ANDY, { ...edit, value: 60 });

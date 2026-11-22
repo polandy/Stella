@@ -67,7 +67,8 @@ beforeEach(async () => {
 			db,
 			clock,
 			ids,
-			contacts: createDrizzleContactRepository(db)
+			contacts: createDrizzleContactRepository(db),
+			currency: 'CHF'
 		}).convertHeldGifts
 	};
 });
@@ -125,7 +126,8 @@ describe('createArchiveServices', () => {
 			db,
 			clock,
 			ids,
-			contacts: createDrizzleContactRepository(db)
+			contacts: createDrizzleContactRepository(db),
+			currency: 'CHF'
 		});
 		const recipients = [await addPerson('Mia'), await addPerson('Ben')].map((contactId) => ({
 			contactId
@@ -166,7 +168,8 @@ describe('createArchiveServices', () => {
 			db,
 			clock,
 			ids,
-			contacts: createDrizzleContactRepository(db)
+			contacts: createDrizzleContactRepository(db),
+			currency: 'CHF'
 		});
 		const contactId = await addPerson('Mia');
 		const gift = (title: string, value: number | null) =>
@@ -313,6 +316,7 @@ describe('createServices', () => {
 				nextcloud: null,
 				sessionSecret: 'a-session-secret',
 				updateCheck: false,
+				giftCurrency: 'CHF',
 				updateFeedUrl: '',
 				mediaDir
 			},

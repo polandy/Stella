@@ -15,6 +15,7 @@ const gift = (contactId: string, over: Partial<Gift> = {}) => ({
 	id: `g-${contactId}`,
 	...NO_GIVER,
 	storedAt: null,
+	value: null,
 	contactId,
 	contactName: contactId,
 	birth: { value: '2022-01-20', precision: 'full' as const },

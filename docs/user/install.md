@@ -33,6 +33,7 @@ Open `.env` and set:
 | Setting | What to put there |
 |---|---|
 | `SESSION_SECRET` | A long random string, at least 32 characters. Generate one with `openssl rand -hex 32`. Stella refuses to start in production with a short one or the example value. |
+| `GIFT_CURRENCY` | Optional. The currency a gift's value is shown in, e.g. `CHF` (the default) or `EUR`. Values are whole numbers; changing this only renames them, it never converts. |
 | `STELLA_URL` | **Exactly** the address you will type into the browser, including `http://` or `https://` and the port. |
 
 `STELLA_URL` matters more than it looks. Stella checks that form submissions come from the

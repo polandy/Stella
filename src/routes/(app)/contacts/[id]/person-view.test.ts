@@ -193,6 +193,7 @@ describe('givenGiftView', () => {
 					{ contactId: 'c-secret', name: null, leftName: null }
 				],
 				storedAt: null,
+				value: null,
 				contactId: 'c-hilde',
 				contactName: 'Hilde',
 				createdBy: 'user-2',
@@ -231,6 +232,7 @@ describe('givenGiftView', () => {
 				...NO_GIVER,
 				giverContactId: 'c-tomy',
 				storedAt: 'attic',
+				value: null,
 				contactId: 'c-sandra',
 				contactName: 'Sandra',
 				createdBy: 'user-2',

@@ -9,6 +9,7 @@
 	import { hasGiftDay, type GiftState } from '#lib/gifts/gifts.js';
 	import { SURPRISE } from '#lib/surprise/surprise.js';
 	import { occasionLabel } from '#lib/gifts/labels.js';
+	import { useGiftCurrency } from '#lib/gifts/currency.svelte.js';
 	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import type { SubmitFunction } from '$app/forms';
 	import WhenPicker from '#lib/components/ui/WhenPicker.svelte';
@@ -36,6 +37,7 @@
 			title: string;
 			note: string | null;
 			url: string | null;
+			value: number | null;
 			givenOn: string | null;
 			occasion: string | null;
 			visibility: 'shared' | 'private';
@@ -83,6 +85,7 @@
 	}: Props = $props();
 
 	const i18n = useI18n();
+	const money = useGiftCurrency();
 	const t = i18n.t;
 	// svelte-ignore state_referenced_locally
 	let title = $state(gift?.title ?? '');
@@ -90,7 +93,9 @@
 	const twice = $derived(kind === 'received' ? null : alreadyGiven(title, gifts, gift?.id));
 	const hintId = $props.id();
 	// svelte-ignore state_referenced_locally
-	let showMore = $state(Boolean(gift?.note || gift?.url));
+	let showMore = $state(
+		Boolean(gift?.note || gift?.url || (gift?.value !== null && gift?.value !== undefined))
+	);
 	// svelte-ignore state_referenced_locally
 	let visibility = $state<'shared' | 'private' | typeof SURPRISE>(
 		gift?.hiddenFromRecipient && recipient ? SURPRISE : (gift?.visibility ?? 'shared')
@@ -195,6 +200,19 @@
 				placeholder="https://"
 				class="{INPUT} w-full"
 			/>
+		</label>
+		<label class="flex flex-col gap-1">
+			<span class="text-xs font-medium text-fg-muted">{t('gifts.form.value')}</span>
+			<span class="flex items-center gap-2">
+				<input
+					name="value"
+					inputmode="numeric"
+					value={gift?.value ?? ''}
+					placeholder={t('gifts.form.valuePlaceholder')}
+					class="{INPUT} w-40"
+				/>
+				{#if money.currency}<span class="text-sm text-fg-muted">{money.currency}</span>{/if}
+			</span>
 		</label>
 		{#if asksGiver && kind === 'idea'}{@render giverField(t('gifts.giver.who'))}{/if}
 	{:else}
