@@ -272,6 +272,8 @@ export function planPersonRecords(
 				occasion: str(giftRow, 'occasion'),
 				...whenOfRestored(giftRow, state),
 				...giverOfRestored(giftRow, state, contactId, knownPeople),
+				// A place only means something while the gift waits to be handed over.
+				stored_at: state === 'bought' ? str(giftRow, 'stored_at') : null,
 				// Checked against the archive's groups by `planGiftGroups`.
 				group_id: str(giftRow, 'group'),
 				...stamps(giftRow)

@@ -209,6 +209,7 @@ function fullHousehold(): HouseholdSnapshot {
 					giver_contact_id: 'c-rosa',
 					giver_is_household: 0,
 					giver_left_name: null,
+					stored_at: 'attic, box 3',
 					created_at: EXPORTED
 				},
 				{
@@ -615,6 +616,7 @@ describe('the round trip', () => {
 			'giver_contact_id',
 			'giver_is_household',
 			'giver_left_name',
+			'stored_at',
 			'created_at'
 		],
 		todo: [
@@ -1193,6 +1195,20 @@ describe('an archive that does not add up', () => {
 			target()
 		);
 		expect(rowsOf(plan, 'gift').find((g) => g.id === 'g-bought')?.hidden_from_recipient).toBe(0);
+	});
+
+	it('keeps where a gift waits only while it is bought', () => {
+		const plan = planRestore(
+			deps(),
+			archived(
+				bent((s) => {
+					s.tables.gift[0]!.stored_at = 'cellar';
+				})
+			),
+			target()
+		);
+		expect(rowsOf(plan, 'gift').find((g) => g.id === 'g-idea')?.stored_at).toBeNull();
+		expect(rowsOf(plan, 'gift').find((g) => g.id === 'g-bought')?.stored_at).toBe('attic, box 3');
 	});
 
 	it('restores a gift from an archive written before givers as given by nobody', () => {

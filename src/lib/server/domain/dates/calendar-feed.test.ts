@@ -200,6 +200,7 @@ function idea(over: Partial<IdeaWithBirth<OpenIdea>> = {}): IdeaWithBirth<OpenId
 	return {
 		id: 'g1',
 		...NO_GIVER,
+		storedAt: null,
 		contactId: 'c1',
 		contactName: 'Mia Example',
 		avatarPhotoId: null,

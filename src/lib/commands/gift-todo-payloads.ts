@@ -113,7 +113,11 @@ export const GiftMarkGivenSchema = v.object({
 export const GiftMarkBoughtSchema = v.object({
 	contactId: nonEmpty,
 	giftId: nonEmpty,
-	bought: v.boolean()
+	bought: v.boolean(),
+	/** Where it waits to be handed over (§2.25.9); absent or blank, nowhere in particular. */
+	storedAt: v.optional(v.nullable(v.string())),
+	/** Asked of its author only, as on *Vergeben…* (§2.25.10). */
+	hiddenFromRecipient: v.optional(v.boolean())
 });
 
 /** An idea's question answered (docs/dev/02 §2.25.8): kept as *now* (null), or given a new when. */

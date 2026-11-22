@@ -235,6 +235,7 @@ export function groupIdeaFor(
 		whenCheckedOn: null,
 		groupId: group.id,
 		...NO_GIVER,
+		storedAt: null,
 		createdAt: now,
 		updatedAt: now
 	};

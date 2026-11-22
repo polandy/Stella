@@ -95,6 +95,18 @@ describe('a gift and who gives it (docs/dev/02 §2.25.12)', () => {
 });
 
 describe('a gift marked bought, or not bought after all', () => {
+	it('may carry where it waits and, for its author, whether it is kept from its person', () => {
+		const marked = {
+			contactId: 'hilde',
+			giftId: 'g-1',
+			bought: true,
+			storedAt: 'attic, box 3',
+			hiddenFromRecipient: true
+		};
+		expect(v.parse(GiftMarkBoughtSchema, marked)).toEqual(marked);
+		expect(v.parse(GiftMarkBoughtSchema, { ...marked, storedAt: null }).storedAt).toBeNull();
+	});
+
 	it('says which way, and nothing else', () => {
 		const marked = { contactId: 'hilde', giftId: 'g-1', bought: true };
 		expect(v.parse(GiftMarkBoughtSchema, marked)).toEqual(marked);

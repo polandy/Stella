@@ -28,6 +28,7 @@ import {
 	ExternalLink,
 	EyeOff,
 	ShoppingBag,
+	Package,
 	Fingerprint,
 	Gift,
 	Handshake,
@@ -172,6 +173,8 @@ export const ICONS = {
 	idea: Lightbulb,
 	// Bought and waiting to be handed over; kept from the person it is for (§2.25.9, §2.25.10).
 	bought: ShoppingBag,
+	// Where a bought gift waits to be handed over (§2.25.9).
+	stored: Package,
 	surprise: EyeOff,
 	// A to-do on a person (docs/dev/02 §2.26).
 	todo: ListTodo,

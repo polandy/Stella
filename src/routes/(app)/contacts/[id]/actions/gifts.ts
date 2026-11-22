@@ -4,7 +4,6 @@ import {
 	GiftAnswerWhenSchema,
 	GiftAssignSchema,
 	GiftEditSchema,
-	GiftMarkBoughtSchema,
 	GiftMarkGivenSchema,
 	GiftRemoveSchema
 } from '#lib/commands/gift-todo-payloads.js';
@@ -14,6 +13,7 @@ import {
 	applyGiftCommand,
 	giverOf,
 	occasionOf,
+	boughtOf,
 	surpriseOf,
 	visibilityOf,
 	whenOf,
@@ -85,16 +85,10 @@ export const giftActions = {
 		);
 	},
 
-	/** *Bought*, or *Not bought yet* (§2.25.9): posted once its toast's undo window has closed. */
+	/** *Besorgt…*, *Erledigt* or undone (§2.25.9): posted once its toast's undo window has closed. */
 	markGiftBought: async (event) => {
 		const form = await event.request.formData();
-		return onCard(
-			event,
-			form,
-			'gift.markBought',
-			fromFormData(GiftMarkBoughtSchema, form),
-			'giftRowError'
-		);
+		return onCard(event, form, 'gift.markBought', boughtOf(form), 'giftRowError');
 	},
 
 	/** *Vergeben…* (§2.25.12): who gives it, for when, and — its author only — kept from its person. */

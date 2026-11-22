@@ -125,12 +125,18 @@ test('a surprise stays away from the member it is for, and a bought one waits as
 		await appReady(page);
 		await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1000);
 		const toast = page.getByTestId('toast-undo');
-		await scarfRow.getByTestId('gift-bought').click();
+		await scarfRow.getByTestId('gift-buy-open').click();
+		await scarfRow.getByTestId('gift-buy-save').click();
 		await expect(scarfRow).toHaveCount(0);
 		await expect(toast).toContainText(`“${scarf}” bought`);
 		await toast.getByRole('button', { name: 'Undo' }).click();
 		await expect(scarfRow).toHaveCount(1);
-		await scarfRow.getByTestId('gift-bought').click();
+		// Bought for a member, the sheet keeps it from them unless its author says otherwise (D23).
+		await scarfRow.getByTestId('gift-buy-open').click();
+		const sheet = scarfRow.getByTestId('gift-buy');
+		await expect(sheet.getByRole('checkbox', { name: `Keep it from ${name}` })).toBeChecked();
+		await sheet.getByLabel('Where is it kept? (optional)').fill('attic, box 3');
+		await sheet.getByTestId('gift-buy-save').click();
 		await expect(scarfRow).toHaveCount(0);
 		const committed = page.waitForResponse(
 			(response) =>
@@ -144,6 +150,7 @@ test('a surprise stays away from the member it is for, and a bought one waits as
 		await expect(card.getByTestId('gift-ready-heading')).toHaveText('Ready to give · 1');
 		await expect(card.getByRole('tab', { name: 'Ideas' })).toHaveText('Ideas · 1');
 		await expect(ready.getByTestId('gift-not-bought')).toBeVisible();
+		await expect(ready.getByTestId('gift-stored-at')).toContainText('attic, box 3');
 		await card.screenshot({ path: testInfo.outputPath('giver-card.png') });
 
 		const giverHome = await comingUpRow(page, name);

@@ -118,6 +118,8 @@ export function giftView(gift: Gift, ctx: PersonViewContext) {
 		notedBy: mine ? null : authorLabel(false, ctx.nameOfAuthor(gift.createdBy)),
 		/** Who gives it (§2.25.12); an unseen giver comes without their id. */
 		giver: giverViewOf(gift),
+		/** Where a bought gift waits (§2.25.9); kept, but not shown, once it is given. */
+		storedAt: gift.state === 'bought' ? gift.storedAt : null,
 		/** When it was noted, shown on an idea; given and received gifts show their day. */
 		createdAt: gift.createdAt
 	};

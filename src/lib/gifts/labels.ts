@@ -3,6 +3,8 @@ import type { Translate } from '../i18n/translate';
 import { isGiftOccasionPreset, type GiftState } from './gifts';
 import type { GiverView } from './giver';
 import type { NextOccasion } from './idea-list';
+import { whenChip } from '../when/labels';
+import type { When } from '../when/when';
 
 /*
  * How a gift's occasion reads (docs/dev/02 §2.25). A preset is stored as its key and worded in the
@@ -69,4 +71,31 @@ export function giverLabel(t: Translate, giver: GiverView, state: GiftState): st
 		return t(`gifts.giver.${tense}.person`, { name: giver.name });
 	}
 	return t(`gifts.giver.${tense}.${giver.kind}`);
+}
+
+const DAY_MS = 86_400_000;
+
+/** An occasion's heading (§2.25.13): *Christmas 2026* · *in 34 days · 24 Dec*, or *Without an occasion*. */
+export function occasionHeading(
+	lang: DateLanguage,
+	group: { on: string | null; when: When | null },
+	today: string
+): { title: string; near: string | null } {
+	if (group.on === null || group.when === null) {
+		return { title: lang.t('gifts.byOccasion.none'), near: null };
+	}
+	const title = group.on.endsWith('-12-24')
+		? lang.t('when.christmas', { year: group.on.slice(0, 4) })
+		: whenChip(lang, group.when);
+	const days = Math.round((Date.parse(group.on) - Date.parse(today)) / DAY_MS);
+	if (days < 0) return { title, near: lang.t('when.chip.passed') };
+	if (days === 0) return { title, near: lang.t('when.chip.today') };
+	const ahead = days === 1 ? lang.t('when.chip.tomorrow') : lang.t('dates.inDays', { days });
+	// The ISO day is read as UTC midnight, so it is formatted in UTC too: never the day before.
+	const day = new Date(group.on).toLocaleDateString(lang.intlLocale, {
+		day: 'numeric',
+		month: 'short',
+		timeZone: 'UTC'
+	});
+	return { title, near: `${ahead} · ${day}` };
 }

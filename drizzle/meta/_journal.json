@@ -351,6 +351,13 @@
       "when": 1795296142887,
       "tag": "0049_gift_giver",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "6",
+      "when": 1795300113975,
+      "tag": "0050_gift_stored_at",
+      "breakpoints": true
     }
   ]
 }

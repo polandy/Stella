@@ -31,6 +31,7 @@ function gift(over: Partial<Gift>): Gift {
 	return {
 		id: 'g',
 		...NO_GIVER,
+		storedAt: null,
 		contactId: JULIA_PERSON,
 		createdBy: ANDY,
 		visibility: 'shared',

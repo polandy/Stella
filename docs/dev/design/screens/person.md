@@ -405,6 +405,19 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   disabled until a chip is chosen. *+ Idea* has the same chips as *Who is giving it?* under
   *Note or link*, *+ Given* as *From*. Designed in the owner-approved gifts study (§9–15); its
   sheet is built as this inline box.
+- *Bought…* (*Besorgt…*, bag icon) on an idea the household hands over itself, a one-tap *Done*
+  (*Erledigt*) on anyone else's (docs/dev/02 §2.25.9, D17). *Bought…* opens the same sunken box:
+  *Bought “Puzzle” for Hilde*, *Where is it kept? (optional)* with the places already used as
+  chips (the occasion chips' look, pressed in `--primary`) above a free field, one muted hint
+  line, for the author on a member's gift *Keep it from Hilde* ticked at the right, then *Cancel*
+  and the filled *Bought*. A bought row shows its place in the subtle line, led by the box icon;
+  its way back reads *Not bought yet* or *Not done yet*.
+- By occasion (docs/dev/02 §2.25.13): once a gift has a giver or a day, the Ideas tab is a list of
+  sections, each headed in the year-divider style by the occasion (`text-sm font-semibold`), how
+  near it is (`text-xs`, `--fg-muted`) and, at the right, the tally *1 done · 2 assigned · 1 free*
+  (`text-xs`, `--fg-muted`). The open rows first; the bought ones at the group's end at
+  `opacity-70`. A free idea says *still free* in the giver line's place. *Without an occasion*
+  comes last, without a tally; the *Later* fold stays below all groups.
 
 #### To-dos card
 

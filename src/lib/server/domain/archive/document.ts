@@ -318,6 +318,7 @@ export function buildArchiveDocument(
 					giver: text(g, 'giver_contact_id'),
 					giver_is_household: flag(g, 'giver_is_household'),
 					giver_left_name: text(g, 'giver_left_name'),
+					stored_at: text(g, 'stored_at'),
 					group: text(g, 'group_id'),
 					author: text(g, 'created_by'),
 					created_at: moment(g, 'created_at')

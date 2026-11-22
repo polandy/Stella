@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, lt, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNotNull, lt, max, or, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { giftBrowsableBy, giftVisibleTo, giverNameVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
@@ -37,6 +37,7 @@ export const columns = {
 	giverContactId: gift.giverContactId,
 	giverIsHousehold: gift.giverIsHousehold,
 	giverLeftName: gift.giverLeftName,
+	storedAt: gift.storedAt,
 	createdAt: gift.createdAt,
 	updatedAt: gift.updatedAt
 };
@@ -96,6 +97,9 @@ export function giftRow(g: Gift) {
 
 const DATED_STATES = ['given', 'received'] as const;
 
+/** How many places *Bought…* offers as chips; a household keeps its presents in a few. */
+const PLACES_OFFERED = 8;
+
 export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>): GiftRepository {
 	const visibleOn = (viewer: Viewer, contactId: string) =>
 		and(eq(gift.contactId, contactId), giftVisibleTo(viewer, gift));
@@ -131,6 +135,7 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 					giverContactId: g.giverContactId,
 					giverIsHousehold: g.giverIsHousehold ? 1 : 0,
 					giverLeftName: g.giverLeftName,
+					storedAt: g.storedAt,
 					updatedAt: g.updatedAt
 				})
 				.where(eq(gift.id, g.id))
@@ -248,6 +253,19 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 				)
 				.orderBy(asc(gift.updatedAt), asc(gift.id))
 				.all();
+		},
+
+		async listStoredPlacesVisibleTo(viewer) {
+			return db
+				.select({ place: gift.storedAt, latest: max(gift.updatedAt) })
+				.from(gift)
+				.innerJoin(contact, eq(gift.contactId, contact.id))
+				.where(and(isNotNull(gift.storedAt), giftVisibleTo(viewer, gift)))
+				.groupBy(gift.storedAt)
+				.orderBy(desc(max(gift.updatedAt)))
+				.limit(PLACES_OFFERED)
+				.all()
+				.flatMap((row) => (row.place === null ? [] : [row.place]));
 		}
 	};
 }

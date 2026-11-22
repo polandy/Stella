@@ -168,6 +168,7 @@ export const load = (async ({ locals, params, url }) => {
 		// Ideas, given and received gifts (docs/dev/02 §2.25), already visibility-scoped.
 		gifts: read.gifts.map((gift) => giftView(gift, ctx)),
 		giftGroups: read.giftGroups.map((found) => giftGroupView(found, ctx)),
+		giftPlaces: read.giftPlaces,
 		recipientIsMember: read.recipientIsMember,
 		// The household's givers in the visible graph, for *Wer schenkt?* (§2.25.12).
 		householdGivers: householdGivers(read.memberPeople, read.family.graph),

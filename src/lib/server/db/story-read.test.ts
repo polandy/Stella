@@ -56,6 +56,7 @@ async function giftForOma(id: string, state: 'idea' | 'given' | 'received', day:
 	await createDrizzleGiftRepository(db).insert({
 		id,
 		...NO_GIVER,
+		storedAt: null,
 		contactId: 'oma',
 		createdBy: U1,
 		visibility: 'shared',

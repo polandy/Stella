@@ -102,6 +102,7 @@ describe('giftView', () => {
 	const gift = (overrides: Partial<Gift> = {}): Gift => ({
 		id: 'g-1',
 		...NO_GIVER,
+		storedAt: null,
 		contactId: 'c-hilde',
 		createdBy: 'user-2',
 		visibility: 'shared',
@@ -137,8 +138,19 @@ describe('giftView', () => {
 			mine: false,
 			notedBy: 'Hans',
 			giver: { kind: 'none' },
+			storedAt: null,
 			createdAt: 1
 		});
+	});
+
+	it('shows where a bought gift waits, and no longer once it is given (§2.25.9)', () => {
+		expect(giftView(gift({ state: 'bought', storedAt: 'attic' }), context()).storedAt).toBe(
+			'attic'
+		);
+		expect(
+			giftView(gift({ state: 'given', givenOn: '2026-12-24', storedAt: 'attic' }), context())
+				.storedAt
+		).toBeNull();
 	});
 
 	it('names who gives it, and never the id of a giver the viewer may not see (§2.25.12)', () => {
