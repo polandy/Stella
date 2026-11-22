@@ -184,7 +184,7 @@ export const gifts: GiftsMessages = {
 	'gifts.giver.and': (p) => `${p.head} und ${p.last}`,
 	'gifts.giver.who': 'Wer schenkt?',
 	'gifts.giver.we': 'Uns',
-	'gifts.giver.me': 'Ich',
+	'gifts.giver.me': 'Mir',
 	'gifts.giver.search': 'Jemand anderes…',
 	'gifts.giver.find': 'Person suchen…',
 	'gifts.giver.searchMore': 'Weitere Person hinzufügen…',
