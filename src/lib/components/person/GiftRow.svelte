@@ -4,12 +4,13 @@
 	import RemoveButton from '#lib/components/ui/RemoveButton.svelte';
 	import { dayLabel } from '#lib/dates/labels.js';
 	import type { PartialDate } from '#lib/dates/partial-date.js';
-	import { addedLabel, giverLabel, occasionLabel } from '#lib/gifts/labels.js';
+	import { addedLabel, giverSegments, occasionLabel } from '#lib/gifts/labels.js';
 	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import { reveal } from '#lib/motion/motion.svelte.js';
 	import { isOpenGift } from '#lib/gifts/gifts.js';
 	import { useRemovals } from '#lib/undo/context.svelte.js';
 	import { savedEnhance } from '#lib/undo/saved.js';
+	import GiverText from '#lib/components/gifts/GiverText.svelte';
 	import WhenChip from '#lib/components/when/WhenChip.svelte';
 	import { ideaState } from '#lib/gifts/idea-when.js';
 	import { asks } from '#lib/when/state.js';
@@ -115,7 +116,7 @@
 					.join(' · ')
 			: null
 	);
-	const giver = $derived(giverLabel(t, gift.giver, gift.state));
+	const giver = $derived(giverSegments(t, gift.giver, gift.state));
 	const ours = $derived(handsOver(gift.giver, householdGivers));
 	/** Where the idea stands against its when; a passed or yearly one asks whether it still stands. */
 	const whenState = $derived(gift.state === 'idea' ? ideaState(gift, birth, today) : null);
@@ -159,7 +160,9 @@
 				<div class="min-w-0 flex-1">
 					<p class="font-medium break-words text-fg">{gift.title}</p>
 					{#if when}<p class="text-sm text-fg-muted">{when}</p>{/if}
-					{#if giver}<p class="text-sm text-fg-muted" data-testid="gift-giver-line">{giver}</p>
+					{#if giver}<p class="text-sm text-fg-muted" data-testid="gift-giver-line">
+							<GiverText segments={giver} />
+						</p>
 					{:else if grouped && gift.state === 'idea'}
 						<p class="text-sm text-fg-subtle" data-testid="gift-free">{t('gifts.free')}</p>
 					{/if}

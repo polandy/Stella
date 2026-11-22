@@ -1,8 +1,9 @@
 <script lang="ts">
+	import GiverText from './GiverText.svelte';
 	import GiftStateMark from '#lib/components/person/GiftStateMark.svelte';
 	import Avatar from '#lib/components/ui/Avatar.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';
-	import { giverLabel, occasionHeading } from '#lib/gifts/labels.js';
+	import { giverSegments, occasionHeading } from '#lib/gifts/labels.js';
 	import type { OverviewOccasion } from '#lib/gifts/occasion-overview.js';
 	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import { contactSectionPath } from '#lib/people/sections.js';
@@ -74,7 +75,7 @@
 				</div>
 				<ul class="mt-1">
 					{#each recipient.gifts as gift (gift.id)}
-						{@const giver = giverLabel(t, gift.giver, gift.state)}
+						{@const giver = giverSegments(t, gift.giver, gift.state)}
 						<li
 							class="flex gap-3 border-t border-border-subtle py-2 first:border-t-0"
 							class:opacity-70={gift.state === 'bought'}
@@ -84,7 +85,9 @@
 							<div class="min-w-0 flex-1">
 								<p class="font-medium break-words text-fg">{gift.title}</p>
 								{#if giver ?? (gift.state === 'idea' ? t('gifts.free') : null)}
-									<p class="text-sm text-fg-muted">{giver ?? t('gifts.free')}</p>
+									<p class="text-sm text-fg-muted">
+										{#if giver}<GiverText segments={giver} />{:else}{t('gifts.free')}{/if}
+									</p>
 								{/if}
 								{#if gift.hiddenFromRecipient}
 									<p class="inline-flex items-center gap-1 text-xs text-fg-subtle">

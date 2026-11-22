@@ -6,9 +6,10 @@
 	import Icon from '#lib/components/ui/Icon.svelte';
 	import GiftBoughtButton from '#lib/components/person/GiftBoughtButton.svelte';
 	import GiftOccasionField from '#lib/components/person/GiftOccasionField.svelte';
+	import GiverText from './GiverText.svelte';
 	import GiftStateMark from '#lib/components/person/GiftStateMark.svelte';
 	import type { GiverView } from '#lib/gifts/giver.js';
-	import { giverLabel } from '#lib/gifts/labels.js';
+	import { giverSegments } from '#lib/gifts/labels.js';
 	import type { NextOccasion } from '#lib/gifts/idea-list.js';
 	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import { reveal } from '#lib/motion/motion.svelte.js';
@@ -75,7 +76,7 @@
 		void tick().then(() => row?.querySelector<HTMLElement>('[data-give-open]')?.focus());
 	}
 
-	const giver = $derived(giverLabel(t, idea.giver, 'idea'));
+	const giver = $derived(giverSegments(t, idea.giver, 'idea'));
 
 	const held = $derived(
 		heldAnswer(
@@ -101,7 +102,9 @@
 	<div class="min-w-0 flex-1">
 		<p class="font-medium break-words text-fg">{idea.title}</p>
 		{#if idea.when}<WhenChip when={idea.when} state={idea.whenState} {today} />{/if}
-		{#if giver}<p class="text-sm text-fg-muted" data-testid="gift-giver-line">{giver}</p>{/if}
+		{#if giver}<p class="text-sm text-fg-muted" data-testid="gift-giver-line">
+				<GiverText segments={giver} />
+			</p>{/if}
 		{#if idea.group && idea.group.names.length}
 			<a
 				href={idea.group.href}

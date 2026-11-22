@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { dayLabel } from '#lib/dates/labels.js';
 	import { splitGives } from '#lib/gifts/card.js';
-	import { occasionLabel, togetherLabel } from '#lib/gifts/labels.js';
+	import { occasionLabel, togetherSegments } from '#lib/gifts/labels.js';
 	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import GiverText from '#lib/components/gifts/GiverText.svelte';
 	import WhenChip from '#lib/components/when/WhenChip.svelte';
 	import GiftStateMark from './GiftStateMark.svelte';
 	import type { PersonPageData } from './types';
@@ -36,9 +37,9 @@
 					</span>
 				{/if}
 			</p>
-			{#if togetherLabel(t, gift.withOthers)}
+			{#if gift.withOthers.length > 0}
 				<p class="text-xs text-fg-subtle" data-testid="gift-gives-together">
-					{togetherLabel(t, gift.withOthers)}
+					<GiverText segments={togetherSegments(t, gift.withOthers) ?? []} />
 				</p>
 			{/if}
 			{#if gift.when}

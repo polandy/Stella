@@ -5,6 +5,8 @@ import {
 	addedLabel,
 	giverLabel,
 	togetherLabel,
+	giverSegments,
+	togetherSegments,
 	nextOccasionLabel,
 	occasionHeading,
 	occasionLabel,
@@ -196,5 +198,52 @@ describe('pastOccasionChip (§2.25.14)', () => {
 			title: 'Geburtstag',
 			day: '10. Juni'
 		});
+	});
+});
+
+describe('giverSegments', () => {
+	const en = createTranslator('en');
+	const julia = { kind: 'person', contactId: 'julia', name: 'Julia' } as const;
+	const andy = { kind: 'person', contactId: 'andy', name: 'Andy' } as const;
+
+	it('cuts a person out of the phrase, linking to them', () => {
+		expect(giverSegments(en, julia, 'given')).toEqual([
+			{ text: 'from ' },
+			{ text: 'Julia', contactId: 'julia' }
+		]);
+		expect(giverSegments(en, julia, 'idea')).toEqual([
+			{ text: 'Julia', contactId: 'julia' },
+			{ text: ' is giving it' }
+		]);
+	});
+
+	it('links every person of several, and not the household or a gone name', () => {
+		expect(
+			giverSegments(en, { kind: 'several', givers: [julia, { kind: 'household' }, andy] }, 'given')
+		).toEqual([
+			{ text: 'from ' },
+			{ text: 'Julia', contactId: 'julia' },
+			{ text: ', ' },
+			{ text: 'us' },
+			{ text: ' and ' },
+			{ text: 'Andy', contactId: 'andy' }
+		]);
+		expect(giverSegments(en, { kind: 'left', name: 'Otto' }, 'given')).toEqual([
+			{ text: 'from ' },
+			{ text: 'Otto' }
+		]);
+	});
+
+	it('keeps a nameless giver one plain piece, and says nothing for none', () => {
+		expect(giverSegments(en, { kind: 'household' }, 'given')).toEqual([{ text: 'from us' }]);
+		expect(giverSegments(en, { kind: 'none' }, 'given')).toBeNull();
+	});
+
+	it('links the others of a gift given together', () => {
+		expect(togetherSegments(en, [andy])).toEqual([
+			{ text: 'together with ' },
+			{ text: 'Andy', contactId: 'andy' }
+		]);
+		expect(togetherSegments(en, [])).toBeNull();
 	});
 });

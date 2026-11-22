@@ -60,42 +60,93 @@ export function nextOccasionLabel(lang: DateLanguage, next: NextOccasion): strin
 	return lang.t('gifts.list.next', { occasion: lang.t(`gifts.occasion.${next.kind}`), when, day });
 }
 
+/** A piece of a giver phrase: plain text, or a person's name that links to their page. */
+export interface GiverSegment {
+	text: string;
+	contactId?: string;
+}
+
+/** Stands in for one name while the translated phrase is built, so the name can be cut back out. */
+const NAME_MARK = '\u0001';
+
+/** A phrase built with `names` as marks, cut into text and the names it held, each linking where known. */
+function segmentsOf(phrase: string, names: readonly GiverSegment[]): GiverSegment[] {
+	return phrase
+		.split(new RegExp(`${NAME_MARK}(\\d+)${NAME_MARK}`))
+		.map((piece, at): GiverSegment | null => {
+			if (at % 2 === 0) return piece === '' ? null : { text: piece };
+			const name = names[Number(piece)];
+			return name?.contactId === undefined
+				? { text: name?.text ?? '' }
+				: { text: name.text, contactId: name.contactId };
+		})
+		.filter((segment) => segment !== null);
+}
+
+const markOf = (at: number) => `${NAME_MARK}${at}${NAME_MARK}`;
+
+/**
+ * Who gives a gift, in pieces (docs/dev/02 §2.25.12), so each person named can be a link; null
+ * when nobody is named, or on a gift received — it came from its person.
+ */
+export function giverSegments(
+	t: Translate,
+	giver: GiverView,
+	state: GiftState
+): GiverSegment[] | null {
+	if (giver.kind === 'none' || state === 'received') return null;
+	const tense = state === 'given' ? 'gave' : 'gives';
+	if (giver.kind === 'several') {
+		const parts = giver.givers.map((one) => partOf(t, one, tense));
+		const names = joinNames(
+			t,
+			parts.map((_, at) => markOf(at))
+		);
+		return segmentsOf(t(`gifts.giver.${tense}.several`, { names }), parts);
+	}
+	if (giver.kind === 'person' || giver.kind === 'left') {
+		return segmentsOf(t(`gifts.giver.${tense}.person`, { name: markOf(0) }), [
+			partOf(t, giver, tense)
+		]);
+	}
+	return [{ text: t(`gifts.giver.${tense}.${giver.kind}`) }];
+}
+
+/** *Together with Andy*, in pieces; null when they give it alone. */
+export function togetherSegments(
+	t: Translate,
+	others: readonly SingleGiverView[]
+): GiverSegment[] | null {
+	if (others.length === 0) return null;
+	const parts = others.map((one) => partOf(t, one, 'gave'));
+	const names = joinNames(
+		t,
+		parts.map((_, at) => markOf(at))
+	);
+	return segmentsOf(t('gifts.gives.with', { names }), parts);
+}
+
+const textOf = (segments: GiverSegment[] | null) =>
+	segments === null ? null : segments.map((segment) => segment.text).join('');
+
 /**
  * Who gives a gift, in one phrase (docs/dev/02 §2.25.12): *Sandra schenkt* on an open one, *von
  * Sandra* on one given; null when nobody is named, or on a gift received — it came from its person.
  */
 export function giverLabel(t: Translate, giver: GiverView, state: GiftState): string | null {
-	if (giver.kind === 'none' || state === 'received') return null;
-	const tense = state === 'given' ? 'gave' : 'gives';
-	if (giver.kind === 'several') {
-		return t(`gifts.giver.${tense}.several`, {
-			names: joinNames(
-				t,
-				giver.givers.map((one) => namePart(t, one, tense))
-			)
-		});
-	}
-	if (giver.kind === 'person' || giver.kind === 'left') {
-		return t(`gifts.giver.${tense}.person`, { name: giver.name });
-	}
-	return t(`gifts.giver.${tense}.${giver.kind}`);
+	return textOf(giverSegments(t, giver, state));
 }
 
 /** *Together with Andy*, on the row of one who gives it with others; null when they give it alone. */
 export function togetherLabel(t: Translate, others: readonly SingleGiverView[]): string | null {
-	if (others.length === 0) return null;
-	return t('gifts.gives.with', {
-		names: joinNames(
-			t,
-			others.map((one) => namePart(t, one, 'gave'))
-		)
-	});
+	return textOf(togetherSegments(t, others));
 }
 
 /** One of several givers as it reads inside *Julia und Andy*: the household as *wir* or *uns*. */
-function namePart(t: Translate, giver: SingleGiverView, tense: 'gave' | 'gives'): string {
-	if (giver.kind === 'person' || giver.kind === 'left') return giver.name;
-	return t(`gifts.giver.part.${tense}.${giver.kind}`);
+function partOf(t: Translate, giver: SingleGiverView, tense: 'gave' | 'gives'): GiverSegment {
+	if (giver.kind === 'person') return { text: giver.name, contactId: giver.contactId };
+	if (giver.kind === 'left') return { text: giver.name };
+	return { text: t(`gifts.giver.part.${tense}.${giver.kind}`) };
 }
 
 /** *A*, *A und B*, *A, B und C*. */
