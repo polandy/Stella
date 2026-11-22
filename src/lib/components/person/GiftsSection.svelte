@@ -3,15 +3,12 @@
 	import { deviceDay, writersDay } from '#lib/dates/today.js';
 	import { afterNavigate } from '$app/navigation';
 	import Button from '#lib/components/ui/Button.svelte';
-	import Icon from '#lib/components/ui/Icon.svelte';
 	import KeptItem from '#lib/components/pwa/KeptItem.svelte';
-	import MenuButton from '#lib/components/ui/MenuButton.svelte';
 	import Section from '#lib/components/ui/Section.svelte';
 	import Tabs from '#lib/components/ui/Tabs.svelte';
 	import { cardShape } from '#lib/people/empty-cards.js';
 	import { datesEditorPath } from '#lib/people/identity-card.js';
 	import { sectionAnchor } from '#lib/people/sections.js';
-	import { giftGroupPath } from '#lib/gifts/group-form.js';
 	import { giverSuggestions } from '#lib/gifts/giver-suggestions.js';
 	import { relationshipRowLabel } from '#lib/relationships/labels.js';
 	import { asksForGiftIdea, byYear, giftTabs, splitIdeas, type GiftTab } from '#lib/gifts/card.js';
@@ -26,7 +23,10 @@
 	import { birthOf } from '#lib/when/resolve.js';
 	import { giftAddCommand } from './gift-add-command';
 	import GiftForm from './GiftForm.svelte';
+	import GiftsMenu from './GiftsMenu.svelte';
 	import GiftGroupPanel from '#lib/components/gifts/GiftGroupPanel.svelte';
+	import GiftRecordSheet from '#lib/components/gifts/GiftRecordSheet.svelte';
+	import { plannedOfPerson } from '#lib/gifts/record-given.js';
 	import { alsoFor, opensGiftGroup } from '#lib/gifts/group-panel.js';
 	import GiftIdeas from './GiftIdeas.svelte';
 	import GiftRow from './GiftRow.svelte';
@@ -174,8 +174,15 @@
 	const rowError = (giftId: string): string | null =>
 		form?.giftRowError && form.giftRowError.giftId === giftId ? form.giftRowError.message : null;
 
-	const MENU_ITEM =
-		'flex w-full items-center gap-2 rounded-control px-2.5 py-1.5 text-left text-sm text-fg hover:bg-primary-soft focus-visible:bg-primary-soft';
+	// *Record given…* (§2.25.14): open on a passed occasion's day, or on the latest.
+	let recording = $state(false);
+	let recordStart = $state<string | null>(null);
+	function startRecording(on: string | null, close?: () => void) {
+		close?.();
+		recordStart = on;
+		recording = true;
+	}
+	const planned = $derived(plannedOfPerson(shown, { id: c.id, name: c.displayName }, birth));
 </script>
 
 <Section
@@ -200,37 +207,13 @@
 		{/if}
 	{/snippet}
 	{#snippet menu()}
-		<MenuButton label={t('gifts.menu')} align="end" look="button">
-			{#snippet trigger()}<Icon name="more" size={16} />{/snippet}
-			{#snippet children({ close })}
-				{#if line}
-					<button
-						type="button"
-						role="menuitem"
-						class={MENU_ITEM}
-						onclick={() => startAdding('given', close)}
-					>
-						<Icon name="add" size={14} />{t('gifts.addGiven')}
-					</button>
-				{/if}
-				<button
-					type="button"
-					role="menuitem"
-					class={MENU_ITEM}
-					onclick={() => startAdding('received', close)}
-				>
-					<Icon name="add" size={14} />{t('gifts.addReceived')}
-				</button>
-				<!-- One idea for them and others, each with what it comes to (docs/dev/02 §2.25.11). -->
-				<a href={giftGroupPath(c.id)} role="menuitem" class={MENU_ITEM} onclick={close}>
-					<Icon name="people" size={14} />{t('gifts.several.menu')}
-				</a>
-				<!-- Every idea of the household on one page (docs/dev/02 §2.25.6). -->
-				<a href="/gifts" role="menuitem" class={MENU_ITEM} onclick={close}>
-					<Icon name="idea" size={14} />{t('gifts.allIdeas')}
-				</a>
-			{/snippet}
-		</MenuButton>
+		<GiftsMenu
+			{line}
+			contactId={c.id}
+			name={c.displayName}
+			onAdd={startAdding}
+			onRecord={(close) => startRecording(null, close)}
+		/>
 	{/snippet}
 
 	{#if kept.length > 0}
@@ -281,6 +264,7 @@
 					{givers}
 					householdGivers={householdGiverIds}
 					places={data.giftPlaces}
+					onRecord={(on) => startRecording(on)}
 				/>
 			{:else}
 				{@const list = current === 'given' ? given : received}
@@ -348,3 +332,18 @@
 		{/key}
 	{/snippet}
 </Section>
+
+<!-- Outside the card, so it opens from the menu while the card is a line. -->
+<GiftRecordSheet
+	bind:open={recording}
+	recipient={{ id: c.id, name: c.displayName }}
+	{birth}
+	{today}
+	{planned}
+	start={recordStart}
+	people={givers.people}
+	ties={givers.ties}
+	household={givers.household}
+	gifts={shown}
+	error={form && 'giftRecordError' in form ? (form.giftRecordError ?? null) : null}
+/>

@@ -339,7 +339,8 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 #### Gifts card
 
 - After Activity and Notes, full width (docs/dev/02 §2.25). Its header: *+ Given* (ghost), the
-  card's own *+ Idea* disclosure, and a ⋯ menu holding *+ Received*. No count in the header.
+  card's own *+ Idea* disclosure, and a ⋯ menu holding *+ Received* and *Record several…*. No count
+  in the header.
 - Three tabs in the segmented-pill look of the Immich page: *Ideas · n* (the open ideas,
   counted), *Given*, and *Received* only once there is one; arrow keys move between them.
 - A row: a square icon tile (a light bulb in `--accent-yellow` for an idea, the gift in
@@ -417,7 +418,17 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   near it is (`text-xs`, `--fg-muted`) and, at the right, the tally *1 done · 2 assigned · 1 free*
   (`text-xs`, `--fg-muted`). The open rows first; the bought ones at the group's end at
   `opacity-70`. A free idea says *still free* in the giver line's place. *Without an occasion*
-  comes last, without a tally; the *Later* fold stays below all groups.
+  comes last, without a tally; the *Later* fold stays below all groups. A passed group says
+  *Christmas 2025 is over.* under its heading (`text-xs`, `--fg-muted`), followed by the link
+  button *Record what was given…*.
+- *Record given…* (docs/dev/02 §2.25.14, `GiftRecordSheet`): a bottom sheet on a phone and a
+  centered dialog from `md`, with the same frame as *Who has it?*. Under the title and intro come
+  the occasion chips (`aria-pressed`, the passed day in `--fg-subtle`) and *Another day…*, which
+  opens a `DateField`. Then *Planned for this occasion* lists one row per gift, a whole-line
+  `<label>` with the checkbox at the right. Then *Also given*, rows of *What?* and *From*
+  (`GiftGiverField`), and *+ Row*. The footer holds *Cancel* and *Record n*, which is disabled
+  at 0. A saved sheet closes and leaves a toast. A refused one stays open and shows the error
+  inline.
 
 #### To-dos card
 

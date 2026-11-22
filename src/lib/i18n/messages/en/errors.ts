@@ -148,6 +148,11 @@ export const errors = {
 	'errors.giftGroup.nobody': 'Nobody can get this idea for that time. Choose another.',
 	'errors.gift.couldNotSave': 'Could not save the gift.',
 	'errors.gift.badWhen': 'Please choose when the idea is for.',
+	'errors.gift.record.nothing': 'Tick a gift or write one down.',
+	'errors.gift.record.needRecipient': 'Choose whom each gift was for.',
+	'errors.gift.record.needGiver': 'A gift to us needs the person it came from.',
+	'errors.gift.record.stopped': (p: { saved: number; reason: string }) =>
+		`${p.saved} saved, then this one was not: ${p.reason}`,
 	'errors.when.needsBirthYear': 'An age needs their birth year, or an estimate of it.',
 	'errors.when.birthdayPassed': 'That birthday is over. Choose a later one.',
 	'errors.when.christmasPassed': 'That Christmas is over. Choose a later age.',

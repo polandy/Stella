@@ -138,6 +138,8 @@ export interface GiftRepository {
 	 * browses — an archived person's ideas stay on their page only (docs/dev/02 §2.25.6).
 	 */
 	listOpenIdeasVisibleTo(viewer: Viewer): Promise<IdeaWithBirth<OpenIdea>[]>;
+	/** As `listOpenIdeasVisibleTo`, with the bought ones too: what *Nachtragen…* may tick (§2.25.14). */
+	listPlannedVisibleTo(viewer: Viewer): Promise<IdeaWithBirth<OpenIdea>[]>;
 	/**
 	 * One keyset page of the person's given and received gifts, newest day first, then latest
 	 * noted — the story's order (docs/dev/02 §2.23). Ideas are never in it.

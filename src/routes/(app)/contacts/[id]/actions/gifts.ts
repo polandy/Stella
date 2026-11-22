@@ -20,6 +20,7 @@ import {
 	type GiftCommand,
 	type GiftErrorKey
 } from '../../../_shared/gift-commands';
+import { recordGivenFromForm } from '../../../_shared/gift-record';
 import type { Actions } from '../$types';
 
 /*
@@ -119,6 +120,10 @@ export const giftActions = {
 			'giftRowError'
 		);
 	},
+
+	/** *Nachtragen…* (§2.25.14): what was given at a passed occasion, one command per gift. */
+	recordGifts: async ({ request, locals, params }) =>
+		recordGivenFromForm(locals, await request.formData(), contactSectionPath(params.id, 'gifts')),
 
 	removeGift: async (event) => {
 		const form = await event.request.formData();

@@ -104,6 +104,31 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 	const visibleOn = (viewer: Viewer, contactId: string) =>
 		and(eq(gift.contactId, contactId), giftVisibleTo(viewer, gift));
 
+	/** The viewer's gifts in `states` with whom each is for, newest noted first, archived people out. */
+	const browsableIn = (viewer: Viewer, states: readonly Gift['state'][]) =>
+		db
+			.select({
+				...columnsFor(viewer),
+				contactName: contact.displayName,
+				avatarPhotoId: contact.avatarPhotoId,
+				...birthColumns
+			})
+			.from(gift)
+			.innerJoin(contact, eq(gift.contactId, contact.id))
+			.where(
+				and(
+					inArray(gift.state, [...states]),
+					// A list to act on is a browsing surface: an archived person is out (docs/dev/04 §4.9).
+					giftBrowsableBy(viewer, gift)
+				)
+			)
+			.orderBy(desc(gift.createdAt))
+			.all()
+			.map(({ birthDate, birthDatePrecision, ...row }) => ({
+				...giftOf(row),
+				birth: birthOf({ birthDate, birthDatePrecision })
+			}));
+
 	return {
 		async insert(g: Gift) {
 			db.insert(gift).values(giftRow(g)).run();
@@ -186,28 +211,11 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 		},
 
 		async listOpenIdeasVisibleTo(viewer) {
-			return db
-				.select({
-					...columnsFor(viewer),
-					contactName: contact.displayName,
-					avatarPhotoId: contact.avatarPhotoId,
-					...birthColumns
-				})
-				.from(gift)
-				.innerJoin(contact, eq(gift.contactId, contact.id))
-				.where(
-					and(
-						eq(gift.state, 'idea'),
-						// A list to act on is a browsing surface: an archived person is out (docs/dev/04 §4.9).
-						giftBrowsableBy(viewer, gift)
-					)
-				)
-				.orderBy(desc(gift.createdAt))
-				.all()
-				.map(({ birthDate, birthDatePrecision, ...row }) => ({
-					...giftOf(row),
-					birth: birthOf({ birthDate, birthDatePrecision })
-				}));
+			return browsableIn(viewer, ['idea']);
+		},
+
+		async listPlannedVisibleTo(viewer) {
+			return browsableIn(viewer, ['idea', 'bought']);
 		},
 
 		async listStoryPageForContactVisibleTo(viewer, contactId, opts) {

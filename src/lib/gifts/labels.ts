@@ -91,11 +91,25 @@ export function occasionHeading(
 	if (days < 0) return { title, near: lang.t('when.chip.passed') };
 	if (days === 0) return { title, near: lang.t('when.chip.today') };
 	const ahead = days === 1 ? lang.t('when.chip.tomorrow') : lang.t('dates.inDays', { days });
-	// The ISO day is read as UTC midnight, so it is formatted in UTC too: never the day before.
-	const day = new Date(group.on).toLocaleDateString(lang.intlLocale, {
+	return { title, near: `${ahead} · ${shortDay(lang, group.on)}` };
+}
+
+/** *24 Dec*: the ISO day is read as UTC midnight, so it is formatted in UTC too, never the day before. */
+const shortDay = (lang: DateLanguage, on: string) =>
+	new Date(on).toLocaleDateString(lang.intlLocale, {
 		day: 'numeric',
 		month: 'short',
 		timeZone: 'UTC'
 	});
-	return { title, near: `${ahead} · ${day}` };
+
+/** A passed occasion's chip on *Record given…* (§2.25.14): *Christmas 2026 · 24 Dec*; *Birthday* without an age. */
+export function pastOccasionChip(
+	lang: DateLanguage,
+	past: { on: string; when: When | null }
+): { title: string; day: string } {
+	const title =
+		past.when === null
+			? lang.t('gifts.occasion.birthday')
+			: occasionHeading(lang, { on: past.on, when: past.when }, past.on).title;
+	return { title, day: shortDay(lang, past.on) };
 }

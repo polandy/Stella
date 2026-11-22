@@ -58,6 +58,11 @@ export function fakeGifts(
 				.filter((g) => g.state === 'idea' && visible(viewer, g))
 				.map((g) => ({ ...g, contactName: g.contactId, avatarPhotoId: null, birth: birthOf() }));
 		},
+		async listPlannedVisibleTo(viewer) {
+			return [...rows.values()]
+				.filter((g) => (g.state === 'idea' || g.state === 'bought') && visible(viewer, g))
+				.map((g) => ({ ...g, contactName: g.contactId, avatarPhotoId: null, birth: birthOf() }));
+		},
 		async listBoughtVisibleTo(viewer, contactIds) {
 			return [...rows.values()]
 				.filter(

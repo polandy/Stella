@@ -7,6 +7,7 @@ import {
 	nextOccasionLabel,
 	occasionHeading,
 	occasionLabel,
+	pastOccasionChip,
 	stateLabel
 } from './labels';
 
@@ -139,6 +140,22 @@ describe('occasionHeading (§2.25.13)', () => {
 		expect(occasionHeading(de, { on: null, when: null }, '2026-11-21')).toEqual({
 			title: 'Ohne Anlass',
 			near: null
+		});
+	});
+});
+
+describe('pastOccasionChip (§2.25.14)', () => {
+	const de = { t: createTranslator('de'), intlLocale: INTL_LOCALES.de };
+
+	it('names the occasion and its day', () => {
+		const eve = { on: '2026-12-24', when: { kind: 'on_date', on: '2026-12-24' } as const };
+		expect(pastOccasionChip(de, eve)).toEqual({ title: 'Weihnachten 2026', day: '24. Dez.' });
+	});
+
+	it('names a birthday without an age as a birthday', () => {
+		expect(pastOccasionChip(de, { on: '2026-06-10', when: null })).toEqual({
+			title: 'Geburtstag',
+			day: '10. Juni'
 		});
 	});
 });

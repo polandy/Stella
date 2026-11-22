@@ -655,6 +655,14 @@ and a good idea is still there on the birthday it was meant for.
   *Christmas 2026 · in 33 days*, then the next birthday, *Without an occasion* last — and each
   says how far it is: *1 done · 2 assigned · 1 free*. An idea nobody gives yet says *still free*;
   the ones already bought or done stand at the end of their occasion.
+- **Record given…** After Christmas or a birthday, write down everything that was given at
+  once. Use **Record several…** in the Gifts card's **⋯** menu, or **Record what was given…**
+  under an occasion that has passed. Pick the occasion, or **Another day…**. The ideas planned
+  for it are listed; tick the ones that were given. Ideas that were bought or have a giver are
+  already ticked. Below that, add what else was given and whom it was from, one row each. On
+  the **Gift ideas** page the same button records gifts for everyone. There, each row also asks
+  whom it was for: **Us (household)** notes a present you received, on the giver's card under
+  **Received**. Everything recorded this way is shared with the household.
 - When you give it, press **Mark as given…** under the idea. Stella asks only for the day (today,
   unless you change it) and the occasion — *Birthday*, *Christmas*, *Anniversary*, or *Other…*
   in your own words. The idea moves to the **Given** tab, grouped by year, with its note and

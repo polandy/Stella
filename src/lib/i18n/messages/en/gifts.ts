@@ -189,7 +189,37 @@ export const gifts = {
 	'gifts.assign.occasion': 'For which occasion?',
 	'gifts.assign.keep': (p: { name: string }) => `Keep it from ${p.name}`,
 	'gifts.assign.free': 'Free again',
-	'gifts.assign.save': 'Assign'
+	'gifts.assign.save': 'Assign',
+
+	// *Record given…* (docs/dev/02 §2.25.14): what was given at a passed occasion, several at once.
+	'gifts.record.open': 'Record given…',
+	'gifts.record.menu': 'Record several…',
+	'gifts.record.menuHint': (p: { name: string }) => `What ${p.name} got at an occasion, at once`,
+	'gifts.record.title': 'Record gifts',
+	'gifts.record.titleFor': (p: { name: string }) => `Record gifts for ${p.name}`,
+	'gifts.record.intro':
+		'What was given at an occasion, all at once. It then stands in the same story as everything else.',
+	'gifts.record.occasion': 'Occasion',
+	'gifts.record.otherDay': 'Another day…',
+	'gifts.record.day': 'Day',
+	'gifts.record.on': (p: { day: string }) => `On ${p.day}.`,
+	'gifts.record.planned': 'Planned for this occasion',
+	'gifts.record.plannedFor': (p: { name: string }) => `for ${p.name}`,
+	'gifts.record.wasGiven': (p: { title: string }) => `“${p.title}” was given`,
+	'gifts.record.also': 'Also given',
+	'gifts.record.what': 'What was given?',
+	'gifts.record.whatPlaceholder': 'What?',
+	'gifts.record.for': 'For',
+	'gifts.record.forUs': 'Us (household)',
+	'gifts.record.forSearch': 'Whom?',
+	'gifts.record.needGiver': 'A gift to “Us” needs a person under “From”.',
+	'gifts.record.becomesReceived': (p: { name: string }) => `Noted on ${p.name} under “Received”.`,
+	'gifts.record.addRow': 'Row',
+	'gifts.record.save': (p: { count: number }) => `Record ${p.count}`,
+	'gifts.record.done': (p: { count: number; occasion: string }) =>
+		`${p.count} ${p.count === 1 ? 'gift' : 'gifts'} recorded for ${p.occasion}`,
+	'gifts.record.over': (p: { occasion: string }) => `${p.occasion} is over.`,
+	'gifts.record.overLink': 'Record what was given…'
 };
 
 /** The key set every translation of this area has to provide. */

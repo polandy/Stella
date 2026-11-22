@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import { onMount } from 'svelte';
+	import GiftRecordSheet from '#lib/components/gifts/GiftRecordSheet.svelte';
 	import IdeaListRow from '#lib/components/gifts/IdeaListRow.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
 	import Avatar from '#lib/components/ui/Avatar.svelte';
 	import EmptyState from '#lib/components/ui/EmptyState.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';
@@ -74,6 +76,9 @@
 		else sending.delete(giftId);
 	}
 
+	// *Record given…* for everyone (§2.25.14): whom each row is for is chosen on the row.
+	let recording = $state(false);
+
 	const rowError = (giftId: string) =>
 		form?.giftRowError?.giftId === giftId ? form.giftRowError.message : null;
 </script>
@@ -82,14 +87,24 @@
 
 <main class="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-6 md:px-6 md:py-10">
 	<header class="flex flex-col gap-1">
-		<h1 class="flex items-baseline gap-2 text-2xl font-semibold text-fg">
-			{t('gifts.list.title')}
-			{#if open > 0}
-				<span class="text-sm font-normal text-fg-muted" data-testid="gift-list-open"
-					>{t('gifts.list.open', { count: open })}</span
-				>
-			{/if}
-		</h1>
+		<div class="flex items-start gap-2">
+			<h1 class="flex flex-1 items-baseline gap-2 text-2xl font-semibold text-fg">
+				{t('gifts.list.title')}
+				{#if open > 0}
+					<span class="text-sm font-normal text-fg-muted" data-testid="gift-list-open"
+						>{t('gifts.list.open', { count: open })}</span
+					>
+				{/if}
+			</h1>
+			<Button
+				variant="secondary"
+				size="sm"
+				type="button"
+				icon="gift"
+				onclick={() => (recording = true)}
+				data-testid="gift-record-open">{t('gifts.record.open')}</Button
+			>
+		</div>
 		<p class="text-sm text-fg-muted">{t('gifts.list.intro')}</p>
 		{#if hasWaiting}
 			<button
@@ -163,3 +178,17 @@
 		<EmptyState icon="idea" title={t('gifts.list.empty')} hint={t('gifts.list.emptyHint')} />
 	{/if}
 </main>
+
+<GiftRecordSheet
+	bind:open={recording}
+	recipient={null}
+	birth={null}
+	today={data.today}
+	planned={data.planned}
+	start={null}
+	people={data.people}
+	ties={[]}
+	household={[]}
+	gifts={[]}
+	error={form && 'giftRecordError' in form ? (form.giftRecordError ?? null) : null}
+/>
