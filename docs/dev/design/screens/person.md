@@ -14,7 +14,7 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 
 - One column of full-width cards, at most `66.25rem` (about 1060 px), in a fixed order: the
   identity card, then **People · Photos · Activity and Notes · Gifts · Outings · Mentioned in**.
-  No page tabs (the Gifts and Outings cards have tabs of their own, inside them).
+  No page tabs (the Gifts and Outings cards have tabs of their own, inside them; Gifts ends with *Gives*, docs/dev/02 §2.25.15).
 - The **To-dos** card is the one card that moves: right under the identity card (above the jump
   bar's slot and People) while a to-do is open, otherwise one line after Gifts (docs/dev/02
   §2.26.2).
