@@ -75,10 +75,7 @@ export function giverLabel(t: Translate, giver: GiverView, state: GiftState): st
 
 const DAY_MS = 86_400_000;
 
-/**
- * An occasion's heading on the card (§2.25.13): *Christmas 2026* · *in 34 days · 24 Dec*, or
- * *Without an occasion* with no nearness at all.
- */
+/** An occasion's heading (§2.25.13): *Christmas 2026* · *in 34 days · 24 Dec*, or *Without an occasion*. */
 export function occasionHeading(
 	lang: DateLanguage,
 	group: { on: string | null; when: When | null },

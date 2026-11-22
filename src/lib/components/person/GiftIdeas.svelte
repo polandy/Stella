@@ -8,8 +8,7 @@
 	import type { GiverChoices, GroupLink, PersonPageData } from './types';
 
 	// The *Ideas* tab: open ideas, the waiting ones folded under *Later* (docs/dev/02 §2.25.8), and
-	// the bought ones under *Ready to give* (§2.25.9) — or, once one has a giver or a day, every open
-	// and bought gift under its occasion (§2.25.13).
+	// the bought ones under *Ready to give* (§2.25.9); or all of them by occasion (§2.25.13).
 	interface Props {
 		open: PersonPageData['gifts'];
 		waiting: PersonPageData['gifts'];

@@ -4,11 +4,7 @@ import type { When } from '../when/when';
 import type { GiftState } from './gifts';
 import { isAssigned, type GiverView } from './giver';
 
-/*
- * The Gifts card by occasion (docs/dev/02 §2.25.13): its open and bought gifts under the day they
- * are for, so a Christmas reads as one plan — who gives what, what is done, what is still free.
- * Pure, so the grouping is tested without a browser; the card only renders.
- */
+// The Gifts card by occasion (docs/dev/02 §2.25.13): who gives what, what is done, what is free.
 
 /** What grouping reads of a gift. */
 export interface OccasionGift {
@@ -35,10 +31,7 @@ function dayOf(gift: OccasionGift, birth: PartialDate | null): string | null {
 	return whenDay(when, birth)?.on ?? null;
 }
 
-/**
- * The gifts by occasion, soonest first and those without one last — or null while none has a
- * giver or a day, and the card stays as it was.
- */
+/** The gifts by occasion, soonest first, none last; null while no gift has a giver or a day. */
 export function byOccasion<T extends OccasionGift>(
 	gifts: readonly T[],
 	birth: PartialDate | null
@@ -75,10 +68,7 @@ export function occasionTally(gifts: readonly OccasionGift[]): {
 	};
 }
 
-/**
- * Whether the household hands it over itself (D17): then *Besorgt…* asks where it waits; for
- * anyone else's gift *Erledigt* only notes that it is taken care of.
- */
+/** Whether the household hands it over itself (D17): *Besorgt…* then, else *Erledigt*. */
 export function handsOver(giver: GiverView, householdGivers: ReadonlySet<string>): boolean {
 	if (giver.kind === 'none' || giver.kind === 'household') return true;
 	return giver.kind === 'person' && householdGivers.has(giver.contactId);

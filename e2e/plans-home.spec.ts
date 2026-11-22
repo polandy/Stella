@@ -205,9 +205,7 @@ test.describe('on a phone', () => {
 		for (const title of [titles.walk, titles.swim, titles.run])
 			await ask(page, title).getByRole('button', { name: 'Keep without a date' }).click();
 		await expect(comingUp(page).getByTestId('plan-ask')).toHaveCount(0);
-		// What the line may name is read off the settled list, not assumed: the shared database
-		// holds other birthdays today (the demo seed's among them) that sort before this Mia.
-		// Attributes, not roles: past the phone's first rows the list is hidden until *Show all*.
+		// Read the nameable row off the settled list: the shared DB has other birthdays before Mia.
 		const veiled = page.locator(
 			'[role="img"][aria-label="private"], [role="img"][aria-label^="hidden from "]'
 		);

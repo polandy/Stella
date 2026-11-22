@@ -9,11 +9,7 @@
 	import { heldAnswer } from '#lib/undo/held-answer.js';
 	import { removalKey } from '#lib/undo/keys.js';
 
-	/*
-	 * *Besorgt…* on a gift the household hands over itself (docs/dev/02 §2.25.9, D17, D20): where it
-	 * waits, picked from the places already used or typed, and — its author, on a member's own
-	 * person — kept from them, ticked by default (D23). Held for one undo window like *Bought*.
-	 */
+	// *Besorgt…* (docs/dev/02 §2.25.9): where it waits (D20) and, for its author, kept from them (D23).
 	interface Props {
 		gift: {
 			id: string;

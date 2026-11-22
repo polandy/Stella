@@ -27,10 +27,7 @@ export interface MarkGiftBoughtInput {
 	hiddenFromRecipient?: boolean;
 }
 
-/**
- * An idea bought — kept somewhere, maybe — or a bought one an idea again, its place forgotten.
- * Asking for what already stands changes nothing.
- */
+/** An idea bought, maybe kept somewhere, or an idea again with its place forgotten; a no-op is a no-op. */
 export async function markGiftBought(
 	deps: Pick<GiftDeps, 'gifts' | 'clock' | 'ownPeople'>,
 	actor: GiftActor,

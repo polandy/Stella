@@ -202,7 +202,8 @@ describe('createDrizzleGiftRepository', () => {
 			await repo.insert(
 				gift({ id: 'g-2', contactId: 'c-priv', state: 'bought', storedAt: 'Safe' })
 			);
-			expect(await repo.listStoredPlacesVisibleTo(viewerU2)).toEqual([]);
+			await repo.insert(gift({ id: 'g-3', state: 'bought', storedAt: 'Estrich' }));
+			expect(await repo.listStoredPlacesVisibleTo(viewerU2)).toEqual(['Estrich']);
 			expect(await repo.listStoredPlacesVisibleTo(viewerU1)).toEqual(
 				expect.arrayContaining(['Tresor', 'Safe'])
 			);

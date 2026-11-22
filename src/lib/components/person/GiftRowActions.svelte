@@ -5,11 +5,7 @@
 	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import GiftBoughtButton from './GiftBoughtButton.svelte';
 
-	/*
-	 * What an open gift's row offers (docs/dev/02 §2.25.9, §2.25.12): *Besorgt…* when the household
-	 * hands it over, *Erledigt* when someone else does (D17); *Mark as given*; *Vergeben…*; and on a
-	 * bought one its undo, in the same word.
-	 */
+	// A gift row's actions (docs/dev/02 §2.25.9, §2.25.12): *Besorgt…* if ours, else *Erledigt* (D17).
 	interface Props {
 		gift: { id: string; title: string; state: GiftState; giver: GiverView };
 		/** The household hands it over itself (`handsOver`). */

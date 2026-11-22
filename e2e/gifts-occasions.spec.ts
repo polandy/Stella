@@ -3,12 +3,7 @@ import { appReady, isoDaysAfter, serverToday, signIn } from './app';
 import { LINK, personIdOf, seedHousehold } from './seed';
 import { UNDO_WINDOW_MS } from '../src/lib/undo/pending-removals';
 
-/*
- * The Gifts card by occasion (docs/dev/02 §2.25.13): once an idea has a giver or a day, every open
- * and bought gift stands under its occasion with a tally. A gift someone outside the household
- * gives is *Done* in one tap; one the household hands over is *Bought…* with where it waits
- * (§2.25.9). The person is the run's own, since the suite shares one database.
- */
+// The card by occasion (docs/dev/02 §2.25.13), *Done* vs *Bought…* with a place (§2.25.9).
 
 /** Six letters no other attempt shares. */
 function runLetters(): string {
