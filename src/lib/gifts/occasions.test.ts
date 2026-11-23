@@ -101,12 +101,21 @@ describe('whose turn it is to hand it over (D17)', () => {
 	it('is ours with nobody named, the household, or one of its people', () => {
 		expect(handsOver(NOBODY, household)).toBe(true);
 		expect(handsOver({ kind: 'household' }, household)).toBe(true);
+		expect(
+			handsOver(
+				{ kind: 'several', givers: [SANDRA, { kind: 'person', contactId: 'lena', name: 'Lena' }] },
+				household
+			)
+		).toBe(true);
 		expect(handsOver({ kind: 'person', contactId: 'lena', name: 'Lena' }, household)).toBe(true);
 	});
 
 	it('is not ours for anyone else, unseen or gone', () => {
 		expect(handsOver(SANDRA, household)).toBe(false);
 		expect(handsOver({ kind: 'unseen' }, household)).toBe(false);
+		expect(handsOver({ kind: 'several', givers: [SANDRA, { kind: 'unseen' }] }, household)).toBe(
+			false
+		);
 		expect(handsOver({ kind: 'left', name: 'Ruth' }, household)).toBe(false);
 	});
 });

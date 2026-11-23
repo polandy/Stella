@@ -244,6 +244,28 @@ export const gift = sqliteTable(
 );
 
 /*
+ * The givers of a gift beside the first (docs/dev/02 §2.25.12): several people giving together, in
+ * the order they were named. A deleted giver lets go of `contact_id` and keeps their name in
+ * `left_name`, as `gift.giver_left_name` does for the first.
+ */
+export const giftCoGiver = sqliteTable(
+	'gift_co_giver',
+	{
+		giftId: text('gift_id')
+			.notNull()
+			.references(() => gift.id, { onDelete: 'cascade' }),
+		position: integer('position').notNull(),
+		contactId: text('contact_id').references(() => contact.id),
+		leftName: text('left_name')
+	},
+	(t) => [
+		primaryKey({ columns: [t.giftId, t.position] }),
+		// What one person gives together with others (the *Schenkt* tab).
+		index('gift_co_giver_contact_idx').on(t.contactId)
+	]
+);
+
+/*
  * Something the household still owes one person (docs/dev/02 §2.26): a line, maybe a day it is due
  * by, open until somebody ticks it — then `done_at`, `done_on` and `done_by` say when, on which
  * day and who. Visibility follows the child-record rule (private ⇒ only the author).

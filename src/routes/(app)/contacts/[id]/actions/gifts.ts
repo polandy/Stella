@@ -8,10 +8,12 @@ import {
 	GiftRemoveSchema
 } from '#lib/commands/gift-todo-payloads.js';
 import { contactSectionPath } from '#lib/people/sections.js';
-import type { RequestEvent } from '@sveltejs/kit';
+import { fail, type RequestEvent } from '@sveltejs/kit';
+import { say } from '#lib/server/i18n/say.js';
 import {
 	applyGiftCommand,
-	giverOf,
+	textOf,
+	giversOf,
 	occasionOf,
 	boughtOf,
 	surpriseOf,
@@ -53,9 +55,33 @@ export const giftActions = {
 				...visibilityOf(form),
 				occasion: occasionOf(form),
 				when: whenOf(form),
-				giver: giverOf(form)
+				...giversOf(form)
 			},
 			'giftError'
+		);
+	},
+
+	/** *Tomy gives…* (§2.25.15): the person the URL names gives an idea to whom the form chose. */
+	addGiftBy: async (event) => {
+		const form = await event.request.formData();
+		const recipient = textOf(form, 'for');
+		if (recipient === null) {
+			return fail(400, { giftError: say(event.locals, 'errors.gift.needRecipient') });
+		}
+		return applyGiftCommand(
+			event.locals,
+			form,
+			'gift.add',
+			{
+				...fromFormData(GiftAddSchema, form),
+				state: 'idea',
+				...visibilityOf(form),
+				occasion: null,
+				when: whenOf(form),
+				giver: { contactId: event.params.id }
+			},
+			'giftError',
+			{ contactId: recipient, back: contactSectionPath(event.params.id, 'gifts') }
 		);
 	},
 
@@ -101,7 +127,7 @@ export const giftActions = {
 			'gift.assign',
 			{
 				...fromFormData(GiftAssignSchema, form),
-				giver: giverOf(form),
+				...giversOf(form),
 				when: whenOf(form),
 				hiddenFromRecipient: surpriseOf(form)
 			},

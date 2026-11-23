@@ -76,7 +76,9 @@ test('the card groups by occasion, a giver’s gift is done, and ours is bought 
 	const kiteRow = rowOf(card, kite);
 	await kiteRow.getByTestId('gift-assign-open').click();
 	const assign = kiteRow.getByTestId('gift-assign');
-	await assign.getByTestId('gift-giver').locator('label', { hasText: aunt }).click();
+	const giver = assign.getByTestId('gift-giver');
+	await giver.getByRole('combobox').fill(aunt);
+	await giver.getByRole('option').filter({ hasText: aunt }).first().click();
 	await assign.getByRole('button', { name: 'Assign', exact: true }).click();
 	await expect(groups.first().getByTestId('gift-tally')).toHaveText('0 done · 1 assigned · 1 free');
 	await expect(kiteRow.getByTestId('gift-buy-open')).toHaveCount(0);

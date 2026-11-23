@@ -7,7 +7,8 @@ import { birthOf } from '../../when/resolve';
 import { whenColumns, whenOfColumns, type When, type WhenColumns } from '../../when/when';
 import type { DatePrecision } from '../../dates/partial-date';
 import type * as schema from './schema';
-import { contact, gift } from './schema';
+import { withCoGivers, storeCoGivers } from './gift-co-givers';
+import { contact, gift, giftCoGiver } from './schema';
 
 /*
  * Drizzle adapter for the GiftRepository port (docs/dev/08 §8.3). Every read joins the person the
@@ -86,7 +87,14 @@ function withBirth<R extends WhenColumns & BirthColumns>(row: R) {
 
 /** A gift as its row stores it: its when as the three when columns. */
 export function giftRow(g: Gift) {
-	const { when, hiddenFromRecipient, giverIsHousehold, giverName: _read, ...rest } = g;
+	const {
+		when,
+		hiddenFromRecipient,
+		giverIsHousehold,
+		giverName: _read,
+		coGivers: _beside,
+		...rest
+	} = g;
 	return {
 		...rest,
 		hiddenFromRecipient: hiddenFromRecipient ? 1 : 0,
@@ -106,32 +114,39 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 
 	/** The viewer's gifts in `states` with whom each is for, newest noted first, archived people out. */
 	const browsableIn = (viewer: Viewer, states: readonly Gift['state'][]) =>
-		db
-			.select({
-				...columnsFor(viewer),
-				contactName: contact.displayName,
-				avatarPhotoId: contact.avatarPhotoId,
-				...birthColumns
-			})
-			.from(gift)
-			.innerJoin(contact, eq(gift.contactId, contact.id))
-			.where(
-				and(
-					inArray(gift.state, [...states]),
-					// A list to act on is a browsing surface: an archived person is out (docs/dev/04 §4.9).
-					giftBrowsableBy(viewer, gift)
+		withCoGivers(
+			db,
+			viewer,
+			db
+				.select({
+					...columnsFor(viewer),
+					contactName: contact.displayName,
+					avatarPhotoId: contact.avatarPhotoId,
+					...birthColumns
+				})
+				.from(gift)
+				.innerJoin(contact, eq(gift.contactId, contact.id))
+				.where(
+					and(
+						inArray(gift.state, [...states]),
+						// A list to act on is a browsing surface: an archived person is out (docs/dev/04 §4.9).
+						giftBrowsableBy(viewer, gift)
+					)
 				)
-			)
-			.orderBy(desc(gift.createdAt))
-			.all()
-			.map(({ birthDate, birthDatePrecision, ...row }) => ({
-				...giftOf(row),
-				birth: birthOf({ birthDate, birthDatePrecision })
-			}));
+				.orderBy(desc(gift.createdAt))
+				.all()
+				.map(({ birthDate, birthDatePrecision, ...row }) => ({
+					...giftOf(row),
+					birth: birthOf({ birthDate, birthDatePrecision })
+				}))
+		);
 
 	return {
 		async insert(g: Gift) {
-			db.insert(gift).values(giftRow(g)).run();
+			db.transaction((tx) => {
+				tx.insert(gift).values(giftRow(g)).run();
+				storeCoGivers(tx, g);
+			});
 		},
 
 		async findVisibleTo(viewer, contactId, giftId) {
@@ -141,30 +156,33 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 				.innerJoin(contact, eq(gift.contactId, contact.id))
 				.where(and(eq(gift.id, giftId), visibleOn(viewer, contactId)))
 				.get();
-			return row ? giftOf(row) : null;
+			return row ? withCoGivers(db, viewer, [giftOf(row)])[0]! : null;
 		},
 
 		async update(g: Gift) {
-			db.update(gift)
-				.set({
-					visibility: g.visibility,
-					hiddenFromRecipient: g.hiddenFromRecipient ? 1 : 0,
-					state: g.state,
-					title: g.title,
-					note: g.note,
-					url: g.url,
-					givenOn: g.givenOn,
-					occasion: g.occasion,
-					...whenColumns(g.when),
-					whenCheckedOn: g.whenCheckedOn,
-					giverContactId: g.giverContactId,
-					giverIsHousehold: g.giverIsHousehold ? 1 : 0,
-					giverLeftName: g.giverLeftName,
-					storedAt: g.storedAt,
-					updatedAt: g.updatedAt
-				})
-				.where(eq(gift.id, g.id))
-				.run();
+			db.transaction((tx) => {
+				tx.update(gift)
+					.set({
+						visibility: g.visibility,
+						hiddenFromRecipient: g.hiddenFromRecipient ? 1 : 0,
+						state: g.state,
+						title: g.title,
+						note: g.note,
+						url: g.url,
+						givenOn: g.givenOn,
+						occasion: g.occasion,
+						...whenColumns(g.when),
+						whenCheckedOn: g.whenCheckedOn,
+						giverContactId: g.giverContactId,
+						giverIsHousehold: g.giverIsHousehold ? 1 : 0,
+						giverLeftName: g.giverLeftName,
+						storedAt: g.storedAt,
+						updatedAt: g.updatedAt
+					})
+					.where(eq(gift.id, g.id))
+					.run();
+				storeCoGivers(tx, g);
+			});
 		},
 
 		async remove(giftId) {
@@ -172,7 +190,9 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 		},
 
 		async listForContactVisibleTo(viewer, contactId) {
-			return (
+			return withCoGivers(
+				db,
+				viewer,
 				db
 					.select(columnsFor(viewer))
 					.from(gift)
@@ -230,19 +250,47 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 					)!
 				);
 			}
-			const rows = db
-				.select(columnsFor(viewer))
-				.from(gift)
-				.innerJoin(contact, eq(gift.contactId, contact.id))
-				.where(and(...conditions))
-				.orderBy(desc(gift.givenOn), desc(gift.createdAt))
-				.limit(opts.limit)
-				.all()
-				.map(giftOf);
+			const rows = withCoGivers(
+				db,
+				viewer,
+				db
+					.select(columnsFor(viewer))
+					.from(gift)
+					.innerJoin(contact, eq(gift.contactId, contact.id))
+					.where(and(...conditions))
+					.orderBy(desc(gift.givenOn), desc(gift.createdAt))
+					.limit(opts.limit)
+					.all()
+					.map(giftOf)
+			);
 			// A given or received gift always has its day (`domain/gifts`); the state filter says so.
 			return rows.filter(
 				(row): row is DatedGift =>
 					row.givenOn !== null && (row.state === 'given' || row.state === 'received')
+			);
+		},
+
+		async listGivenByVisibleTo(viewer, giverId) {
+			const beside = db
+				.select({ giftId: giftCoGiver.giftId })
+				.from(giftCoGiver)
+				.where(eq(giftCoGiver.contactId, giverId));
+			return withCoGivers(
+				db,
+				viewer,
+				db
+					.select({ ...columnsFor(viewer), contactName: contact.displayName })
+					.from(gift)
+					.innerJoin(contact, eq(gift.contactId, contact.id))
+					.where(
+						and(
+							or(eq(gift.giverContactId, giverId), inArray(gift.id, beside)),
+							giftVisibleTo(viewer, gift)
+						)
+					)
+					.orderBy(desc(gift.createdAt))
+					.all()
+					.map(giftOf)
 			);
 		},
 

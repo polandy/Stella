@@ -672,6 +672,10 @@ and a good idea is still there on the birthday it was meant for.
   second one is on purpose.
 - **+ Given** records something given earlier, for catching up. **+ Received**, in the card's
   **⋯** menu, records a present *from* them; the **Received** tab appears once there is one.
+- **Gives.** Every person's Gifts card, a child's too, has a **Gives** tab: what they give
+  whom, open ideas first and **Earlier** below. **Tomy gives…** in the **⋯** menu notes a new
+  one: say what, for whom, and optionally when. A present for someone in the household is a
+  surprise for them: it stays out of their sight here too, and the others see *Kept from Mama*.
 - Each gift says who noted it. The pencil changes it, the cross removes it (with *Undo* for a
   few seconds). Anyone who can see a gift can change it or mark it given — only the person who
   noted it can make it private.
@@ -685,8 +689,12 @@ and a good idea is still there on the birthday it was meant for.
   family and friends first, then your household; **Someone else…** finds anyone else, or adds
   someone new. The idea then reads *Grandma is giving it*, so nobody buys it twice; choosing
   again moves it on, **Free again** clears it. *+ Idea* can say who gives it right away (under
-  *Note or link*), and *+ Given* asks **From** — whom it was from. When the idea is for someone
-  in the household, picking a giver makes it a surprise for them. If you cannot see the giver's
+  *Note or link*), and *+ Given* shows **From us** quietly, optional: leave it, and nothing is recorded beyond *us*; tap **Change** only when it was someone else (it reads **From me** for your own person alone). When the idea is for someone
+  in the household, picking a giver makes it a surprise for them. **From** and **Who gives it?**
+  are a person search: Stella lists **Us**, the person's family and your household first, and
+  you can add several people, who give it together. They show as chips (tap the **×** to
+  remove one) and the gift reads *from Julia and Andy*; on Julia's **Gives** tab it says
+  *together with Andy*. Handy to note that your wife gave someone a present as a reminder. If you cannot see the giver's
   person, the idea just says *taken*.
 - Given and received gifts also appear under **Activity** on their day. Ideas never do.
 - An idea can be noted from anywhere: `⌘K` / `Ctrl-K`, **Gift idea for …**, then the person's

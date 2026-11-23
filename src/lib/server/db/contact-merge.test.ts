@@ -187,6 +187,44 @@ describe('what follows the person', () => {
 		]);
 	});
 
+	it('makes the survivor a giver beside the first too, named once and never for their own gift', () => {
+		seedContact('tomy', 'Tomy');
+		seedContact('ada', 'Ada');
+		db.insert(schema.gift)
+			.values([
+				{ id: 'g1', contactId: 'tomy', createdBy: U1, state: 'idea', title: 'Puzzle' },
+				{ id: 'g2', contactId: 'keep', createdBy: U1, state: 'idea', title: 'Candle' },
+				{ id: 'g3', contactId: 'tomy', createdBy: U1, state: 'idea', title: 'Book' }
+			])
+			.run();
+		db.update(schema.gift).set({ giverContactId: 'ada' }).where(eq(schema.gift.id, 'g1')).run();
+		db.insert(schema.giftCoGiver)
+			.values([
+				// Beside the first: the merged record moves across.
+				{ giftId: 'g1', position: 0, contactId: 'dup' },
+				// Both of them were named: one stays.
+				{ giftId: 'g3', position: 0, contactId: 'keep' },
+				{ giftId: 'g3', position: 1, contactId: 'dup' },
+				// A gift for the survivor would come from themselves.
+				{ giftId: 'g2', position: 0, contactId: 'dup' }
+			])
+			.run();
+
+		expect(merge()).toBe(true);
+
+		expect(
+			db
+				.select()
+				.from(schema.giftCoGiver)
+				.orderBy(schema.giftCoGiver.giftId)
+				.all()
+				.map((r) => [r.giftId, r.position, r.contactId])
+		).toEqual([
+			['g1', 0, 'keep'],
+			['g3', 0, 'keep']
+		]);
+	});
+
 	it('brings their to-dos across, open and ticked alike (docs/dev/02 §2.26)', () => {
 		db.insert(schema.todo)
 			.values([

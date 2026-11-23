@@ -4,6 +4,9 @@ import { createTranslator } from '../i18n/translate';
 import {
 	addedLabel,
 	giverLabel,
+	togetherLabel,
+	giverSegments,
+	togetherSegments,
 	nextOccasionLabel,
 	occasionHeading,
 	occasionLabel,
@@ -88,6 +91,20 @@ describe('nextOccasionLabel', () => {
 	});
 });
 
+describe('togetherLabel', () => {
+	const en = createTranslator('en');
+	const de = createTranslator('de');
+	const andy = { kind: 'person', contactId: 'andy', name: 'Andy' } as const;
+	it('says with whom it is given, and nothing when it is given alone', () => {
+		expect(togetherLabel(de, [])).toBeNull();
+		expect(togetherLabel(de, [andy])).toBe('gemeinsam mit Andy');
+		expect(togetherLabel(en, [andy, { kind: 'household' }])).toBe('together with Andy and us');
+		expect(togetherLabel(de, [andy, { kind: 'unseen' }])).toBe(
+			'gemeinsam mit Andy und jemand anderem'
+		);
+	});
+});
+
 describe('giverLabel', () => {
 	const en = createTranslator('en');
 	const de = createTranslator('de');
@@ -106,6 +123,30 @@ describe('giverLabel', () => {
 		expect(giverLabel(de, sandra, 'given')).toBe('von Sandra');
 		expect(giverLabel(en, { kind: 'household' }, 'given')).toBe('from us');
 		expect(giverLabel(de, { kind: 'unseen' }, 'given')).toBe('von jemand anderem');
+	});
+
+	it('says who give together, the household among them', () => {
+		const julia = { kind: 'person', contactId: 'j', name: 'Julia' } as const;
+		const andy = { kind: 'person', contactId: 'a', name: 'Andy' } as const;
+		const ruth = { kind: 'left', name: 'Ruth' } as const;
+		expect(giverLabel(de, { kind: 'several', givers: [julia, andy] }, 'given')).toBe(
+			'von Julia und Andy'
+		);
+		expect(giverLabel(en, { kind: 'several', givers: [julia, andy, ruth] }, 'given')).toBe(
+			'from Julia, Andy and Ruth'
+		);
+		expect(giverLabel(de, { kind: 'several', givers: [julia, andy] }, 'idea')).toBe(
+			'Julia und Andy schenken'
+		);
+		expect(
+			giverLabel(en, { kind: 'several', givers: [{ kind: 'household' }, julia] }, 'idea')
+		).toBe('We and Julia are giving it');
+		expect(
+			giverLabel(de, { kind: 'several', givers: [{ kind: 'household' }, julia] }, 'given')
+		).toBe('von uns und Julia');
+		expect(giverLabel(de, { kind: 'several', givers: [julia, { kind: 'unseen' }] }, 'given')).toBe(
+			'von Julia und jemand anderem'
+		);
 	});
 
 	it('says nothing when nobody is named, or on a gift received', () => {
@@ -157,5 +198,52 @@ describe('pastOccasionChip (§2.25.14)', () => {
 			title: 'Geburtstag',
 			day: '10. Juni'
 		});
+	});
+});
+
+describe('giverSegments', () => {
+	const en = createTranslator('en');
+	const julia = { kind: 'person', contactId: 'julia', name: 'Julia' } as const;
+	const andy = { kind: 'person', contactId: 'andy', name: 'Andy' } as const;
+
+	it('cuts a person out of the phrase, linking to them', () => {
+		expect(giverSegments(en, julia, 'given')).toEqual([
+			{ text: 'from ' },
+			{ text: 'Julia', contactId: 'julia' }
+		]);
+		expect(giverSegments(en, julia, 'idea')).toEqual([
+			{ text: 'Julia', contactId: 'julia' },
+			{ text: ' is giving it' }
+		]);
+	});
+
+	it('links every person of several, and not the household or a gone name', () => {
+		expect(
+			giverSegments(en, { kind: 'several', givers: [julia, { kind: 'household' }, andy] }, 'given')
+		).toEqual([
+			{ text: 'from ' },
+			{ text: 'Julia', contactId: 'julia' },
+			{ text: ', ' },
+			{ text: 'us' },
+			{ text: ' and ' },
+			{ text: 'Andy', contactId: 'andy' }
+		]);
+		expect(giverSegments(en, { kind: 'left', name: 'Otto' }, 'given')).toEqual([
+			{ text: 'from ' },
+			{ text: 'Otto' }
+		]);
+	});
+
+	it('keeps a nameless giver one plain piece, and says nothing for none', () => {
+		expect(giverSegments(en, { kind: 'household' }, 'given')).toEqual([{ text: 'from us' }]);
+		expect(giverSegments(en, { kind: 'none' }, 'given')).toBeNull();
+	});
+
+	it('links the others of a gift given together', () => {
+		expect(togetherSegments(en, [andy])).toEqual([
+			{ text: 'together with ' },
+			{ text: 'Andy', contactId: 'andy' }
+		]);
+		expect(togetherSegments(en, [])).toBeNull();
 	});
 });

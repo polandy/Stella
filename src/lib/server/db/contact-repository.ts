@@ -21,6 +21,7 @@ import {
 	activityLog,
 	contact as contactTable,
 	gift,
+	giftCoGiver,
 	journalEntry,
 	photo,
 	user as userTable
@@ -169,6 +170,11 @@ export function createDrizzleContactRepository(
 				tx.update(gift)
 					.set({ giverLeftName: found.displayName, giverContactId: null })
 					.where(eq(gift.giverContactId, id))
+					.run();
+
+				tx.update(giftCoGiver)
+					.set({ leftName: found.displayName, contactId: null })
+					.where(eq(giftCoGiver.contactId, id))
 					.run();
 
 				tx.delete(contactTable).where(eq(contactTable.id, id)).run();

@@ -16,11 +16,11 @@ import { listGroupPhotosOf, listGroupPhotosToCut } from '#lib/server/domain/medi
 import { listGallery } from '#lib/server/domain/media/gallery.js';
 import { listMentionedIn } from '#lib/server/domain/mentions/mentioned-in.js';
 import { listNotesForContact } from '#lib/server/domain/notes/notes.js';
-import { listGiftsForContact } from '#lib/server/domain/gifts/gifts.js';
+import { listGiftsForContact, listGiftsGivenBy } from '#lib/server/domain/gifts/gifts.js';
 import { giftPlaces } from '#lib/server/domain/gifts/bought.js';
 import { listPlansForContact } from '#lib/server/domain/plans/plans.js';
 import { readGiftGroupsOf } from '#lib/server/domain/gifts/gift-group-follow-up.js';
-import { mayKeepFrom } from '#lib/server/domain/shared/idea-on-person.js';
+import { mayKeepFrom, peopleToKeepFrom } from '#lib/server/domain/shared/idea-on-person.js';
 import { membersOwnPeopleOf } from '#lib/server/domain/gifts/giver.js';
 import { listOpenTodosForContact } from '#lib/server/domain/todos/todos.js';
 import { readFamilyOf } from '#lib/server/domain/relationships/family.js';
@@ -76,13 +76,17 @@ export function readPersonPage(
 		lastContactedAt: lastContactedOn(story.interactionDeps, viewer, contactId),
 		notes: listNotesForContact(notes.noteDeps, viewer, contactId),
 		gifts: listGiftsForContact(gifts.giftDeps, viewer, contactId),
+		// What they give others, children too (§2.25.15).
+		givenBy: listGiftsGivenBy(gifts.giftDeps, viewer, contactId),
 		// The ideas they share with others, each with all of it the viewer sees (§2.25.11).
 		giftGroups: readGiftGroupsOf(gifts.giftGroupDeps, viewer, contactId),
 		// Where bought gifts already wait, offered on *Besorgt…* (§2.25.9).
 		giftPlaces: giftPlaces(gifts.giftDeps, viewer),
 		// Whether a gift may be kept from them, they being another member (§2.25.10).
 		recipientIsMember: mayKeepFrom(gifts.giftDeps.ownPeople, viewer, contactId),
-		// The members' own people, whom *Wer schenkt?* suggests with their children (§2.25.12).
+		// The people a gift may be kept from, for *Schenkt…*'s own recipient (§2.25.15).
+		keepFrom: peopleToKeepFrom(gifts.giftDeps.ownPeople, viewer),
+		// The members' own people, whom *Wer schenkt?* suggests with their children (§2.25.15).
 		memberPeople: membersOwnPeopleOf(gifts.giftDeps, {
 			userId: viewer.id,
 			householdId: viewer.householdId

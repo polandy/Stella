@@ -135,6 +135,7 @@ export const errors = {
 	'errors.note.empty': 'Please write something before saving.',
 	'errors.note.couldNotSave': 'Could not save the note.',
 	'errors.note.gone': 'This note is no longer there.',
+	'errors.gift.needRecipient': 'Choose whom the gift is for.',
 	'errors.gift.needTitle': 'A gift needs a name.',
 	'errors.gift.badLink': 'The link must be a web address.',
 	'errors.gift.needDay': 'Please choose the day.',

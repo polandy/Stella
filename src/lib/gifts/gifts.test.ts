@@ -7,6 +7,9 @@ import {
 	isOpenGift,
 	occasionFromForm,
 	giverFromForm,
+	giversFromForm,
+	givenFromWho,
+	giverIdsOf,
 	HOUSEHOLD_GIVER,
 	OTHER_OCCASION,
 	visibilityFromForm
@@ -97,11 +100,60 @@ describe('visibilityFromForm', () => {
 	});
 });
 
+describe('giverIdsOf (§2.25.12)', () => {
+	it('names who gives it as the field posts them: people by id, the household as itself', () => {
+		expect(giverIdsOf({ kind: 'none' })).toEqual([]);
+		expect(giverIdsOf({ kind: 'unseen' })).toEqual([]);
+		expect(giverIdsOf({ kind: 'person', contactId: 'sandra', name: 'Sandra' })).toEqual(['sandra']);
+		expect(
+			giverIdsOf({
+				kind: 'several',
+				givers: [
+					{ kind: 'household' },
+					{ kind: 'person', contactId: 'marco', name: 'Marco' },
+					{ kind: 'left', name: 'Ruth' }
+				]
+			})
+		).toEqual([HOUSEHOLD_GIVER, 'marco']);
+	});
+});
+
+describe('giversFromForm (§2.25.12)', () => {
+	it('reads nobody when nothing, or only blanks, was posted', () => {
+		expect(giversFromForm([])).toEqual({ giver: null, coGivers: [] });
+		expect(giversFromForm(['', ' '])).toEqual({ giver: null, coGivers: [] });
+	});
+
+	it('reads the first as the giver and the rest beside them, in the order posted', () => {
+		expect(giversFromForm(['sandra', '', HOUSEHOLD_GIVER, 'marco'])).toEqual({
+			giver: { contactId: 'sandra' },
+			coGivers: [{ household: true }, { contactId: 'marco' }]
+		});
+	});
+});
+
 describe('giverFromForm (§2.25.12)', () => {
 	it('reads nobody, the household, or a person', () => {
 		expect(giverFromForm(null)).toBeNull();
 		expect(giverFromForm('  ')).toBeNull();
 		expect(giverFromForm(HOUSEHOLD_GIVER)).toEqual({ household: true });
 		expect(giverFromForm('sandra')).toEqual({ contactId: 'sandra' });
+	});
+});
+
+describe('givenFromWho (§2.25.12)', () => {
+	it('says us while nobody is named: the stored default', () => {
+		expect(givenFromWho([], 'c-me')).toBe('us');
+	});
+
+	it('says me only when the own person is the sole giver', () => {
+		expect(givenFromWho(['c-me'], 'c-me')).toBe('me');
+		expect(givenFromWho(['c-me', 'c-andy'], 'c-me')).toBe('named');
+		expect(givenFromWho(['c-andy'], 'c-me')).toBe('named');
+		expect(givenFromWho(['c-andy'], null)).toBe('named');
+	});
+
+	it('names the household when it is chosen on purpose', () => {
+		expect(givenFromWho([HOUSEHOLD_GIVER], 'c-me')).toBe('named');
 	});
 });

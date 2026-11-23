@@ -6,6 +6,7 @@ import { fakeGifts } from './gifts.fixture';
 import {
 	addGift,
 	InvalidGiftError,
+	listGiftsGivenBy,
 	markGiftGiven,
 	type AddGiftInput,
 	type GiftDeps
@@ -133,6 +134,98 @@ describe('addGift with a giver', () => {
 	});
 });
 
+describe('several givers', () => {
+	it('keeps the first as the giver and the rest beside them, in the order named', async () => {
+		const giftId = await note({
+			state: 'given',
+			givenOn: '2025-12-24',
+			giver: { contactId: 'sandra' },
+			coGivers: [{ contactId: 'marco' }]
+		});
+		expect(gifts.rows.get(giftId)).toMatchObject({
+			giverContactId: 'sandra',
+			giverName: 'Sandra',
+			coGivers: [{ contactId: 'marco', name: 'Marco', leftName: null }]
+		});
+	});
+
+	it('lets the household give with people: *Wir* first, every person beside it', async () => {
+		const giftId = await note({
+			giver: { household: true },
+			coGivers: [{ contactId: 'sandra' }, { contactId: 'marco' }]
+		});
+		expect(gifts.rows.get(giftId)).toMatchObject({
+			giverContactId: null,
+			giverIsHousehold: true,
+			coGivers: [{ contactId: 'sandra' }, { contactId: 'marco' }]
+		});
+	});
+
+	it('moves the household up when it is named after a person', async () => {
+		const giftId = await note({
+			giver: { contactId: 'sandra' },
+			coGivers: [{ household: true }]
+		});
+		expect(gifts.rows.get(giftId)).toMatchObject({
+			giverContactId: null,
+			giverIsHousehold: true,
+			coGivers: [{ contactId: 'sandra' }]
+		});
+	});
+
+	it('names a person once, however often they are chosen', async () => {
+		const giftId = await note({
+			giver: { contactId: 'sandra' },
+			coGivers: [{ contactId: 'sandra' }, { contactId: 'marco' }]
+		});
+		expect(gifts.rows.get(giftId)).toMatchObject({
+			giverContactId: 'sandra',
+			coGivers: [{ contactId: 'marco' }]
+		});
+	});
+
+	it('refuses the person it is for, or one the author cannot see, among them', async () => {
+		expect(
+			await refusal(note({ giver: { contactId: 'sandra' }, coGivers: [{ contactId: TOMY }] }))
+		).toMatch(/for/i);
+		const asJulia = addGift(deps, JULIA, {
+			contactId: TOMY,
+			state: 'idea',
+			title: 'Puzzle',
+			note: null,
+			url: null,
+			givenOn: null,
+			occasion: null,
+			visibility: 'shared',
+			giver: { contactId: 'sandra' },
+			coGivers: [{ contactId: HIDDEN }]
+		});
+		expect(await refusal(asJulia)).toMatch(/no longer/i);
+	});
+
+	it('names nobody on a gift received', async () => {
+		const giftId = await note({
+			state: 'received',
+			givenOn: '2025-12-24',
+			giver: { contactId: 'sandra' },
+			coGivers: [{ contactId: 'marco' }]
+		});
+		expect(gifts.rows.get(giftId)).toMatchObject({ giverContactId: null, coGivers: [] });
+	});
+
+	it('is replaced whole when the gift is given to others, or freed', async () => {
+		const giftId = await note({
+			giver: { contactId: 'sandra' },
+			coGivers: [{ contactId: 'marco' }]
+		});
+		await assign(giftId, { giver: { contactId: 'marco' } });
+		expect(gifts.rows.get(giftId)).toMatchObject({ giverContactId: 'marco', coGivers: [] });
+		await assign(giftId, { giver: { contactId: 'sandra' }, coGivers: [{ contactId: 'marco' }] });
+		await assign(giftId, { giver: null });
+		expect(gifts.rows.get(giftId)).toMatchObject({ giverContactId: null, coGivers: [] });
+	});
+});
+
 describe('assignGift', () => {
 	it('gives anyone’s open idea to a person, keeping its when', async () => {
 		const giftId = await note({ when: { kind: 'on_date', on: '2026-12-24' } });
@@ -212,5 +305,34 @@ describe('membersOwnPeopleOf', () => {
 		own.set('andy-self', 'andy');
 		own.set('julia-self', 'julia');
 		expect(await membersOwnPeopleOf(deps, JULIA)).toEqual(['andy-self', 'julia-self']);
+	});
+});
+
+const ANDY_VIEWER = { id: 'andy', householdId: 'h1' };
+const JULIA_VIEWER = { id: 'julia', householdId: 'h1' };
+
+describe('listGiftsGivenBy', () => {
+	it('lists what a person gives, a child too, to anyone', async () => {
+		await note({ contactId: 'sandra', title: 'Candle', giver: { contactId: TOMY } });
+		await note({ contactId: 'marco', title: 'Card', giver: { contactId: TOMY } });
+		await note({ contactId: TOMY, title: 'Not his', giver: { contactId: 'sandra' } });
+
+		const gives = await listGiftsGivenBy(deps, ANDY_VIEWER, TOMY);
+		expect(gives.map((g) => g.title).sort()).toEqual(['Candle', 'Card']);
+	});
+
+	it('keeps a gift hidden from its recipient hidden from them in the giver’s list', async () => {
+		own.set('sandra', 'julia');
+		await note({
+			contactId: 'sandra',
+			title: 'Candle',
+			giver: { contactId: TOMY },
+			hiddenFromRecipient: true
+		});
+
+		expect(await listGiftsGivenBy(deps, JULIA_VIEWER, TOMY)).toEqual([]);
+		expect((await listGiftsGivenBy(deps, ANDY_VIEWER, TOMY)).map((g) => g.title)).toEqual([
+			'Candle'
+		]);
 	});
 });

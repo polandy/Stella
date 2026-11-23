@@ -75,6 +75,16 @@ describe('the merge plan', () => {
 		expect(settling('drop-givers-of-own-gifts')).toBeGreaterThan(repointOf('gift'));
 	});
 
+	it('drops a repeated or own-gift co-giver only once they have moved', () => {
+		expect(settling('drop-repeated-co-givers')).toBeGreaterThan(
+			repointOf('gift_co_giver', 'contact_id')
+		);
+		expect(settling('drop-repeated-co-givers')).toBeGreaterThan(repointOf('gift'));
+		expect(settling('drop-repeated-co-givers')).toBeGreaterThan(
+			repointOf('gift', 'giver_contact_id')
+		);
+	});
+
 	it('settles each table in the plan that the settlement names', () => {
 		const tables = new Set(
 			MERGE_PLAN.flatMap((step) => (step.kind === 'repoint' ? [step.table] : []))

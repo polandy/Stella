@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import type { When } from '../when/when';
-import { asksForGiftIdea, byYear, giftIdeaPath, giftTabs, splitIdeas } from './card';
+import { asksForGiftIdea, byYear, giftIdeaPath, giftTabs, splitGives, splitIdeas } from './card';
 
 /*
  * How the person page's Gifts card stands (docs/dev/02 §2.25, docs/dev/05 §5.5): which tabs it shows,
@@ -8,23 +8,44 @@ import { asksForGiftIdea, byYear, giftIdeaPath, giftTabs, splitIdeas } from './c
  */
 
 describe('giftTabs', () => {
-	it('shows Ideas and Given, counting only the open ideas', () => {
-		expect(giftTabs({ ideas: 3, given: 5, received: 0 })).toEqual([
+	const counts = { ideas: 0, given: 0, received: 0, gives: 0 };
+
+	it('shows Ideas, Given and Gives, counting only the open ideas and what is still to give', () => {
+		expect(giftTabs({ ...counts, ideas: 3, given: 5, gives: 2 })).toEqual([
 			{ tab: 'ideas', count: 3 },
-			{ tab: 'given', count: null }
+			{ tab: 'given', count: null },
+			{ tab: 'gives', count: 2 }
 		]);
 	});
 
-	it('leaves the count off when no idea is open', () => {
-		expect(giftTabs({ ideas: 0, given: 1, received: 0 })[0]).toEqual({ tab: 'ideas', count: null });
+	it('leaves the count off when nothing is open', () => {
+		expect(giftTabs({ ...counts, given: 1 })).toEqual([
+			{ tab: 'ideas', count: null },
+			{ tab: 'given', count: null },
+			{ tab: 'gives', count: null }
+		]);
 	});
 
-	it('shows Received only once there is one', () => {
-		expect(giftTabs({ ideas: 0, given: 0, received: 1 }).map((t) => t.tab)).toEqual([
+	it('shows Received only once there is one, before Gives', () => {
+		expect(giftTabs({ ...counts, received: 1 }).map((t) => t.tab)).toEqual([
 			'ideas',
 			'given',
-			'received'
+			'received',
+			'gives'
 		]);
+	});
+});
+
+describe('splitGives', () => {
+	it('puts what is still to give first and what was given under Earlier', () => {
+		const rows = [
+			{ id: 'a', state: 'idea' },
+			{ id: 'b', state: 'given' },
+			{ id: 'c', state: 'bought' }
+		] as const;
+		const { open, earlier } = splitGives(rows);
+		expect(open.map((g) => g.id)).toEqual(['a', 'c']);
+		expect(earlier.map((g) => g.id)).toEqual(['b']);
 	});
 });
 

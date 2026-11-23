@@ -13,8 +13,9 @@
 		name: string;
 		onAdd: (kind: AddableGiftState, close: () => void) => void;
 		onRecord: (close: () => void) => void;
+		onGives: (close: () => void) => void;
 	}
-	let { line, contactId, name, onAdd, onRecord }: Props = $props();
+	let { line, contactId, name, onAdd, onRecord, onGives }: Props = $props();
 
 	const t = useI18n().t;
 
@@ -37,6 +38,10 @@
 			onclick={() => onAdd('received', close)}
 		>
 			<Icon name="add" size={14} />{t('gifts.addReceived')}
+		</button>
+		<!-- What this person gives someone else, noted from their card (docs/dev/02 §2.25.15). -->
+		<button type="button" role="menuitem" class={MENU_ITEM} onclick={() => onGives(close)}>
+			<Icon name="add" size={14} />{t('gifts.gives.add', { name })}
 		</button>
 		<!-- What they got at a passed occasion, several at once (docs/dev/02 §2.25.14). -->
 		<button

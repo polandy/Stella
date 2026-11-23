@@ -12,6 +12,7 @@ import {
 	fieldView,
 	galleryPhotoView,
 	giftView,
+	givenGiftView,
 	todoView,
 	circleNamesIn,
 	mentionedInView,
@@ -167,6 +168,91 @@ describe('giftView', () => {
 
 	it('marks the viewer’s own gift, which only they may make private', () => {
 		expect(giftView(gift({ createdBy: VIEWER }), context()).mine).toBe(true);
+	});
+});
+
+describe('givenGiftView', () => {
+	const together = (giverId: string) =>
+		givenGiftView(
+			{
+				id: 'g-2',
+				...NO_GIVER,
+				giverContactId: 'c-julia',
+				giverName: 'Julia',
+				coGivers: [
+					{ contactId: 'c-andy', name: 'Andy', leftName: null },
+					{ contactId: 'c-secret', name: null, leftName: null }
+				],
+				storedAt: null,
+				contactId: 'c-hilde',
+				contactName: 'Hilde',
+				createdBy: 'user-2',
+				visibility: 'shared',
+				state: 'given',
+				title: 'Scarf',
+				note: null,
+				url: null,
+				givenOn: '2026-12-24',
+				occasion: null,
+				when: null,
+				whenCheckedOn: null,
+				groupId: null,
+				hiddenFromRecipient: false,
+				createdAt: 1,
+				updatedAt: 2
+			},
+			giverId
+		);
+
+	it('names the others who give it with them, never the person themselves', () => {
+		expect(together('c-julia').withOthers).toEqual([
+			{ kind: 'person', contactId: 'c-andy', name: 'Andy' },
+			{ kind: 'unseen' }
+		]);
+		expect(together('c-andy').withOthers).toEqual([
+			{ kind: 'person', contactId: 'c-julia', name: 'Julia' },
+			{ kind: 'unseen' }
+		]);
+	});
+
+	it('says what is given, to whom and for when, without the giver’s own fields', () => {
+		const view = givenGiftView(
+			{
+				id: 'g-1',
+				...NO_GIVER,
+				giverContactId: 'c-tomy',
+				storedAt: 'attic',
+				contactId: 'c-sandra',
+				contactName: 'Sandra',
+				createdBy: 'user-2',
+				visibility: 'shared',
+				state: 'bought',
+				title: 'Candle',
+				note: 'Beeswax',
+				url: null,
+				givenOn: null,
+				occasion: null,
+				when: { kind: 'later' },
+				whenCheckedOn: null,
+				groupId: null,
+				hiddenFromRecipient: true,
+				createdAt: 1,
+				updatedAt: 2
+			},
+			'c-tomy'
+		);
+		expect(view).toEqual({
+			id: 'g-1',
+			contactId: 'c-sandra',
+			contactName: 'Sandra',
+			state: 'bought',
+			title: 'Candle',
+			when: { kind: 'later' },
+			givenOn: null,
+			occasion: null,
+			hiddenFromRecipient: true,
+			withOthers: []
+		});
 	});
 });
 

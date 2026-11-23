@@ -6,6 +6,7 @@ import { whenColumns, whenFromOutside } from '../../../when/when';
 import type { MentionKind, RestoreContext } from './restore-context';
 import { bool, ids, int, ms, records, str, visibilityOf, type Row } from './restore-fields';
 import type { PhotoPlan } from './restore-photos';
+import { coGiversOfRestored, giverOfRestored } from './restore-gift-givers';
 import { planRowsOf } from './restore-plans';
 import { subjectKeyOf } from '../journal/subjects';
 import { isImmichId } from '../immich/gateway';
@@ -28,6 +29,8 @@ export interface PersonRecordRows {
 	interactions: Row[];
 	participants: Row[];
 	gifts: Row[];
+	/** The givers beside each gift's first (§2.25.12). */
+	giftCoGivers: Row[];
 	todos: Row[];
 	plans: Row[];
 }
@@ -61,26 +64,6 @@ function whenOfRestored(row: Row, state: GiftState) {
 const isRealDay = (day: string | null): day is string =>
 	day !== null && FULL_DATE_SHAPE.test(day) && isRealCalendarDay(day);
 
-/** Who gives a restored gift (§2.25.12): someone the archive brought along, never its own person. */
-function giverOfRestored(
-	row: Row,
-	state: GiftState,
-	recipientId: string,
-	knownPeople: ReadonlySet<string>
-) {
-	// What was received came from its person.
-	if (state === 'received') {
-		return { giver_contact_id: null, giver_is_household: 0, giver_left_name: null };
-	}
-	const giver = str(row, 'giver');
-	const kept = giver !== null && giver !== recipientId && knownPeople.has(giver) ? giver : null;
-	return {
-		giver_contact_id: kept,
-		giver_is_household: kept === null && bool(row, 'giver_is_household') ? 1 : 0,
-		giver_left_name: kept === null ? str(row, 'giver_left_name') : null
-	};
-}
-
 export function planPersonRecords(
 	people: readonly Row[],
 	knownPeople: ReadonlySet<string>,
@@ -100,6 +83,7 @@ export function planPersonRecords(
 		interactions: [],
 		participants: [],
 		gifts: [],
+		giftCoGivers: [],
 		todos: [],
 		plans: []
 	};
@@ -255,8 +239,20 @@ export function planPersonRecords(
 				warn({ code: 'giftIncomplete' });
 				continue;
 			}
+			const giftId = str(giftRow, 'id') ?? ctx.ids.next();
+			const giver = giverOfRestored(giftRow, state, contactId, knownPeople);
+			rows.giftCoGivers.push(
+				...coGiversOfRestored(
+					giftRow,
+					state,
+					giftId,
+					contactId,
+					giver.giver_contact_id,
+					knownPeople
+				)
+			);
 			rows.gifts.push({
-				id: str(giftRow, 'id') ?? ctx.ids.next(),
+				id: giftId,
 				contact_id: contactId,
 				created_by: author(giftRow),
 				visibility: visibilityOf(giftRow),
@@ -271,7 +267,7 @@ export function planPersonRecords(
 				given_on: hasGiftDay(state) ? givenOn : null,
 				occasion: str(giftRow, 'occasion'),
 				...whenOfRestored(giftRow, state),
-				...giverOfRestored(giftRow, state, contactId, knownPeople),
+				...giver,
 				// A place only means something while the gift waits to be handed over.
 				stored_at: state === 'bought' ? str(giftRow, 'stored_at') : null,
 				// Checked against the archive's groups by `planGiftGroups`.

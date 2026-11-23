@@ -168,10 +168,32 @@ describe('assignGift on the card (§2.25.12)', () => {
 		await assign(services, { giver: '' });
 		await assign(services, { giver: 'sandra', free: 'on' });
 		expect(sent).toEqual([
-			{ contactId: 'anna', giftId: 'g1', giver: { contactId: 'sandra' } },
-			{ contactId: 'anna', giftId: 'g1', giver: { household: true } },
-			{ contactId: 'anna', giftId: 'g1', giver: null },
-			{ contactId: 'anna', giftId: 'g1', giver: null }
+			{ contactId: 'anna', giftId: 'g1', giver: { contactId: 'sandra' }, coGivers: [] },
+			{ contactId: 'anna', giftId: 'g1', giver: { household: true }, coGivers: [] },
+			{ contactId: 'anna', giftId: 'g1', giver: null, coGivers: [] },
+			{ contactId: 'anna', giftId: 'g1', giver: null, coGivers: [] }
+		]);
+	});
+
+	it('gives it to several together: the first posted giver, the others beside', async () => {
+		const sent: unknown[] = [];
+		const services = assigning(sent);
+		await answerOf(
+			actions.assignGift(
+				routeEvent({
+					services,
+					params: { id: 'anna' },
+					form: formOf({ giftId: 'g1', giver: ['sandra', 'marco'] })
+				})
+			)
+		);
+		expect(sent).toEqual([
+			{
+				contactId: 'anna',
+				giftId: 'g1',
+				giver: { contactId: 'sandra' },
+				coGivers: [{ contactId: 'marco' }]
+			}
 		]);
 	});
 
@@ -255,5 +277,44 @@ describe('the visibility choice on the card (§2.25.10)', () => {
 		expect(sent).toMatchObject([
 			{ giftId: 'g1', visibility: 'private', hiddenFromRecipient: false }
 		]);
+	});
+});
+
+describe('addGiftBy', () => {
+	const give = (services: FakeServices, fields: Record<string, string>) =>
+		answerOf(
+			actions.addGiftBy(routeEvent({ services, params: { id: 'tomy' }, form: formOf(fields) }))
+		);
+
+	it('notes an idea on the person it is for, with the page’s person as its giver', async () => {
+		const added: unknown[] = [];
+		const services = commanding({
+			'gift.add': async (_actor, payload) => {
+				added.push(payload);
+				return { giftId: 'g1' };
+			}
+		});
+		expect(await give(services, { title: 'Candle', for: 'sandra', visibility: 'shared' })).toEqual({
+			kind: 'redirect',
+			status: 303,
+			location: '/contacts/tomy#section-gifts'
+		});
+		expect(added).toMatchObject([
+			{
+				contactId: 'sandra',
+				state: 'idea',
+				title: 'Candle',
+				giver: { contactId: 'tomy' },
+				visibility: 'shared'
+			}
+		]);
+	});
+
+	it('asks for the recipient when none was chosen', async () => {
+		expect(await give(commanding({}), { title: 'Candle' })).toEqual({
+			kind: 'fail',
+			status: 400,
+			data: { giftError: t('errors.gift.needRecipient') }
+		});
 	});
 });

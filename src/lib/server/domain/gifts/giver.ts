@@ -17,7 +17,7 @@ import {
 /*
  * Who gives a gift (docs/dev/02 §2.25.12): an open idea, or one bought, *vergeben* to a person or
  * to the household itself, for the occasion it is meant for. A booking is simply the giver field —
- * one row per item, so two givers for one present cannot happen. What was given or received keeps
+ * one booking per item, its givers together. What was given or received keeps
  * its giver; it happened.
  */
 
@@ -26,6 +26,8 @@ export interface AssignGiftInput {
 	giftId: string;
 	/** The new giver; null frees the gift again (*Wieder frei*). */
 	giver: GiverChoice | null;
+	/** Those giving with them, in the order named. */
+	coGivers?: GiverChoice[];
 	/** The occasion it is meant for; absent keeps the gift's own. */
 	when?: When | null;
 	/** Kept from the person it is for (D4); only its author decides, absent keeps it as it was. */
@@ -56,7 +58,7 @@ export async function assignGift(
 			: await hiddenOf(deps, actor, gift.contactId, gift.visibility, asksHidden);
 	await deps.gifts.update({
 		...gift,
-		...(await giverOf(deps, actor, gift, input.giver)),
+		...(await giverOf(deps, actor, gift, input.giver, input.coGivers)),
 		when,
 		whenCheckedOn: kept ? gift.whenCheckedOn : today,
 		hiddenFromRecipient: hidden,

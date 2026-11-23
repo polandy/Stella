@@ -481,6 +481,34 @@ describe('deleting a contact', () => {
 		]);
 	});
 
+	it('keeps the name of a giver beside the first, too', async () => {
+		db.insert(schema.gift)
+			.values({
+				id: 'g-1',
+				contactId: 'c-stays',
+				createdBy: U1,
+				state: 'given',
+				title: 'Candle',
+				givenOn: '2025-12-24'
+			})
+			.run();
+		db.insert(schema.giftCoGiver)
+			.values([
+				{ giftId: 'g-1', position: 0, contactId: 'c-gone' },
+				{ giftId: 'g-1', position: 1, contactId: 'c-stays' }
+			])
+			.run();
+
+		expect(await repo.deleteDeletableBy(adminU1, 'c-gone', audit())).not.toBeNull();
+
+		expect(db.select().from(schema.giftCoGiver).orderBy(schema.giftCoGiver.position).all()).toEqual(
+			[
+				{ giftId: 'g-1', position: 0, contactId: null, leftName: 'Gone Person' },
+				{ giftId: 'g-1', position: 1, contactId: 'c-stays', leftName: null }
+			]
+		);
+	});
+
 	it('hands back the bytes of their gallery *and* their journal photos', async () => {
 		// The journal entry cascades with the contact, so its photo would leave orphaned
 		// bytes behind if only the gallery were collected.
