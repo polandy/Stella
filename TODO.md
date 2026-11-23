@@ -20,9 +20,3 @@ PR 1, the giver on a gift, PR 2, the card by occasion with *Erledigt* / *Besorgt
 - **Share ideas…**: free ideas exclude *Wir* and procured ones.
 - **Home and calendar wording**: *Ready:* only ours, done gifts leave the feed.
 - **A giver on an idea for several** (`gift_group`): PR 1 sets it per gift only.
-
-## e2e gaps (analysis 2026-11-15)
-
-Each is one PR; the owner OKs the behaviour first (`docs/dev/08` §8.4.1).
-
-- **A report-only `scripts/spec-coverage.sh`**: lists each `docs/dev/features` subsection that no e2e header cites and that is not marked unit.
