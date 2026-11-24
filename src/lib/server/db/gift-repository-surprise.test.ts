@@ -164,3 +164,68 @@ describe('a surprise, in every read', () => {
 		expect(await repo.findVisibleTo(andy, JULIA_PERSON, 'surprise')).not.toBeNull();
 	});
 });
+
+describe('a bought gift’s givers, as Home’s ready line reads them (D17)', () => {
+	const GRANDMA = 'c-grandma';
+
+	beforeEach(async () => {
+		db.insert(schema.contact)
+			.values({ id: GRANDMA, householdId: H, createdBy: ANDY, displayName: 'Grandma' })
+			.run();
+		await repo.insert(
+			gift({ id: 'by-us', state: 'bought', title: 'Bike', giverIsHousehold: true })
+		);
+		await repo.insert(
+			gift({
+				id: 'by-grandma',
+				state: 'bought',
+				title: 'Skates',
+				giverContactId: GRANDMA,
+				coGivers: [{ contactId: JULIA_PERSON, name: null, leftName: null }]
+			})
+		);
+		await repo.insert(
+			gift({ id: 'by-left', state: 'bought', title: 'Book', giverLeftName: 'Old friend' })
+		);
+	});
+
+	it('reads the household flag, the giver with their name, co-givers and a left name back', async () => {
+		const read = await repo.listBoughtVisibleTo(andy, [JULIA_PERSON]);
+		expect(new Map(read.map((g) => [g.id, g]))).toEqual(
+			new Map([
+				[
+					'by-us',
+					{
+						id: 'by-us',
+						contactId: JULIA_PERSON,
+						title: 'Bike',
+						...NO_GIVER,
+						giverIsHousehold: true
+					}
+				],
+				[
+					'by-grandma',
+					{
+						id: 'by-grandma',
+						contactId: JULIA_PERSON,
+						title: 'Skates',
+						...NO_GIVER,
+						giverContactId: GRANDMA,
+						giverName: 'Grandma',
+						coGivers: [{ contactId: JULIA_PERSON, name: 'Julia', leftName: null }]
+					}
+				],
+				[
+					'by-left',
+					{
+						id: 'by-left',
+						contactId: JULIA_PERSON,
+						title: 'Book',
+						...NO_GIVER,
+						giverLeftName: 'Old friend'
+					}
+				]
+			])
+		);
+	});
+});

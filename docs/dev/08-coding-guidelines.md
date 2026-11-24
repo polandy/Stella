@@ -243,9 +243,10 @@ its own inverse and says nothing, which is how one came to be withdrawn.
 **Where the specs are owed.** `scripts/spec-coverage.sh` lists — report-only, never a CI gate —
 every numbered `docs/dev/features` subsection (a `###` or `####` heading) that no e2e header
 cites and that does not say its behaviour is unit-covered; a header that cites a numbered part
-counts for the heading above it. A gap is a section to read: add the e2e once the owner signs it
-off, or say *unit* in the section when the unit layer is the right one. An owed e2e still waits
-in `TODO.md` as `e2e owed: §2.x.y`.
+counts for the heading above it, and a range (`§2.9.2–4`, `§2.2.1–2.2.3`) for every section
+between its ends. A gap is a section to read: add the e2e once the owner signs it off, or write
+an emphasised `*unit*` in the section when the unit layer is the right one (the bare word, as in
+"not unit-tested", does not count). An owed e2e still waits in `TODO.md` as `e2e owed: §2.x.y`.
 
 Two tiny servers run beside the app. The first is `e2e/release-feed-stub.ts`, the stand-in for
 GitHub's `releases/latest` that the About card reads (`UPDATE_CHECK=true` plus

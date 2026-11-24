@@ -254,4 +254,31 @@ describe('a bought gift leaves the list and the counts, and shows as ready', () 
 		});
 		expect(await readyGifts(deps, VIEWER, [HILDE])).toEqual(new Map([[HILDE, ['Bike', 'Book']]]));
 	});
+
+	it('counts a gift given together once a co-giver is ours, not when none is (D17)', async () => {
+		deps = { ...deps, ownPeople: fakeOwnPeople(new Map([['julia-person', JULIA.userId]])) };
+		const withJulia = await noteIdea('Bike');
+		const withoutUs = await noteIdea('Skates');
+		await bought(withJulia);
+		await bought(withoutUs);
+		const grandma = { giverContactId: 'grandma', giverName: 'Grandma' };
+		gifts.rows.set(withJulia, {
+			...gifts.rows.get(withJulia)!,
+			...grandma,
+			coGivers: [{ contactId: 'julia-person', name: 'Julia', leftName: null }]
+		});
+		gifts.rows.set(withoutUs, {
+			...gifts.rows.get(withoutUs)!,
+			...grandma,
+			coGivers: [{ contactId: 'uncle', name: 'Uncle', leftName: null }]
+		});
+		expect(await readyGifts(deps, VIEWER, [HILDE])).toEqual(new Map([[HILDE, ['Bike']]]));
+	});
+
+	it('leaves out a gift whose giver has left, by the name they left (D17)', async () => {
+		const giftId = await noteIdea('Bike');
+		await bought(giftId);
+		gifts.rows.set(giftId, { ...gifts.rows.get(giftId)!, giverLeftName: 'Old friend' });
+		expect(await readyGifts(deps, VIEWER, [HILDE])).toEqual(new Map());
+	});
 });

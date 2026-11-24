@@ -6,4 +6,8 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-exec bun scripts/spec-coverage.ts "$@"
+if [ $# -gt 0 ]; then
+	echo "spec-coverage.sh takes no arguments, got: $*" >&2
+	exit 2
+fi
+exec bun scripts/spec-coverage.ts

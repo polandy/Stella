@@ -15,7 +15,7 @@ export interface SpecFile {
 	readonly source: string;
 }
 
-/** One numbered subsection (`### 2.x.y` or `#### 2.x.y.z`) with the text that belongs to it. */
+/** One numbered subsection (`### 2.x.y` or `#### 2.x.y.z`, any leading number) with its text. */
 export interface FeatureSubsection {
 	readonly file: string;
 	readonly id: string;
@@ -30,12 +30,14 @@ export interface CoverageGap {
 	readonly heading: string;
 }
 
-const SUBSECTION_HEADING = /^#{3,4}\s+(2\.\d+(?:\.\d+)*)\s+(.*)$/;
+const SUBSECTION_HEADING = /^#{3,4}\s+(\d+(?:\.\d+)+)\s+(.*)$/;
 const CLOSING_HEADING = /^#{1,3}\s/;
 const FIRST_TEST = /^[ \t]*test(?:\.\w+)?\s*\(/m;
 const CITATION = /§(\d+(?:\.\d+)+)/g;
-const RANGE = /§(\d+(?:\.\d+)+)\s*[–-]\s*(?:§(\d+(?:\.\d+)+)|(\d+))/g;
+const RANGE = /§(\d+(?:\.\d+)+)\s*[–-]\s*§?(\d+(?:\.\d+)*)/g;
+const UNIT_MARK = /(?:\*unit\*|_unit_)/i;
 
+/** Every numbered `###`/`####` subsection of one features file, in document order. */
 export function featureSubsections(file: string, markdown: string): FeatureSubsection[] {
 	const out: FeatureSubsection[] = [];
 	let open: { id: string; heading: string; body: string[] } | null = null;
@@ -59,7 +61,10 @@ export function featureSubsections(file: string, markdown: string): FeatureSubse
 	return out;
 }
 
-/** The `§` ids an e2e spec's header cites, a range like `§2.26.6–7` read as both. */
+/**
+ * The `§` ids an e2e spec's header cites. A range (`§2.26.6–7`, `§2.2.1–2.2.3`, `§2.9.1–§2.9.3`)
+ * counts every section between its ends; a short end replaces the start's last parts.
+ */
 export function headerCitations(source: string): Set<string> {
 	const at = source.search(FIRST_TEST);
 	const header = (at === -1 ? source : source.slice(0, at))
@@ -68,15 +73,14 @@ export function headerCitations(source: string): Set<string> {
 	const ids = new Set<string>();
 	for (const full of header.matchAll(CITATION)) ids.add(full[1]);
 	for (const range of header.matchAll(RANGE)) {
-		const end = range[2] ?? range[1].replace(/\d+$/, range[3]);
-		for (const id of expandRange(range[1], end)) ids.add(id);
+		for (const id of expandRange(range[1], rangeEnd(range[1], range[2]))) ids.add(id);
 	}
 	return ids;
 }
 
-/** Whether the subsection says its behaviour is held by unit tests rather than an e2e. */
+/** Whether the subsection marks its behaviour as held by unit tests: an emphasised *unit*. */
 export function markedUnit(subsection: FeatureSubsection): boolean {
-	return /\bunit\b/i.test(`${subsection.heading}\n${subsection.body}`);
+	return UNIT_MARK.test(`${subsection.heading}\n${subsection.body}`);
 }
 
 /**
@@ -127,12 +131,23 @@ function compareNumbers(a: readonly number[], b: readonly number[]): number {
 	return 0;
 }
 
+/** A range's end as a full id: a shorter end replaces the start's last parts (`2.9.2–4`). */
+function rangeEnd(start: string, end: string): string {
+	const from = start.split('.');
+	const to = end.split('.');
+	return to.length >= from.length
+		? end
+		: [...from.slice(0, from.length - to.length), ...to].join('.');
+}
+
+/** The ids a range covers; a backwards one only its start, never an end the header did not mean. */
 function expandRange(start: string, end: string): string[] {
 	const from = numbers(start);
 	const to = numbers(end);
+	if (compareNumbers(to, from) <= 0) return [start];
 	const sameParent =
 		from.length === to.length && from.slice(0, -1).every((part, i) => part === to[i]);
-	if (!sameParent || to[to.length - 1] < from[from.length - 1]) return [start, end];
+	if (!sameParent) return [start, end];
 	const ids: string[] = [];
 	for (let last = from[from.length - 1]; last <= to[to.length - 1]; last++) {
 		ids.push([...from.slice(0, -1), last].join('.'));

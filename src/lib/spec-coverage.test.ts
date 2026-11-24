@@ -69,12 +69,18 @@ List.
 		expect(sections[1].heading).toBe('Where a proposal comes from');
 	});
 
+	it('reads a subsection whose number does not start with 2, and none from a bare number', () => {
+		const sections = featureSubsections('f.md', '### 3.10.2 Schema\n\n### 4 Plain\n\nText.\n');
+		expect(sections.map((s) => s.id)).toEqual(['3.10.2']);
+		expect(sections[0].body).toBe('');
+	});
+
 	it('keeps an unnumbered #### inside its ### subsection', () => {
 		const [section] = featureSubsections(
 			'f.md',
-			'### 2.4.1 Kin\n\n#### On the person page\n\nThe merge is unit-tested.\n'
+			'### 2.4.1 Kin\n\n#### On the person page\n\nThe merge is *unit*-tested.\n'
 		);
-		expect(section.body).toContain('The merge is unit-tested.');
+		expect(section.body).toContain('The merge is *unit*-tested.');
 		expect(markedUnit(section)).toBe(true);
 	});
 });
@@ -99,6 +105,31 @@ describe('the citations an e2e header makes', () => {
 		expect([...ids].sort()).toEqual(['2.9.2', '2.9.3', '2.9.4']);
 	});
 
+	it('expands a range whose end is written out in full, without a second §', () => {
+		const ids = headerCitations('// One to three (docs/dev/02 §2.2.1–2.2.3).\n');
+		expect([...ids].sort()).toEqual(['2.2.1', '2.2.2', '2.2.3']);
+	});
+
+	it('expands a multi-digit range by number, 2.25.9 to 2.25.11', () => {
+		const ids = headerCitations('// Gifts (docs/dev/02 §2.25.9–11).\n');
+		expect([...ids].sort()).toEqual(['2.25.10', '2.25.11', '2.25.9']);
+	});
+
+	it('reads a backwards range as its start alone, inventing no end', () => {
+		const ids = headerCitations('// Gifts (docs/dev/02 §2.25.13–5).\n');
+		expect([...ids]).toEqual(['2.25.13']);
+	});
+
+	it('reads a short dotted end against the start’s last parts', () => {
+		const ids = headerCitations('// Across (docs/dev/02 §2.25.13–26.2).\n');
+		expect([...ids].sort()).toEqual(['2.25.13', '2.26.2']);
+	});
+
+	it('cites both ends of a range across two parents, nothing between', () => {
+		const ids = headerCitations('// Across (docs/dev/02 §2.9.4–§2.10.1).\n');
+		expect([...ids].sort()).toEqual(['2.10.1', '2.9.4']);
+	});
+
 	it('expands a range split across the comment’s lines', () => {
 		const ids = headerCitations(
 			'/*\n * One to three (docs/dev/02 §2.9.1–\n * §2.9.3).\n */\nimport { test } from "x";\n'
@@ -108,12 +139,18 @@ describe('the citations an e2e header makes', () => {
 });
 
 describe('a subsection marked unit', () => {
-	it('says so when its text names unit coverage', () => {
-		const [sub] = featureSubsections(
-			'f.md',
-			'### 2.9.1 A\n\nThe merge is unit-tested for every order.\n'
-		);
-		expect(markedUnit(sub)).toBe(true);
+	it('says so for an emphasised *unit* or _unit_', () => {
+		for (const mark of ['*unit*', '_unit_', '*Unit*']) {
+			const [sub] = featureSubsections('f.md', `### 2.9.1 A\n\nThe merge is ${mark}-tested.\n`);
+			expect(markedUnit(sub)).toBe(true);
+		}
+	});
+
+	it('says nothing for the bare word, so "not unit-tested" stays a gap', () => {
+		for (const text of ['This is not unit-tested.', 'Pure and unit-testable.', 'A unit of work.']) {
+			const [sub] = featureSubsections('f.md', `### 2.9.1 A\n\n${text}\n`);
+			expect(markedUnit(sub)).toBe(false);
+		}
 	});
 
 	it('says nothing for prose that merely contains the letters', () => {
@@ -131,7 +168,11 @@ describe('the gaps', () => {
 
 ### 2.9.2 What it leaves out
 
-The rule is unit-tested.
+The rule is *unit*-tested.
+
+### 2.9.4 Not tested yet
+
+This is not unit-tested.
 
 ### 2.9.3 Not planned
 `
@@ -140,7 +181,12 @@ The rule is unit-tested.
 
 	it('lists the uncited subsections, a unit-marked one left out', () => {
 		const gaps = coverageGaps(features, [spec('/*\n * Search (docs/dev/02 §2.9.1).\n */\n')]);
-		expect(gaps.map((gap) => gap.id)).toEqual(['2.9.3']);
+		expect(gaps.map((gap) => gap.id)).toEqual(['2.9.3', '2.9.4']);
+	});
+
+	it('lists every subsection when no spec cites anything, and nothing without features', () => {
+		expect(coverageGaps(features, []).map((gap) => gap.id)).toEqual(['2.9.1', '2.9.3', '2.9.4']);
+		expect(coverageGaps([], [spec('// §2.9.1\n')])).toEqual([]);
 	});
 
 	it('lets a cited descendant cover its ancestor subsection', () => {

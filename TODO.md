@@ -19,3 +19,5 @@ PR 1, the giver on a gift, PR 2, the card by occasion with *Erledigt* / *Besorgt
 - **Stock** (`gift_stock`, `stock.assign`), its own ADR.
 - **Share ideas…**: free ideas exclude *Wir* and procured ones.
 - **A giver on an idea for several** (`gift_group`): PR 1 sets it per gift only.
+- e2e owed: §2.25.9 — a bought gift someone outside the household hands over (*Erledigt*)
+  stays off Home's *Ready:* (#583, after the owner's OK).
