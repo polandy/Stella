@@ -68,6 +68,9 @@ function fromRow<R extends WhenColumns>(
 	return { ...rest, when: whenOfColumns({ whenKind, whenOn, whenAge }) };
 }
 
+/** A stored 0/1 flag as the domain reads it. */
+const flagOf = (stored: number): boolean => stored !== 0;
+
 /** A whole gift row as the domain reads it: its when as one, its two flags booleans. */
 export function giftOf<
 	R extends WhenColumns & { hiddenFromRecipient: number; giverIsHousehold: number }
@@ -75,8 +78,8 @@ export function giftOf<
 	const { hiddenFromRecipient, giverIsHousehold, ...rest } = fromRow(row);
 	return {
 		...rest,
-		hiddenFromRecipient: hiddenFromRecipient !== 0,
-		giverIsHousehold: giverIsHousehold !== 0
+		hiddenFromRecipient: flagOf(hiddenFromRecipient),
+		giverIsHousehold: flagOf(giverIsHousehold)
 	};
 }
 
@@ -298,18 +301,20 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 
 		async listBoughtVisibleTo(viewer, contactIds) {
 			if (contactIds.length === 0) return [];
+			const { id, contactId, title, giverContactId, giverIsHousehold, giverLeftName, giverName } =
+				columnsFor(viewer);
 			return withCoGivers(
 				db,
 				viewer,
 				db
 					.select({
-						id: gift.id,
-						contactId: gift.contactId,
-						title: gift.title,
-						giverContactId: gift.giverContactId,
-						giverIsHousehold: gift.giverIsHousehold,
-						giverLeftName: gift.giverLeftName,
-						giverName: giverNameVisibleTo(viewer, gift.giverContactId)
+						id,
+						contactId,
+						title,
+						giverContactId,
+						giverIsHousehold,
+						giverLeftName,
+						giverName
 					})
 					.from(gift)
 					.innerJoin(contact, eq(gift.contactId, contact.id))
@@ -322,7 +327,7 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 					)
 					.orderBy(asc(gift.updatedAt), asc(gift.id))
 					.all()
-			).map((row) => ({ ...row, giverIsHousehold: row.giverIsHousehold !== 0 }));
+			).map((row) => ({ ...row, giverIsHousehold: flagOf(row.giverIsHousehold) }));
 		},
 
 		async listStoredPlacesVisibleTo(viewer) {
