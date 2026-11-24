@@ -46,6 +46,37 @@ Private records.
 		const [subsection] = featureSubsections('docs/dev/features/2.9-search.md', '### 2.9.1 A');
 		expect(subsection.file).toBe('docs/dev/features/2.9-search.md');
 	});
+
+	it('reads numbered #### subsections too, the ### intro up to the first', () => {
+		const sections = featureSubsections(
+			'docs/dev/features/2.2-contacts.md',
+			`### 2.2.4 Last names for several people at once
+
+Intro.
+
+#### 2.2.4.1 Where a proposal comes from
+
+Proposal.
+
+#### 2.2.4.2 The list
+
+List.
+`
+		);
+		expect(sections.map((s) => s.id)).toEqual(['2.2.4', '2.2.4.1', '2.2.4.2']);
+		expect(sections[0].body).toContain('Intro.');
+		expect(sections[0].body).not.toContain('Proposal.');
+		expect(sections[1].heading).toBe('Where a proposal comes from');
+	});
+
+	it('keeps an unnumbered #### inside its ### subsection', () => {
+		const [section] = featureSubsections(
+			'f.md',
+			'### 2.4.1 Kin\n\n#### On the person page\n\nThe merge is unit-tested.\n'
+		);
+		expect(section.body).toContain('The merge is unit-tested.');
+		expect(markedUnit(section)).toBe(true);
+	});
 });
 
 describe('the citations an e2e header makes', () => {
@@ -110,6 +141,15 @@ The rule is unit-tested.
 	it('lists the uncited subsections, a unit-marked one left out', () => {
 		const gaps = coverageGaps(features, [spec('/*\n * Search (docs/dev/02 §2.9.1).\n */\n')]);
 		expect(gaps.map((gap) => gap.id)).toEqual(['2.9.3']);
+	});
+
+	it('lets a cited descendant cover its ancestor subsection', () => {
+		const contact: FeatureFile = {
+			file: 'docs/dev/features/2.2-contacts.md',
+			markdown: '### 2.2.4 Last names\n\n#### 2.2.4.1 Where\n\n#### 2.2.4.2 The list\n'
+		};
+		const gaps = coverageGaps([contact], [spec('/*\n * List (docs/dev/02 §2.2.4.2).\n */\n')]);
+		expect(gaps.map((gap) => gap.id)).toEqual(['2.2.4.1']);
 	});
 
 	it('orders by file then by the section’s own numbers', () => {

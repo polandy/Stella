@@ -15,7 +15,7 @@ export interface SpecFile {
 	readonly source: string;
 }
 
-/** One `### 2.x.y` subsection with the text that belongs to it. */
+/** One numbered subsection (`### 2.x.y` or `#### 2.x.y.z`) with the text that belongs to it. */
 export interface FeatureSubsection {
 	readonly file: string;
 	readonly id: string;
@@ -30,8 +30,8 @@ export interface CoverageGap {
 	readonly heading: string;
 }
 
-const SUBSECTION_HEADING = /^###\s+(2\.\d+(?:\.\d+)*)\s+(.*)$/;
-const ANY_HEADING = /^#{1,6}\s/;
+const SUBSECTION_HEADING = /^#{3,4}\s+(2\.\d+(?:\.\d+)*)\s+(.*)$/;
+const CLOSING_HEADING = /^#{1,3}\s/;
 const FIRST_TEST = /^[ \t]*test(?:\.\w+)?\s*\(/m;
 const CITATION = /§(\d+(?:\.\d+)+)/g;
 const RANGE = /§(\d+(?:\.\d+)+)\s*[–-]\s*(?:§(\d+(?:\.\d+)+)|(\d+))/g;
@@ -49,7 +49,7 @@ export function featureSubsections(file: string, markdown: string): FeatureSubse
 		if (subsection) {
 			close();
 			open = { id: subsection[1], heading: subsection[2].trim(), body: [] };
-		} else if (ANY_HEADING.test(line)) {
+		} else if (CLOSING_HEADING.test(line)) {
 			close();
 		} else if (open) {
 			open.body.push(line);
@@ -79,19 +79,25 @@ export function markedUnit(subsection: FeatureSubsection): boolean {
 	return /\bunit\b/i.test(`${subsection.heading}\n${subsection.body}`);
 }
 
-/** Every subsection no e2e header cites and that is not marked unit, by file then id. */
+/**
+ * Every subsection no e2e header cites and that is not marked unit, by file then id. A header
+ * that cites a numbered part (`§2.2.4.2`) counts for the `###` heading above it (`2.2.4`).
+ */
 export function coverageGaps(
 	features: readonly FeatureFile[],
 	specs: readonly SpecFile[]
 ): CoverageGap[] {
-	const cited = new Set<string>();
+	const covered = new Set<string>();
 	for (const spec of specs) {
-		for (const id of headerCitations(spec.source)) cited.add(id);
+		for (const id of headerCitations(spec.source)) {
+			const parts = id.split('.');
+			for (let n = parts.length; n > 0; n--) covered.add(parts.slice(0, n).join('.'));
+		}
 	}
 	const gaps: CoverageGap[] = [];
 	for (const file of features) {
 		for (const subsection of featureSubsections(file.file, file.markdown)) {
-			if (cited.has(subsection.id) || markedUnit(subsection)) continue;
+			if (covered.has(subsection.id) || markedUnit(subsection)) continue;
 			gaps.push({ file: subsection.file, id: subsection.id, heading: subsection.heading });
 		}
 	}
