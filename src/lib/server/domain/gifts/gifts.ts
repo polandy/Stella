@@ -111,6 +111,19 @@ export type OpenIdea = Gift & { contactName: string; avatarPhotoId: string | nul
 /** A gift with whom it is for, as the giver's *Gives* tab lists it (docs/dev/02 §2.25.15). */
 export type GivenGift = Gift & { contactName: string };
 
+/** A bought gift as *Ready to give* reads it: enough to see whether the household hands it over (D17). */
+export type BoughtGift = Pick<
+	Gift,
+	| 'id'
+	| 'contactId'
+	| 'title'
+	| 'giverContactId'
+	| 'giverIsHousehold'
+	| 'giverLeftName'
+	| 'giverName'
+	| 'coGivers'
+>;
+
 /** An open idea read with its person's birth date, so whether it still waits can be told. */
 export type IdeaWithBirth<T extends Pick<Gift, 'when'>> = T & { birth: PartialDate | null };
 
@@ -164,10 +177,7 @@ export interface GiftRepository {
 		opts: { limit: number; before?: GiftStoryCursor }
 	): Promise<DatedGift[]>;
 	/** The bought gifts the viewer may see on `contactIds`, oldest bought first (§2.25.9). */
-	listBoughtVisibleTo(
-		viewer: Viewer,
-		contactIds: readonly string[]
-	): Promise<Pick<Gift, 'id' | 'contactId' | 'title'>[]>;
+	listBoughtVisibleTo(viewer: Viewer, contactIds: readonly string[]): Promise<BoughtGift[]>;
 	/** The places the viewer's visible gifts were stored at, latest used first, each once (D20). */
 	listStoredPlacesVisibleTo(viewer: Viewer): Promise<string[]>;
 }

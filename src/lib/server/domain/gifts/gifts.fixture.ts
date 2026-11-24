@@ -74,7 +74,16 @@ export function fakeGifts(
 				.filter(
 					(g) => g.state === 'bought' && contactIds.includes(g.contactId) && visible(viewer, g)
 				)
-				.map(({ id, contactId, title }) => ({ id, contactId, title }));
+				.map((g) => ({
+					id: g.id,
+					contactId: g.contactId,
+					title: g.title,
+					giverContactId: g.giverContactId,
+					giverIsHousehold: g.giverIsHousehold,
+					giverLeftName: g.giverLeftName,
+					giverName: g.giverName,
+					coGivers: g.coGivers
+				}));
 		},
 		async listStoredPlacesVisibleTo(viewer) {
 			const latest = [...rows.values()]

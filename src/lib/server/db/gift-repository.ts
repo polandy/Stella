@@ -298,19 +298,31 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 
 		async listBoughtVisibleTo(viewer, contactIds) {
 			if (contactIds.length === 0) return [];
-			return db
-				.select({ id: gift.id, contactId: gift.contactId, title: gift.title })
-				.from(gift)
-				.innerJoin(contact, eq(gift.contactId, contact.id))
-				.where(
-					and(
-						inArray(gift.contactId, [...contactIds]),
-						eq(gift.state, 'bought'),
-						giftVisibleTo(viewer, gift)
+			return withCoGivers(
+				db,
+				viewer,
+				db
+					.select({
+						id: gift.id,
+						contactId: gift.contactId,
+						title: gift.title,
+						giverContactId: gift.giverContactId,
+						giverIsHousehold: gift.giverIsHousehold,
+						giverLeftName: gift.giverLeftName,
+						giverName: giverNameVisibleTo(viewer, gift.giverContactId)
+					})
+					.from(gift)
+					.innerJoin(contact, eq(gift.contactId, contact.id))
+					.where(
+						and(
+							inArray(gift.contactId, [...contactIds]),
+							eq(gift.state, 'bought'),
+							giftVisibleTo(viewer, gift)
+						)
 					)
-				)
-				.orderBy(asc(gift.updatedAt), asc(gift.id))
-				.all();
+					.orderBy(asc(gift.updatedAt), asc(gift.id))
+					.all()
+			).map((row) => ({ ...row, giverIsHousehold: row.giverIsHousehold !== 0 }));
 		},
 
 		async listStoredPlacesVisibleTo(viewer) {
