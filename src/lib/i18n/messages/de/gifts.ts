@@ -36,6 +36,8 @@ export const gifts: GiftsMessages = {
 	'gifts.form.note': 'Notiz',
 	'gifts.form.notePlaceholder': 'Größe, Farbe, wo es gesehen wurde',
 	'gifts.form.link': 'Link',
+	'gifts.form.value': 'Wert',
+	'gifts.form.valuePlaceholder': 'Was es kostet',
 	'gifts.form.on': 'Am',
 	'gifts.form.occasion': 'Anlass',
 	'gifts.form.otherOccasion': 'Welcher Anlass?',

@@ -48,7 +48,7 @@ beforeEach(async () => {
 			locale: 'en'
 		}
 	);
-	wiring = { db, clock, ids, contacts: createDrizzleContactRepository(db) };
+	wiring = { db, clock, ids, contacts: createDrizzleContactRepository(db), currency: 'CHF' };
 });
 
 const viewerOf = (user: AuthUser) => ({ id: user.id, householdId: user.householdId });
@@ -88,6 +88,10 @@ describe('createGiftServices', () => {
 		const gifts = createGiftServices(wiring);
 		expect(gifts.giftDeps.gifts).toBe(gifts.gifts);
 		expect(gifts.giftDeps.contacts).toBe(wiring.contacts);
+	});
+
+	it('says what a gift is counted in, as wired (§2.25.16)', () => {
+		expect(createGiftServices({ ...wiring, currency: 'EUR' }).currency).toBe('EUR');
 	});
 
 	it('wires the injected clock and ids', () => {
@@ -140,6 +144,7 @@ describe('createServices', () => {
 				nextcloud: null,
 				sessionSecret: 'a-session-secret',
 				updateCheck: false,
+				giftCurrency: 'CHF',
 				updateFeedUrl: '',
 				mediaDir: '/nonexistent/stella-media'
 			},

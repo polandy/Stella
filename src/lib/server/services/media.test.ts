@@ -198,6 +198,7 @@ describe('createServices', () => {
 				nextcloud: null,
 				sessionSecret: 'a-session-secret',
 				updateCheck: false,
+				giftCurrency: 'CHF',
 				updateFeedUrl: '',
 				mediaDir
 			},

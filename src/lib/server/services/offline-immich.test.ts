@@ -72,6 +72,7 @@ async function servicesWith(immich: boolean): Promise<void> {
 			nextcloud: null,
 			sessionSecret: 'a-session-secret',
 			updateCheck: false,
+			giftCurrency: 'CHF',
 			updateFeedUrl: '',
 			mediaDir: '/nonexistent/stella-media'
 		},

@@ -5,6 +5,7 @@
 	import { dayLabel } from '#lib/dates/labels.js';
 	import type { PartialDate } from '#lib/dates/partial-date.js';
 	import { addedLabel, giverSegments, occasionLabel } from '#lib/gifts/labels.js';
+	import { useGiftCurrency } from '#lib/gifts/currency.svelte.js';
 	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import { reveal } from '#lib/motion/motion.svelte.js';
 	import { isOpenGift } from '#lib/gifts/gifts.js';
@@ -80,6 +81,7 @@
 	}: Props = $props();
 
 	const i18n = useI18n();
+	const money = useGiftCurrency();
 	const t = i18n.t;
 	const removals = useRemovals();
 	const listOf = (names: string[]) =>
@@ -158,7 +160,14 @@
 		{:else}
 			<div class="flex flex-wrap items-start gap-x-2 gap-y-1">
 				<div class="min-w-0 flex-1">
-					<p class="font-medium break-words text-fg">{gift.title}</p>
+					<p class="font-medium break-words text-fg">
+						{gift.title}{#if gift.value !== null}<span
+								class="font-normal text-fg-muted"
+								data-testid="gift-value"
+							>
+								· {money.label(gift.value)}</span
+							>{/if}
+					</p>
 					{#if when}<p class="text-sm text-fg-muted">{when}</p>{/if}
 					{#if giver}<p class="text-sm text-fg-muted" data-testid="gift-giver-line">
 							<GiverText segments={giver} />

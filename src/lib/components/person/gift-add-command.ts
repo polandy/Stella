@@ -5,6 +5,7 @@ import {
 	occasionFromForm,
 	visibilityFromForm
 } from '#lib/gifts/gifts.js';
+import { valueFromForm } from '#lib/gifts/value.js';
 import { GIFT_WHEN_KINDS } from '#lib/gifts/idea-when.js';
 import { parsedWhenFromForm } from '#lib/when/form.js';
 
@@ -30,7 +31,10 @@ export function giftAddCommand(
 	// A when the schema refuses goes to the server, which says why.
 	const when =
 		state === 'idea' ? parsedWhenFromForm((key) => text(formData, key), GIFT_WHEN_KINDS) : {};
+	// A value that is no whole number goes to the server, which says why.
+	const value = valueFromForm(text(formData, 'value'));
 	if (!title || !isAddableGiftState(state) || (state !== 'idea' && !givenOn) || !when) return null;
+	if (value === 'invalid') return null;
 	return {
 		id,
 		type: 'gift.add',
@@ -40,6 +44,7 @@ export function giftAddCommand(
 			title,
 			note: text(formData, 'note'),
 			url: text(formData, 'url'),
+			value,
 			givenOn: state === 'idea' ? null : givenOn,
 			occasion: occasionFromForm(text(formData, 'occasionChoice'), text(formData, 'occasionText')),
 			...visibilityFromForm(text(formData, 'visibility')),

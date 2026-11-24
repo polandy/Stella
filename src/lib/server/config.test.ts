@@ -18,6 +18,10 @@ describe('getConfig', () => {
 	it('logs plain text unless LOG_FORMAT says json', () => {
 		expect(getConfig().logFormat).toBe('text');
 	});
+
+	it('counts a gift in CHF unless GIFT_CURRENCY says otherwise', () => {
+		expect(getConfig().giftCurrency).toBe('CHF');
+	});
 });
 
 describe('assertProductionSessionSecret', () => {

@@ -236,6 +236,7 @@ export function groupIdeaFor(
 		groupId: group.id,
 		...NO_GIVER,
 		storedAt: null,
+		value: null,
 		createdAt: now,
 		updatedAt: now
 	};

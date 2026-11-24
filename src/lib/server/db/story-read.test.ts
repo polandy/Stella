@@ -57,6 +57,7 @@ async function giftForOma(id: string, state: 'idea' | 'given' | 'received', day:
 		id,
 		...NO_GIVER,
 		storedAt: null,
+		value: null,
 		contactId: 'oma',
 		createdBy: U1,
 		visibility: 'shared',

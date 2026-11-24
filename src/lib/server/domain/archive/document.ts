@@ -331,6 +331,7 @@ export function buildArchiveDocument(
 								)
 						: null,
 					stored_at: text(g, 'stored_at'),
+					value: num(g, 'value'),
 					group: text(g, 'group_id'),
 					author: text(g, 'created_by'),
 					created_at: moment(g, 'created_at')

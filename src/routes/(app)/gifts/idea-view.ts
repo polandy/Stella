@@ -29,6 +29,7 @@ export function openIdeaView(
 		contactName: idea.contactName,
 		avatarPhotoId: idea.avatarPhotoId,
 		title: idea.title,
+		value: idea.value,
 		note: idea.note,
 		url: idea.url,
 		visibility: idea.visibility,

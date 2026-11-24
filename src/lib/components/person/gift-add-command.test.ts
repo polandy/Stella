@@ -49,6 +49,15 @@ describe('giftAddCommand', () => {
 		);
 	});
 
+	it('carries what the gift was worth, whole, and is no command for anything else (§2.25.16)', () => {
+		const of = (value: string) =>
+			giftAddCommand(formOf({ state: 'idea', title: 'Kite', value }), 'c', 'julia', 7);
+		expect(of('1 250')?.payload.value).toBe(1250);
+		expect(of('')?.payload.value).toBeNull();
+		expect(of('12.50')).toBeNull();
+		expect(v.safeParse(GiftAddSchema, of('45')?.payload).success).toBe(true);
+	});
+
 	it('makes a payload the command schema takes', () => {
 		expect(v.safeParse(GiftAddSchema, idea('surprise')?.payload).success).toBe(true);
 	});

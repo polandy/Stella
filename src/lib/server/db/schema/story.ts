@@ -231,6 +231,8 @@ export const gift = sqliteTable(
 		giverLeftName: text('giver_left_name'),
 		// Where a bought gift waits to be handed over (*Estrich, Box 3*); cleared with *Not bought yet*.
 		storedAt: text('stored_at'),
+		// What it was worth, in whole units of the instance's `GIFT_CURRENCY`; never converted (§2.25.16).
+		value: integer('value'),
 		createdAt: integer('created_at').notNull().default(now),
 		updatedAt: integer('updated_at').notNull().default(now)
 	},

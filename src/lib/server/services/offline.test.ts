@@ -75,6 +75,7 @@ beforeEach(async () => {
 			nextcloud: null,
 			sessionSecret: 'a-session-secret',
 			updateCheck: false,
+			giftCurrency: 'CHF',
 			updateFeedUrl: '',
 			mediaDir: '/nonexistent/stella-media'
 		},

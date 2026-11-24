@@ -1,7 +1,12 @@
 import { createArchiveServices, type ArchiveServices, type ArchiveWiring } from './archive';
 import { createAuthServices, type AuthServices, type AuthWiring } from './auth';
 import { createCircleServices, type CircleServices, type CircleWiring } from './circles';
-import { createGiftServices, type GiftServices, type GiftWiring } from './gifts';
+import {
+	createGiftServices,
+	type GiftServices,
+	type GiftWiring,
+	type GiftWiringConfig
+} from './gifts';
 import { createHealthServices, type HealthServices, type HealthWiring } from './health';
 import { createHouseholdServices, type HouseholdServices, type HouseholdWiring } from './household';
 import { createImmichServices, type ImmichServices, type ImmichWiring } from './immich';
@@ -84,8 +89,10 @@ export type ServicesWiring = AuthWiring &
 	ReleaseWiring &
 	HealthWiring &
 	Omit<OfflineWiring, 'contexts'> &
-	Omit<GiftWiring, 'contacts'> &
-	Omit<TodoWiring, 'contacts'> &
+	Omit<GiftWiring, 'contacts' | 'currency'> & { config: GiftWiringConfig } & Omit<
+		TodoWiring,
+		'contacts'
+	> &
 	Omit<PlanWiring, 'contacts'>;
 
 /** Wires every grouped context. Pure assembly: no I/O beyond what the adapters do when used. */
@@ -104,7 +111,11 @@ export function createServices(wiring: ServicesWiring): AppServices {
 		contacts: people.contacts,
 		media: media.store
 	});
-	const gifts = createGiftServices({ ...wiring, contacts: people.contacts });
+	const gifts = createGiftServices({
+		...wiring,
+		contacts: people.contacts,
+		currency: wiring.config.giftCurrency
+	});
 	const todos = createTodoServices({ ...wiring, contacts: people.contacts });
 	const plans = createPlanServices({ ...wiring, contacts: people.contacts });
 	const story = createStoryServices({

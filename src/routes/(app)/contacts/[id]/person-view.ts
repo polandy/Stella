@@ -120,6 +120,8 @@ export function giftView(gift: Gift, ctx: PersonViewContext) {
 		giver: giverViewOf(gift),
 		/** Where a bought gift waits (§2.25.9); kept, but not shown, once it is given. */
 		storedAt: gift.state === 'bought' ? gift.storedAt : null,
+		/** What it was worth, whole units of the instance's currency (§2.25.16). */
+		value: gift.value,
 		/** When it was noted, shown on an idea; given and received gifts show their day. */
 		createdAt: gift.createdAt
 	};

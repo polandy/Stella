@@ -104,6 +104,7 @@ describe('giftView', () => {
 		id: 'g-1',
 		...NO_GIVER,
 		storedAt: null,
+		value: null,
 		contactId: 'c-hilde',
 		createdBy: 'user-2',
 		visibility: 'shared',
@@ -140,8 +141,16 @@ describe('giftView', () => {
 			notedBy: 'Hans',
 			giver: { kind: 'none' },
 			storedAt: null,
+			value: null,
 			createdAt: 1
 		});
+	});
+
+	it('carries what a gift was worth, on any state (§2.25.16)', () => {
+		expect(giftView(gift({ value: 45 }), context()).value).toBe(45);
+		expect(
+			giftView(gift({ state: 'given', givenOn: '2026-12-24', value: 0 }), context()).value
+		).toBe(0);
 	});
 
 	it('shows where a bought gift waits, and no longer once it is given (§2.25.9)', () => {
@@ -184,6 +193,7 @@ describe('givenGiftView', () => {
 					{ contactId: 'c-secret', name: null, leftName: null }
 				],
 				storedAt: null,
+				value: null,
 				contactId: 'c-hilde',
 				contactName: 'Hilde',
 				createdBy: 'user-2',
@@ -222,6 +232,7 @@ describe('givenGiftView', () => {
 				...NO_GIVER,
 				giverContactId: 'c-tomy',
 				storedAt: 'attic',
+				value: null,
 				contactId: 'c-sandra',
 				contactName: 'Sandra',
 				createdBy: 'user-2',

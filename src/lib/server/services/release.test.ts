@@ -85,6 +85,7 @@ describe('createServices', () => {
 				nextcloud: null,
 				sessionSecret: 'a-session-secret',
 				mediaDir: '/nonexistent/stella-media',
+				giftCurrency: 'CHF',
 				...wiring.config
 			},
 			db: drizzle(sqlite, { schema }),

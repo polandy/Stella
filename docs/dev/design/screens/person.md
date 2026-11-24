@@ -354,7 +354,8 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 - Given and Received are grouped by year under uppercase dividers (the list-divider style,
   §5.4), newest first.
 - The add form opens at the card's top like every card form: *Idea for Hilde* asks *What?*,
-  with *Note or link* folded away; *Given to Hilde* and *Received from Hilde* add the day
+  with *Note or link* folded away (it holds the whole-number *Value*, with the instance's currency
+  beside the field, and a row shows it after the title, §2.25.16); *Given to Hilde* and *Received from Hilde* add the day
   (today) and the occasion chips *Birthday · Christmas · Anniversary · Other…* (a pressed chip
   pressed again lets go; *Other…* opens a field). Shared/Private radios, *Save*.
 - Under *What?* the *already given* hint (docs/dev/02 §2.25.2): `text-xs`, `--fg-muted`, led by a

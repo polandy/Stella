@@ -134,6 +134,7 @@ export const errors: ErrorsMessages = {
 	'errors.note.gone': 'Diese Notiz gibt es nicht mehr.',
 	'errors.gift.needRecipient': 'Wähle, für wen das Geschenk ist.',
 	'errors.gift.needTitle': 'Ein Geschenk braucht einen Namen.',
+	'errors.gift.badValue': 'Gib eine ganze Zahl ein, etwa 45.',
 	'errors.gift.badLink': 'Der Link muss eine Webadresse sein.',
 	'errors.gift.needDay': 'Bitte wähle den Tag.',
 	'errors.gift.noSuchDay': (p: { day: string }) => `Den ${p.day} gibt es nicht.`,

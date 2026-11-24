@@ -40,6 +40,10 @@ export const RawSchema = v.object({
 	// Populate the database with the demo dataset on startup (test phase only). Idempotent.
 	SEED_DEMO: boolFrom(false),
 
+	// What a gift's value is counted in (docs/dev/02 §2.25.16): a plain string appended to the
+	// amount, nothing converted. Empty shows the number alone; unset is CHF.
+	GIFT_CURRENCY: v.optional(v.string(), 'CHF'),
+
 	// Ask GitHub once a day whether a newer Stella has been released (docs/dev/02 §2.17.1).
 	// On by default; it is the only request an instance makes on its own, and a household
 	// can opt out with UPDATE_CHECK=false.

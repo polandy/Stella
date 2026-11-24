@@ -67,6 +67,8 @@ interface GiftRecord {
 	groupId: string | null;
 	/** Where a bought gift waits to be handed over (D20); null when nobody said, or not bought. */
 	storedAt: string | null;
+	/** What it was worth, whole units of the instance's currency (§2.25.16); null when nobody said. */
+	value: number | null;
 	createdAt: number;
 	updatedAt: number;
 }
@@ -205,6 +207,8 @@ export interface GiftContent {
 	hiddenFromRecipient?: boolean;
 	/** An idea's when; absent on a command from before whens — *now*, or as it was on an edit. */
 	when?: When | null;
+	/** Absent on a command from before values: none, or as it was on an edit; null clears it. */
+	value?: number | null;
 }
 
 export interface AddGiftInput extends GiftContent {
@@ -386,6 +390,7 @@ export async function addGift(
 		whenCheckedOn: null,
 		groupId: null,
 		storedAt: null,
+		value: input.value ?? null,
 		...(await giverOf(deps, author, input, input.giver, input.coGivers)),
 		createdAt: now,
 		updatedAt: now
@@ -420,6 +425,7 @@ export async function editGift(
 	await deps.gifts.update({
 		...gift,
 		...checkedContent(gift.state, input),
+		value: input.value === undefined ? gift.value : input.value,
 		when,
 		// A when chosen anew is an answer too: *later* is not asked about again straight away.
 		whenCheckedOn: kept ? gift.whenCheckedOn : today,

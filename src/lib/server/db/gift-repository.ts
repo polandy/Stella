@@ -39,6 +39,7 @@ export const columns = {
 	giverIsHousehold: gift.giverIsHousehold,
 	giverLeftName: gift.giverLeftName,
 	storedAt: gift.storedAt,
+	value: gift.value,
 	createdAt: gift.createdAt,
 	updatedAt: gift.updatedAt
 };
@@ -177,6 +178,7 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 						giverIsHousehold: g.giverIsHousehold ? 1 : 0,
 						giverLeftName: g.giverLeftName,
 						storedAt: g.storedAt,
+						value: g.value,
 						updatedAt: g.updatedAt
 					})
 					.where(eq(gift.id, g.id))

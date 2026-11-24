@@ -172,6 +172,7 @@ describe('createServices', () => {
 				nextcloud: null,
 				sessionSecret: wiring.config.sessionSecret,
 				updateCheck: false,
+				giftCurrency: 'CHF',
 				updateFeedUrl: ''
 			},
 			db,
@@ -209,6 +210,7 @@ describe('createServices', () => {
 				nextcloud: null,
 				sessionSecret: wiring.config.sessionSecret,
 				updateCheck: false,
+				giftCurrency: 'CHF',
 				updateFeedUrl: ''
 			},
 			db,

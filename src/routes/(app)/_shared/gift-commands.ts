@@ -2,6 +2,7 @@ import type { CommandType } from '#lib/commands/commands.js';
 import { fromFormData } from '#lib/commands/form-data.js';
 import { GiftMarkBoughtSchema } from '#lib/commands/gift-todo-payloads.js';
 import { giversFromForm, occasionFromForm, visibilityFromForm } from '#lib/gifts/gifts.js';
+import { valueFromForm } from '#lib/gifts/value.js';
 import { whenFromForm } from '#lib/when/form.js';
 import { GiftGoneError } from '#lib/server/domain/gifts/gifts.js';
 import { fail, type RequestEvent } from '@sveltejs/kit';
@@ -29,6 +30,18 @@ export type GiftErrorKey = 'giftError' | 'giftRowError' | 'giftGroupError';
 /** The occasion the form chose, as the payload carries it. */
 export const occasionOf = (form: FormData) =>
 	occasionFromForm(textOf(form, 'occasionChoice'), textOf(form, 'occasionText'));
+
+/**
+ * What it was worth, as the field posted it (§2.25.16): a form without the field leaves the value
+ * as it was, a blank one clears it, and what is no whole number goes on as typed for the schema
+ * to refuse under `value`.
+ */
+export function valueOf(form: FormData): { value?: number | string | null } {
+	if (!form.has('value')) return {};
+	const raw = textOf(form, 'value');
+	const value = valueFromForm(raw);
+	return { value: value === 'invalid' ? raw : value };
+}
 
 /** Who may see it, as the three-way choice posted it (§2.25.10). */
 export const visibilityOf = (form: FormData) => visibilityFromForm(textOf(form, 'visibility'));
@@ -61,6 +74,7 @@ const GIFT_FORM: CommandFormEdge = {
 	fieldErrors: {
 		title: 'errors.gift.needTitle',
 		url: 'errors.gift.badLink',
+		value: 'errors.gift.badValue',
 		givenOn: 'errors.gift.needDay',
 		when: 'errors.gift.badWhen',
 		recipients: 'errors.giftGroup.recipients'
