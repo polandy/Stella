@@ -240,6 +240,13 @@ reading inside the element that owns the claim. Without that pair a case passes 
 its own inverse and says nothing, which is how one came to be withdrawn.
 `e2e/tags.spec.ts` is the worked example.
 
+**Where the specs are owed.** `scripts/spec-coverage.sh` lists — report-only, never a CI gate —
+every numbered `docs/dev/features` subsection (a `###` or `####` heading) that no e2e header
+cites and that does not say its behaviour is unit-covered; a header that cites a numbered part
+counts for the heading above it. A gap is a section to read: add the e2e once the owner signs it
+off, or say *unit* in the section when the unit layer is the right one. An owed e2e still waits
+in `TODO.md` as `e2e owed: §2.x.y`.
+
 Two tiny servers run beside the app. The first is `e2e/release-feed-stub.ts`, the stand-in for
 GitHub's `releases/latest` that the About card reads (`UPDATE_CHECK=true` plus
 `UPDATE_FEED_URL` in the `e2e:server` script). It exists so the card has a fixed release to
