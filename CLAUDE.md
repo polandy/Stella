@@ -18,6 +18,17 @@ suite is the **source of truth**; this file only routes, and every coding agent 
   for the go-ahead; at most two feature PRs open; English throughout (§8.10).
 - **Minimal exposure and deps, strict TS (no `any`), fail loud, names say what, comments say why** (§8.1–8.2).
 
+## Test and review quality — every agent, Claude and opencode alike
+
+- **A test must fail for a wrong result**: assert the specific error (exact message or type), no
+  assertion-free subtests, no test that passes on an empty render.
+- **Before committing, walk the degenerate states** — empty, default values/filters, error path,
+  multi-digit numbering (2.10 vs 2.2), ranges — and cover each that applies with a test.
+- **Apply every review suggestion or state why not**; never ignore one.
+- **The first commit subject describes the whole branch** (it becomes the PR title).
+- **A review says Ready only with no open finding**; it checks whether new tests could pass for a
+  wrong result, what the change does in degenerate states, and that the PR title matches the diff.
+
 ## Commands
 
 `bun run test` (unit: `bun test src`) · `bun run test:e2e` (Playwright — the whole suite
