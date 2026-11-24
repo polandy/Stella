@@ -164,4 +164,20 @@ The rule is unit-tested.
 			'docs/dev/features/2.9-search.md#2.9.3'
 		]);
 	});
+
+	it('orders files by their feature number, so 2.2 comes before 2.10', () => {
+		const later: FeatureFile = {
+			file: 'docs/dev/features/2.10-privacy-model.md',
+			markdown: '### 2.10.1 A\n\n'
+		};
+		const earlier: FeatureFile = {
+			file: 'docs/dev/features/2.2-contacts.md',
+			markdown: '### 2.2.1 B\n\n'
+		};
+		const gaps = coverageGaps([later, earlier], []);
+		expect(gaps.map((gap) => gap.file)).toEqual([
+			'docs/dev/features/2.2-contacts.md',
+			'docs/dev/features/2.10-privacy-model.md'
+		]);
+	});
 });

@@ -80,8 +80,8 @@ export function markedUnit(subsection: FeatureSubsection): boolean {
 }
 
 /**
- * Every subsection no e2e header cites and that is not marked unit, by file then id. A header
- * that cites a numbered part (`§2.2.4.2`) counts for the `###` heading above it (`2.2.4`).
+ * Every subsection no e2e header cites and that is not marked unit, in document order: feature
+ * number, then section. A header citing a numbered part counts for the section that holds it.
  */
 export function coverageGaps(
 	features: readonly FeatureFile[],
@@ -101,12 +101,35 @@ export function coverageGaps(
 			gaps.push({ file: subsection.file, id: subsection.id, heading: subsection.heading });
 		}
 	}
-	return gaps.sort((a, b) => a.file.localeCompare(b.file) || compareIds(a.id, b.id));
+	return gaps.sort(
+		(a, b) =>
+			compareNumbers(featureOrder(a.file), featureOrder(b.file)) ||
+			compareNumbers(numbers(a.id), numbers(b.id))
+	);
+}
+
+/** The leading `2.x` number of a features file, so 2.2 sorts before 2.10. */
+function featureOrder(file: string): number[] {
+	const name = file.split('/').pop() ?? '';
+	const match = /^(\d+(?:\.\d+)*)/.exec(name);
+	return match ? numbers(match[1]) : [];
+}
+
+function numbers(id: string): number[] {
+	return id.split('.').map(Number);
+}
+
+function compareNumbers(a: readonly number[], b: readonly number[]): number {
+	for (let i = 0; i < Math.max(a.length, b.length); i++) {
+		const diff = (a[i] ?? 0) - (b[i] ?? 0);
+		if (diff !== 0) return diff;
+	}
+	return 0;
 }
 
 function expandRange(start: string, end: string): string[] {
-	const from = start.split('.').map(Number);
-	const to = end.split('.').map(Number);
+	const from = numbers(start);
+	const to = numbers(end);
 	const sameParent =
 		from.length === to.length && from.slice(0, -1).every((part, i) => part === to[i]);
 	if (!sameParent || to[to.length - 1] < from[from.length - 1]) return [start, end];
@@ -115,14 +138,4 @@ function expandRange(start: string, end: string): string[] {
 		ids.push([...from.slice(0, -1), last].join('.'));
 	}
 	return ids;
-}
-
-function compareIds(a: string, b: string): number {
-	const left = a.split('.').map(Number);
-	const right = b.split('.').map(Number);
-	for (let i = 0; i < Math.max(left.length, right.length); i++) {
-		const diff = (left[i] ?? 0) - (right[i] ?? 0);
-		if (diff !== 0) return diff;
-	}
-	return 0;
 }
