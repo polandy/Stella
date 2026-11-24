@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.1.12](https://github.com/polandy/Stella/compare/v0.1.11...v0.1.12) (2026-11-24)
+
+
+### Features
+
+* **gifts:** /gifts by occasion — every recipient under each day, and the giver on each idea ([#578](https://github.com/polandy/Stella/issues/578)) ([1596938](https://github.com/polandy/Stella/commit/1596938a06551234a7b5442c733cd32a90c787e9))
+* **gifts:** a gift's giver — a person or the household, assigned on the card ([#575](https://github.com/polandy/Stella/issues/575)) ([1ffbd66](https://github.com/polandy/Stella/commit/1ffbd66a8eac91eceb848d89094dc29002a4cdda))
+* **gifts:** an optional gift value, in the instance's currency ([#581](https://github.com/polandy/Stella/issues/581)) ([ccc207e](https://github.com/polandy/Stella/commit/ccc207e94c0a6877a97afe393c9d0663eb3a2738))
+* **gifts:** Nachtragen… — what was given at a passed occasion, several at once ([#577](https://github.com/polandy/Stella/issues/577)) ([081211d](https://github.com/polandy/Stella/commit/081211de581ae99ec39d322cfef20066ab343636))
+* **gifts:** several people give one gift together ([#580](https://github.com/polandy/Stella/issues/580)) ([ded3fcb](https://github.com/polandy/Stella/commit/ded3fcba4f59e7d9e4cd208d811d18966f372de3))
+* **gifts:** the card by occasion, Bought…/Done by giver, and where a bought gift waits ([#576](https://github.com/polandy/Stella/issues/576)) ([185999f](https://github.com/polandy/Stella/commit/185999f8dc690044ee624cc75a05ee8e7c59eb3e))
+* **kinship:** derivation per parent kind — adoptive derives fully, foster only foster siblings ([#572](https://github.com/polandy/Stella/issues/572)) ([41db9ac](https://github.com/polandy/Stella/commit/41db9aca35ef1083d5cd77b105f4481877010b14))
+* **privacy:** Home offers device unlock once a member has a private entry ([#569](https://github.com/polandy/Stella/issues/569)) ([18f255e](https://github.com/polandy/Stella/commit/18f255ed4489914f4ccdc2c6778ea6f1d858fde0))
+* **relationships:** a parent link's kind — biological, adoptive, foster or step ([#571](https://github.com/polandy/Stella/issues/571)) ([cc9268c](https://github.com/polandy/Stella/commit/cc9268cd6c88d52a647cd7a81c6b347567595983))
+* **relationships:** until date for every relationship, plus the cares_for type ([#570](https://github.com/polandy/Stella/issues/570)) ([2522614](https://github.com/polandy/Stella/commit/2522614fb7c00a2202fea3d7bfe64a0e64954c8b))
+* **tree:** several parent pairs per child, a stroke per parent kind ([#573](https://github.com/polandy/Stella/issues/573)) ([f824280](https://github.com/polandy/Stella/commit/f82428057f5d7de95cbb4786268d60cc6817d546))
+
+
+### Bug Fixes
+
+* **gifts:** Home's *Ready:* names only the gifts the household hands over ([#583](https://github.com/polandy/Stella/issues/583)) ([dde7cf6](https://github.com/polandy/Stella/commit/dde7cf64f19dc52d6acf3263eb8d00fe2ae374c4))
+* **relationships:** a former partner can be added beside a current one ([#564](https://github.com/polandy/Stella/issues/564)) ([b396a58](https://github.com/polandy/Stella/commit/b396a5813a068f94fa7857e7c5e9499834771472))
+* **tree:** a lone parent's children stand on that parent's outer side, no two bars under one couple ([#567](https://github.com/polandy/Stella/issues/567)) ([125a46a](https://github.com/polandy/Stella/commit/125a46a52a2a398ec9f0c51a5ef4579201b57ae6))
+* **tree:** a wide tree frames the centre's core family at a readable size, an edge pill counts who stands off screen ([#568](https://github.com/polandy/Stella/issues/568)) ([280bbd2](https://github.com/polandy/Stella/commit/280bbd24b5a2e4fc4cf22a9bc2f2592e5aa06a3a))
+* **tree:** loose same-row relatives stand at the row end, no bar over the row ([#566](https://github.com/polandy/Stella/issues/566)) ([fb6e275](https://github.com/polandy/Stella/commit/fb6e275636a2222fe2da12e82f071aa08ed8d13b))
+
 ## [0.1.11](https://github.com/polandy/Stella/compare/v0.1.10...v0.1.11) (2026-11-20)
 
 
