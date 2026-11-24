@@ -18,5 +18,4 @@ PR 1, the giver on a gift, PR 2, the card by occasion with *Erledigt* / *Besorgt
   *Already given* names the giver.
 - **Stock** (`gift_stock`, `stock.assign`), its own ADR.
 - **Share ideas…**: free ideas exclude *Wir* and procured ones.
-- **Home and calendar wording**: *Ready:* only ours, done gifts leave the feed.
 - **A giver on an idea for several** (`gift_group`): PR 1 sets it per gift only.

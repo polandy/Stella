@@ -111,7 +111,12 @@ describe('a surprise, in every read', () => {
 	it('keeps a bought one out of their ready line', async () => {
 		expect(await repo.listBoughtVisibleTo(julia, [JULIA_PERSON])).toEqual([]);
 		expect(await repo.listBoughtVisibleTo(andy, [JULIA_PERSON])).toEqual([
-			{ id: 'ready', contactId: JULIA_PERSON, title: 'Bike' }
+			{
+				id: 'ready',
+				contactId: JULIA_PERSON,
+				title: 'Bike',
+				...NO_GIVER
+			}
 		]);
 	});
 

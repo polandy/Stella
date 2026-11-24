@@ -1,4 +1,6 @@
 import { hasGiftDay } from '../../../gifts/gifts';
+import { giverViewOf } from '../../../gifts/giver';
+import { handsOver } from '../../../gifts/occasions';
 import { phrase } from '../../../i18n/phrase';
 import type { Viewer } from '../../access/visibility';
 import {
@@ -62,15 +64,23 @@ export async function markGiftBought(
 export const giftPlaces = (deps: Pick<GiftDeps, 'gifts'>, viewer: Viewer): Promise<string[]> =>
 	deps.gifts.listStoredPlacesVisibleTo(viewer);
 
-/** The bought gifts the viewer may see on each of these people, by title; one with none is left out. */
+/**
+ * The bought gifts the viewer may see on each of these people, by title; one with none is left out.
+ * Only the ones the household hands over itself (D17): a gift somebody else gives is *Done*, not
+ * *Ready*, and never stands on Home's *Coming up* (docs/dev/02 §2.25.9).
+ */
 export async function readyGifts(
-	deps: Pick<GiftDeps, 'gifts'>,
+	deps: Pick<GiftDeps, 'gifts' | 'ownPeople'>,
 	viewer: Viewer,
 	contactIds: readonly string[]
 ): Promise<Map<string, string[]>> {
 	const ready = new Map<string, string[]>();
 	if (contactIds.length === 0) return ready;
+	const ours = new Set(
+		(await deps.ownPeople.membersOwnPeople(viewer.householdId)).map((owner) => owner.contactId)
+	);
 	for (const gift of await deps.gifts.listBoughtVisibleTo(viewer, [...new Set(contactIds)])) {
+		if (!handsOver(giverViewOf(gift), ours)) continue;
 		ready.set(gift.contactId, [...(ready.get(gift.contactId) ?? []), gift.title]);
 	}
 	return ready;

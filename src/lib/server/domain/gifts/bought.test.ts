@@ -226,4 +226,32 @@ describe('a bought gift leaves the list and the counts, and shows as ready', () 
 		expect(await readyGifts(deps, VIEWER, [HILDE])).toEqual(new Map());
 		expect(await readyGifts(deps, VIEWER, [])).toEqual(new Map());
 	});
+
+	it('is ready only when the household hands it over, never someone else’s *Done* (D17)', async () => {
+		const ours = await noteIdea('Bike');
+		const theirs = await noteIdea('Skates');
+		await bought(ours);
+		await bought(theirs);
+		gifts.rows.set(theirs, {
+			...gifts.rows.get(theirs)!,
+			giverContactId: 'grandma',
+			giverName: 'Grandma'
+		});
+		expect(await readyGifts(deps, VIEWER, [HILDE])).toEqual(new Map([[HILDE, ['Bike']]]));
+	});
+
+	it('counts what *Wir* or one of the household’s own people gives (D17)', async () => {
+		deps = { ...deps, ownPeople: fakeOwnPeople(new Map([['julia-person', JULIA.userId]])) };
+		const byUs = await noteIdea('Bike');
+		const byJulia = await noteIdea('Book');
+		await bought(byUs);
+		await bought(byJulia);
+		gifts.rows.set(byUs, { ...gifts.rows.get(byUs)!, giverIsHousehold: true });
+		gifts.rows.set(byJulia, {
+			...gifts.rows.get(byJulia)!,
+			giverContactId: 'julia-person',
+			giverName: 'Julia'
+		});
+		expect(await readyGifts(deps, VIEWER, [HILDE])).toEqual(new Map([[HILDE, ['Bike', 'Book']]]));
+	});
 });
