@@ -41,8 +41,9 @@ first to find somebody, so there the page opens on the person search.
   context and one action, *Write a moment*. A person with open gift ideas gets one more line
   beneath: the gift icon and *2 ideas* in `--link`, `text-xs`, to their Gifts card; its
   accessible name says *2 gift ideas for Hilde*. Its own line, not on the *Write a moment*
-  line, because the 17 rem rail would wrap them mid-phrase. A person with bought gifts still to
-  hand over gets *Ready: Scarf, Teapot* the same way, with the bag icon (docs/dev/02 §2.25.9).
+  line, because the 17 rem rail would wrap them mid-phrase. A person with bought gifts of the
+  household's own still to hand over gets *Ready: Scarf, Teapot* the same way, with the bag icon
+  — a gift somebody else gives is *Done* and adds nothing (docs/dev/02 §2.25.9).
   An outing booked with them reads *booked: Zoo* and the undated ideas *1 idea together*, with
   the outing icon, to their Outings card (docs/dev/02 §2.27.7).
 - **Outing ideas in *Coming up*** (`ComingUpPlan`): the next three dated ones are rows of their

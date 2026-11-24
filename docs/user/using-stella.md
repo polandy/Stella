@@ -58,7 +58,8 @@ everything*. Open an entry far down and come *Back*: the stream is where you lef
 Beside the stream sits a short list, **Coming up**: the next thirty days of birthdays and
 anniversaries. Each name offers one thing: *Write a moment*. Someone with gift ideas noted
 also shows *2 ideas* under their name, which takes you to their Gifts card, and *Ready: …* for a
-present already bought and not yet given. The next outings you have planned with a day join
+present your household has bought and not yet given (one somebody else gives is *Done* and shows
+nothing). The next outings you have planned with a day join
 the list too (see *Outings* below). The list disappears when it has
 nothing to say, and on a wide screen the stream then takes its room. On a phone there is no room beside the stream, so it stands above it,
 under the person search; the stream below loads on as you scroll. It shows three people there, with *Show all* underneath when there are more.
@@ -644,11 +645,11 @@ and a good idea is still there on the birthday it was meant for.
   the day you noted it, if Stella does not know their birthday.
 - **Bought it?** Press **Bought…** under the idea. Stella asks where it is kept — *attic, box 3*
   — if you want to say; places you used before are one tap away. It leaves the ideas and *All
-  gift ideas* — nobody buys it twice — and waits on the card, showing where it is, and on Home as
-  *Ready: …* when their day comes up, until you mark it given. *Undo* in the message takes it
-  back for a few seconds; **Not bought yet** makes it an idea again later. When the gift is for
-  someone in the household, *Keep it from Mama* is ticked for you: a present in the cupboard is
-  a surprise.
+  gift ideas* — nobody buys it twice — and waits on the card, showing where it is, and — yours
+  to hand over — on Home as *Ready: …* when their day comes up, until you mark it given. *Undo*
+  in the message takes it back for a few seconds; **Not bought yet** makes it an idea again
+  later. When the gift is for a member of the household, *Keep it from Mama* is ticked for you:
+  a present in the cupboard is a surprise.
 - **Someone else is giving it?** Then the button says **Done**: one tap notes that the aunt has
   it covered, with nothing to ask. **Not done yet** takes it back.
 - **By occasion.** Once an idea has a giver or a day, the card sorts the gifts by occasion —
