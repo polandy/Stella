@@ -58,7 +58,8 @@ everything*. Open an entry far down and come *Back*: the stream is where you lef
 Beside the stream sits a short list, **Coming up**: the next thirty days of birthdays and
 anniversaries. Each name offers one thing: *Write a moment*. Someone with gift ideas noted
 also shows *2 ideas* under their name, which takes you to their Gifts card, and *Ready: …* for a
-present already bought and not yet given. The next outings you have planned with a day join
+present your household has bought and not yet given (one somebody else gives is *Done* and shows
+nothing). The next outings you have planned with a day join
 the list too (see *Outings* below). The list disappears when it has
 nothing to say, and on a wide screen the stream then takes its room. On a phone there is no room beside the stream, so it stands above it,
 under the person search; the stream below loads on as you scroll. It shows three people there, with *Show all* underneath when there are more.
