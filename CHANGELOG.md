@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.13](https://github.com/polandy/Stella/compare/v0.1.12...v0.1.13) (2026-11-25)
+
+
+### Features
+
+* **circles:** show members as they were then, with a Then · Now toggle ([#589](https://github.com/polandy/Stella/issues/589)) ([6260e6d](https://github.com/polandy/Stella/commit/6260e6d7caa701dd0249f77c344cf99fddc2b3a1))
+* **photos:** pick a profile picture from the whole Immich library, and turn it before saving ([#587](https://github.com/polandy/Stella/issues/587)) ([fd2096d](https://github.com/polandy/Stella/commit/fd2096d11d0f7869833d7154ad630d522f2417e4))
+
 ## [0.1.12](https://github.com/polandy/Stella/compare/v0.1.11...v0.1.12) (2026-11-24)
 
 
