@@ -2,7 +2,7 @@
 	"name": "stella",
 	"private": true,
 	"license": "Elastic-2.0",
-	"version": "0.1.12",
+	"version": "0.1.13",
 	"type": "module",
 	"imports": {
 		"#lib": "./src/lib/index.ts",
