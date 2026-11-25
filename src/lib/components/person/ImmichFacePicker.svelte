@@ -11,6 +11,7 @@
 	import { faceChoice, type FaceHolder } from '#lib/immich/face-pick.js';
 	import type { GlimpsePhoto } from '#lib/immich/strip.js';
 	import type { CropRect } from '#lib/media/crop.js';
+	import type { QuarterTurns } from '#lib/media/turn.js';
 	import { loadFullPicture } from '#lib/media/send-cut.js';
 	import { sendImmichPhoto } from '#lib/media/send-immich-photo.js';
 	import { useRemovals } from '#lib/undo/context.svelte.js';
@@ -175,14 +176,14 @@
 	}
 
 	/** The square becomes this person's picture: the path *Use as photo* takes (§2.24.6). */
-	async function keep(crop: CropRect) {
+	async function keep(crop: CropRect, turns: QuarterTurns) {
 		const chosen = picked;
 		picked = null;
 		if (!chosen) return;
 		const hadPhoto = hasPhoto;
 		busy = true;
 		try {
-			await sendImmichPhoto(contactId, chosen.previewUrl, chosen.picture, crop);
+			await sendImmichPhoto(contactId, chosen.previewUrl, chosen.picture, crop, turns);
 			dialog?.close();
 			await invalidateAll();
 			if (hadPhoto) removals.notify(t('components.photo.previousKept'));
@@ -396,6 +397,7 @@
 	<PhotoCropper
 		file={picked.picture}
 		initial={null}
+		turnable
 		onconfirm={keep}
 		oncancel={() => (picked = null)}
 	/>

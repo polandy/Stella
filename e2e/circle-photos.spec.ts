@@ -341,6 +341,8 @@ async function cutFor(page: Page, name: string): Promise<void> {
 	await candidate(page, name).click();
 	const cropper = page.getByTestId('photo-cropper');
 	await expect(cropper.getByRole('button', { name: 'Use photo' })).toBeEnabled();
+	// A cut is a square on the group photo itself, so it cannot be turned (docs/dev/02 §2.14).
+	await expect(cropper.getByRole('button', { name: /^Rotate (left|right)$/ })).toHaveCount(0);
 	// The square is rendered in the browser before it is posted, which a cold runner can take a
 	// while over: Stella's answer to the post is the signal the cut is done, not a guess at time.
 	const stored = page.waitForResponse(

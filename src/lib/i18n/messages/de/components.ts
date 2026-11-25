@@ -21,6 +21,8 @@ export const components: ComponentsMessages = {
 	'components.cropper.hint':
 		'Zum Verschieben ziehen, zum Zoomen mit zwei Fingern oder dem Mausrad. Pfeiltasten und + / − gehen auch.',
 	'components.cropper.zoom': 'Zoom',
+	'components.cropper.turnLeft': 'Nach links drehen',
+	'components.cropper.turnRight': 'Nach rechts drehen',
 	'components.cropper.use': 'Foto verwenden',
 	// Ein Profilbild wählen, wenn die Kreise der Person Fotos haben (docs/dev/02 §2.14).
 	'components.photo.choose': 'Profilbild wählen',
@@ -30,6 +32,7 @@ export const components: ComponentsMessages = {
 	'components.photo.immichNotLinked': (p) =>
 		`${p.name} ist noch mit keinem Gesicht in Immich verknüpft.`,
 	'components.photo.immichNone': (p) => `Immich hat keine Fotos von ${p.name}.`,
+	'components.photo.browseImmich': 'Bibliothek durchblättern…',
 	'components.palette.jumpTo': 'Springen zu',
 	'components.palette.placeholder': 'Zu einer Person springen oder etwas tun…',
 	'components.palette.empty': 'Niemand mit diesem Namen.',

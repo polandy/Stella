@@ -4,8 +4,8 @@ import { addPerson, appReady, signIn } from './app';
 
 /*
  * A photo from Immich as the person's own photo (docs/dev/02 §2.24.6):
- * *Use as photo* in the lightbox on an Immich photo, and *From Immich* in the picture's chooser. Written after
- * the owner tried #245 in the preview (docs/dev/08 §8.4.1).
+ * *Use as photo* in the lightbox on an Immich photo, *From Immich* and *Browse the library…* in
+ * the picture's chooser. Written after the owner tried #245 in the preview (docs/dev/08 §8.4.1).
  *
  * The e2e server runs with `IMMICH_DEMO=true`: Immich is the in-memory demo library, whose
  * photos are solid tiles dated a day apart, newest first. One Immich face links to one person
@@ -125,6 +125,8 @@ test('Use as photo in the lightbox keeps the crop as their picture, dated by Imm
 	// The same photo used now is stored, so the checks above were not locators that could never
 	// find a picture — and a cancelled crop does not block the next one.
 	await cropFromViewer(page);
+	// An Immich preview is re-encoded whole, so it can be turned (docs/dev/02 §2.14).
+	await cropper(page).getByRole('button', { name: 'Rotate right' }).click();
 	await cropper(page).getByRole('button', { name: 'Use photo' }).click();
 
 	await expect(viewer(page)).toBeHidden();
@@ -234,4 +236,32 @@ test('the chooser links an unlinked person in place and then shows their Immich 
 	await expect(
 		chooser.getByText('Quiro Fotomann isn’t linked to a face in Immich yet.')
 	).toHaveCount(0);
+});
+
+test('the chooser browses the whole library: one tap picks a photo, dated by Immich', async ({
+	page
+}) => {
+	await addPerson(page, 'Quendolin', 'Fotomann');
+
+	await portrait(page).click();
+	const chooser = page.getByTestId('avatar-chooser');
+	await chooser.getByRole('button', { name: 'Browse the library…' }).click();
+	await expect(chooser).toBeHidden();
+
+	// The demo library's newest photos are from 1 September 2026; the sheet opens on today.
+	const sheet = page.getByTestId('immich-library');
+	await sheet.getByRole('button', { name: 'An earlier day with photos' }).click();
+	await expect(sheet.getByTestId('immich-library-day')).toContainText('Tuesday, 1 September 2026');
+	const tile = sheet.getByTestId('immich-library-photos').getByRole('button').first();
+	await expect(tile).toBeVisible();
+	// One picture to pick, not photos to tick: no ticks and no *Add* button.
+	await expect(tile).not.toHaveAttribute('aria-pressed');
+	await expect(sheet.getByRole('button', { name: /^Add \d+ photos?$/ })).toHaveCount(0);
+
+	await tile.click();
+	await expect(sheet).toBeHidden();
+	await cropper(page).getByRole('button', { name: 'Use photo' }).click();
+
+	await expect(worn(page)).toHaveAttribute('src', /\/media\//);
+	await expectOnlyGalleryPhotoTaken(page, '1 September 2026');
 });

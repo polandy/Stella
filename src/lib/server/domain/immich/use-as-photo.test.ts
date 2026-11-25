@@ -236,16 +236,16 @@ describe('useImmichPhoto', () => {
 			householdId: 'h1',
 			personId: BERT_ID
 		});
-		// A photo of the whole library is for an upload's copy, never someone's photo (docs/dev/02 §2.24.9).
-		const library = await deps.signer.sign({
+		// The library picker's thumbnail is a tile, never the picture a square is cut from.
+		const libraryThumbnail = await deps.signer.sign({
 			kind: 'library',
 			householdId: 'h1',
 			assetId: fakeAssetId(BERT_ID, 0),
-			size: 'preview'
+			size: 'thumbnail'
 		});
 		const forBertOnCarlsPage = await preview();
 		for (const [contactId, token] of [
-			['c-bert', library],
+			['c-bert', libraryThumbnail],
 			['c-bert', thumbnail],
 			['c-cleo', faceOnCleosPage],
 			['c-bert', newcomer],
@@ -295,6 +295,54 @@ describe('useImmichPhoto', () => {
 			ok: false,
 			refusal: 'expired'
 		});
+		expect(worn).toEqual([]);
+	});
+
+	it('takes a preview from the whole library as anyone’s photo, dated by Immich (docs/dev/02 §2.24.6)', async () => {
+		const { deps, worn } = setup();
+		const token = await deps.signer.sign({
+			kind: 'library',
+			householdId: 'h1',
+			assetId: fakeAssetId(DORA_ID, 0),
+			size: 'preview',
+			takenAt: TAKEN_AT
+		});
+		// Cleo is linked to someone else, and nobody needs to be linked at all: the library is the household's.
+		expect(
+			await useImmichPhoto(deps, viewer, { contactId: 'c-cleo', token, upload: square })
+		).toEqual({ ok: true, photoId: 'photo-1' });
+		expect(worn).toEqual([
+			{
+				uploader: { userId: 'u-anna', householdId: 'h1' },
+				contactId: 'c-cleo',
+				upload: { ...square, takenAt: TAKEN_AT }
+			}
+		]);
+	});
+
+	it('refuses a library preview for a person out of reach, or signed for another household', async () => {
+		const { deps, worn } = setup();
+		const library = (householdId: string) =>
+			deps.signer.sign({
+				kind: 'library',
+				householdId,
+				assetId: fakeAssetId(BERT_ID, 0),
+				size: 'preview'
+			});
+		expect(
+			await useImmichPhoto(deps, viewer, {
+				contactId: 'c-dora',
+				token: await library('h1'),
+				upload: square
+			})
+		).toEqual({ ok: false, refusal: 'notVisible' });
+		expect(
+			await useImmichPhoto(deps, viewer, {
+				contactId: 'c-bert',
+				token: await library('h2'),
+				upload: square
+			})
+		).toEqual({ ok: false, refusal: 'notVisible' });
 		expect(worn).toEqual([]);
 	});
 

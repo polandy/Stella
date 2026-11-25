@@ -16,7 +16,8 @@
 
 	interface Props {
 		days: readonly LibraryDayGroup[];
-		ticked: readonly string[];
+		/** Null while a tap picks one photo rather than ticking it. */
+		ticked: readonly string[] | null;
 		full: boolean;
 		busy: boolean;
 		labelOf: (photo: LibraryPhoto) => string | null;

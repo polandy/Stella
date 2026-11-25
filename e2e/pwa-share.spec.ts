@@ -146,11 +146,26 @@ test('saves several shared photos to the gallery, and offers no profile photo fo
 	await expect(page.getByTestId('photo-grid').locator('li[data-source="stella"]')).toHaveCount(3);
 });
 
-test('offers the profile photo for a single shared photo', async ({ page }) => {
+test('keeps a single shared photo as the profile photo, turned in the cropper', async ({
+	page
+}) => {
 	await addPerson(page, 'Avara', 'Einzeln');
 	await share(page, { photos: 1 });
 
 	await expect(target(page, /As profile photo/)).toBeEnabled();
+	await target(page, /As profile photo/).check();
+	await pick(page, 'Avara');
+	await saveButton(page).click();
+	// The shared photo is re-encoded whole, so it can be turned (docs/dev/02 §2.14).
+	const cropper = page.getByTestId('photo-cropper');
+	await cropper.getByRole('button', { name: 'Rotate left' }).click();
+	await cropper.getByRole('button', { name: 'Use photo' }).click();
+
+	await expect(page.getByRole('heading', { name: 'Avara Einzeln' })).toBeVisible();
+	await expect(page.getByTestId('avatar-uploader').locator('img')).toHaveAttribute(
+		'src',
+		/\/media\//
+	);
 });
 
 test('puts the words back in the address when the server takes the share', async ({

@@ -2,6 +2,7 @@ import { immichMediaToken } from '../immich/media-url';
 import { submitAction } from '../undo/submit-action';
 import type { CropRect } from './crop';
 import { processAvatar } from './process-avatar';
+import type { QuarterTurns } from './turn';
 
 /*
  * Sending the square cut from a photo in Immich (docs/dev/02 §2.24.6): rendered and re-encoded in the
@@ -16,11 +17,12 @@ export async function sendImmichPhoto(
 	contactId: string,
 	previewUrl: string,
 	picture: Blob,
-	crop: CropRect
+	crop: CropRect,
+	turns: QuarterTurns = 0
 ): Promise<void> {
 	const token = immichMediaToken(previewUrl);
 	if (token === null) throw new Error('Not a picture from Stella’s Immich proxy.');
-	const { image, thumb, width, height } = await processAvatar(picture, crop);
+	const { image, thumb, width, height } = await processAvatar(picture, crop, undefined, turns);
 	const body = new FormData();
 	body.append('token', token);
 	body.append('image', image, 'avatar.jpg');

@@ -10,7 +10,8 @@
 
 	interface Props {
 		photos: readonly LibraryPhoto[];
-		ticked: readonly string[];
+		/** Null while a tap picks one photo rather than ticking it. */
+		ticked: readonly string[] | null;
 		/** Whether no more may be ticked. */
 		full: boolean;
 		/** While the ticked ones are copied, nothing can be tapped. */
@@ -28,13 +29,13 @@
 
 <ul class="grid grid-cols-3 gap-1.5 sm:grid-cols-4" data-testid={testid}>
 	{#each photos as photo (photo.id)}
-		{@const number = tickNumber(ticked, photo.id)}
+		{@const number = ticked === null ? null : tickNumber(ticked, photo.id)}
 		{@const label = labelOf(photo)}
 		<li>
 			<button
 				type="button"
 				class="group relative block aspect-square w-full overflow-hidden rounded-control bg-bg-sunken aria-pressed:ring-3 aria-pressed:ring-primary aria-pressed:ring-inset"
-				aria-pressed={number !== null}
+				aria-pressed={ticked === null ? undefined : number !== null}
 				aria-label={label
 					? t('immich.library.photo', { when: label })
 					: t('immich.library.photoUndated')}
@@ -47,12 +48,14 @@
 					loading="lazy"
 					class="size-full object-cover transition-opacity group-disabled:opacity-50"
 				/>
-				<span
-					class="absolute top-1.5 right-1.5 grid size-6 place-items-center rounded-full border-2 border-scrim-fg text-xs font-bold text-primary-fg tabular-nums shadow-card {number
-						? 'bg-primary'
-						: 'bg-scrim/20'}"
-					aria-hidden="true">{number ?? ''}</span
-				>
+				{#if ticked !== null}
+					<span
+						class="absolute top-1.5 right-1.5 grid size-6 place-items-center rounded-full border-2 border-scrim-fg text-xs font-bold text-primary-fg tabular-nums shadow-card {number
+							? 'bg-primary'
+							: 'bg-scrim/20'}"
+						aria-hidden="true">{number ?? ''}</span
+					>
+				{/if}
 				{#if label}
 					<span
 						class="absolute bottom-1 left-1 rounded bg-scrim/55 px-1 text-[11px] text-scrim-fg tabular-nums"

@@ -4,7 +4,8 @@
   that walks the whole library's timeline — all years, a year, a month (with a chip per week), a day — whoever is in the
   photos, its albums beside it, and a smart search across it. It opens on one day; the trail leads up from there. Taps tick photos, numbered in order; *Add N photos* copies them through Stella's signed
   proxy and hands them over as files, for the same pipeline as a pick from the device — or, with
-  `onlink`, hands the photos themselves over, to be kept as references (docs/dev/04 ADR-132).
+  `onlink`, hands the photos themselves over, to be kept as references (docs/dev/04 ADR-132). With
+  `onpick` a tap picks one photo and closes the sheet, for a person's picture (docs/dev/02 §2.24.6).
 -->
 <script lang="ts">
 	import { tick } from 'svelte';
@@ -42,9 +43,11 @@
 		onadd?: (copies: ImmichCopy[]) => void;
 		/** Instead of copies: the ticked photos themselves, in order. The sheet then closes. */
 		onlink?: (photos: LibraryPhoto[]) => void;
+		/** Instead of ticks: the one photo tapped. The sheet then closes. */
+		onpick?: (photo: LibraryPhoto) => void;
 	}
 
-	let { open = $bindable(false), day = null, onadd, onlink }: Props = $props();
+	let { open = $bindable(false), day = null, onadd, onlink, onpick }: Props = $props();
 
 	const i18n = useI18n();
 	const t = i18n.t;
@@ -144,7 +147,16 @@
 		body?.querySelector(`[data-day="${day}"]`)?.scrollIntoView({ block: 'start' });
 	}
 
-	const toggle = (id: string) => (ticked = toggledTick(ticked, id));
+	function toggle(id: string) {
+		if (!onpick) {
+			ticked = toggledTick(ticked, id);
+			return;
+		}
+		const photo = browser.seen.get(id);
+		if (!photo) return;
+		onpick(photo);
+		dialog?.close();
+	}
 </script>
 
 <dialog
@@ -250,7 +262,7 @@
 					empty={readMonth !== null
 						? t('immich.library.noneInMonth', { month: monthAndYear(readMonth, i18n.intlLocale) })
 						: t('immich.library.albumEmpty')}
-					{ticked}
+					ticked={onpick ? null : ticked}
 					{full}
 					busy={copying !== null}
 					labelOf={when}
@@ -288,7 +300,7 @@
 			{:else}
 				<LibraryPhotos
 					{photos}
-					{ticked}
+					ticked={onpick ? null : ticked}
 					{full}
 					busy={copying !== null}
 					labelOf={when}
@@ -299,14 +311,16 @@
 		</div>
 
 		<FormError message={copyError} />
-		<LibraryFooter
-			ticked={ticked.length}
-			tray={tickTray(ticked, browser.seen)}
-			{full}
-			{copying}
-			onclear={() => (ticked = [])}
-			onuntick={toggle}
-			onadd={add}
-		/>
+		{#if !onpick}
+			<LibraryFooter
+				ticked={ticked.length}
+				tray={tickTray(ticked, browser.seen)}
+				{full}
+				{copying}
+				onclear={() => (ticked = [])}
+				onuntick={toggle}
+				onadd={add}
+			/>
+		{/if}
 	</div>
 </dialog>

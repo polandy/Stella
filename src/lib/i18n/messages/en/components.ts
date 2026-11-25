@@ -22,6 +22,8 @@ export const components = {
 	'components.cropper.hint':
 		'Drag to move, pinch or scroll to zoom. Arrow keys and + / − work too.',
 	'components.cropper.zoom': 'Zoom',
+	'components.cropper.turnLeft': 'Rotate left',
+	'components.cropper.turnRight': 'Rotate right',
 	'components.cropper.use': 'Use photo',
 	// Choosing a profile picture when the person's circles have photos (docs/dev/02 §2.14).
 	'components.photo.choose': 'Choose a profile picture',
@@ -31,6 +33,7 @@ export const components = {
 	'components.photo.immichNotLinked': (p: { name: string }) =>
 		`${p.name} isn’t linked to a face in Immich yet.`,
 	'components.photo.immichNone': (p: { name: string }) => `Immich has no photos of ${p.name}.`,
+	'components.photo.browseImmich': 'Browse the library…',
 	'components.palette.jumpTo': 'Jump to',
 	'components.palette.placeholder': 'Jump to a person, or do something…',
 	'components.palette.empty': 'Nobody by that name.',

@@ -15,7 +15,8 @@
 		read: PagedRead;
 		/** What the body says when there is nothing to show. */
 		empty: string;
-		ticked: readonly string[];
+		/** Null while a tap picks one photo rather than ticking it. */
+		ticked: readonly string[] | null;
 		full: boolean;
 		busy: boolean;
 		labelOf: (photo: LibraryPhoto) => string | null;
