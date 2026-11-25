@@ -16,8 +16,9 @@ import {
  * no image library and no EXIF ever reaches it. What the server decides is whether to take that
  * square as a copy of an Immich photo: only with the preview token it signed for this person,
  * while the viewer still sees them (the access layer) and they are still linked to the Immich
- * person the photo was listed for. Immich is never asked anything here, so no asset id the
- * browser names is ever fetched. The capture date is the one Immich gave, signed into the token,
+ * person the photo was listed for — or with a preview the library picker signed for the household,
+ * for anyone the viewer sees. Immich is never asked anything here, so no asset id the browser names
+ * is ever fetched. The capture date is the one Immich gave, signed into the token,
  * not one the browser sends.
  */
 
@@ -50,9 +51,14 @@ export async function useImmichPhoto(
 	const admitted = await admitImmichMedia(deps, viewer, copy.token);
 	if (!admitted.ok) return admitted;
 	const { media } = admitted;
-	if (media.kind === 'newcomer' || media.kind === 'library' || media.contactId !== copy.contactId)
+	if (media.kind === 'library') {
+		// A pick from the whole library (docs/dev/02 §2.24.9) is the household's, for anyone the viewer sees.
+		if (media.size !== 'preview') return { ok: false, refusal: 'invalid' };
+		if (!(await deps.contacts.findByIdVisibleTo(viewer, copy.contactId)))
+			return { ok: false, refusal: 'notVisible' };
+	} else if (media.kind === 'newcomer' || media.contactId !== copy.contactId) {
 		return { ok: false, refusal: 'invalid' };
-	if (media.kind === 'face') {
+	} else if (media.kind === 'face') {
 		// The face Immich shows of them, as a person added from *New from Immich* starts with
 		// (docs/dev/02 §2.24.7). A face token is also signed for a mere proposal, so it is taken only
 		// while they are linked to that very face. Immich does not date a face.
@@ -66,7 +72,7 @@ export async function useImmichPhoto(
 	const photoId = await deps.setAvatar(
 		{ userId: viewer.id, householdId: viewer.householdId },
 		copy.contactId,
-		{ ...copy.upload, takenAt: media.kind === 'photo' ? (media.takenAt ?? null) : null }
+		{ ...copy.upload, takenAt: media.kind === 'face' ? null : (media.takenAt ?? null) }
 	);
 	return { ok: true, photoId };
 }

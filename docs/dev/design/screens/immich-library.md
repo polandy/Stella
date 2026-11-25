@@ -48,6 +48,9 @@ they already took, which live in Immich, without leaving Stella or downloading t
   time (a day) or its date (a search) in the corner, on a dark scrim. A tap ticks it: a primary
   ring and a round badge with its number in the order of the taps; the tile is a toggle button
   (`aria-pressed`) named *Photo, 14:32*.
+- **Picking one** (`onpick`). Opened from a person's picture chooser (docs/dev/02 §2.24.6) the
+  sheet picks a single photo: tiles are plain buttons with no tick and no `aria-pressed`, there is
+  no footer, and a tap hands the photo back and closes the sheet.
 - **A search** replaces the day bar with *Best matches for "…"* and a clear button; clearing
   goes back to the day. Smart search off is a quiet note above the days, not an error.
 - **The tray** sits above the footer's line once something is ticked: small square thumbnails

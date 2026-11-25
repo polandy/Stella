@@ -16,13 +16,22 @@
 		type ImageSize,
 		type WindowPixel
 	} from '#lib/media/crop.js';
+	import {
+		turnCrop,
+		turned,
+		turnedSize,
+		turnStyle,
+		type QuarterTurns,
+		type TurnDirection
+	} from '#lib/media/turn.js';
 	import Button from './Button.svelte';
 	import { syncModal } from './modal';
 
 	/*
 	 * Choosing which square of a picture becomes a person's photo (docs/dev/02 §2.14). The picture
 	 * moves behind a fixed round window: drag it, pinch or scroll to zoom, or use the slider and
-	 * the arrow keys. All geometry lives in `#lib/media/crop.js`; this component only turns pointer
+	 * the arrow keys; where `turnable`, turn it a quarter left or right. All geometry lives in
+	 * `#lib/media/crop.js` and `#lib/media/turn.js`; this component only turns pointer
 	 * and key events into calls there and draws the result. A native <dialog> gives focus
 	 * trapping, Escape and the backdrop for free, as in the command palette. Keys stay inside it:
 	 * the gallery's lightbox walks its photos with the same arrows on `window`.
@@ -33,10 +42,13 @@
 		file: Blob | null;
 		/** The square chosen last time, to start from instead of the centre. */
 		initial?: CropRect | null;
-		onconfirm: (crop: CropRect) => void;
+		/** Whether the picture may be turned a quarter at a time; only where the cut is re-encoded whole. */
+		turnable?: boolean;
+		/** `crop` is in the picture's pixels as turned by `turns`. */
+		onconfirm: (crop: CropRect, turns: QuarterTurns) => void;
 		oncancel: () => void;
 	}
-	let { file, initial = null, onconfirm, oncancel }: Props = $props();
+	let { file, initial = null, turnable = false, onconfirm, oncancel }: Props = $props();
 
 	const t = useTranslate();
 
@@ -46,7 +58,10 @@
 	let dialog: HTMLDialogElement | undefined = $state();
 	let windowPx = $state(0);
 	let windowEl: HTMLDivElement | undefined = $state();
-	let image = $state<ImageSize | null>(null);
+	let natural = $state<ImageSize | null>(null);
+	let turns = $state<QuarterTurns>(0);
+	/** The picture as shown, turned: every crop is in its pixels. */
+	const image = $derived(natural ? turnedSize(natural, turns) : null);
 	let crop = $state<Crop | null>(null);
 
 	const url = $derived(file ? URL.createObjectURL(file) : null);
@@ -59,19 +74,21 @@
 
 	$effect(() => {
 		syncModal(dialog, file !== null, () => {
-			image = null;
+			natural = null;
+			turns = 0;
 			crop = null;
 		});
 	});
 
 	const placement = $derived(
-		image && crop && windowPx > 0 ? imagePlacement(image, crop, windowPx) : null
+		image && crop && windowPx > 0 ? turnStyle(imagePlacement(image, crop, windowPx), turns) : null
 	);
 
 	function onLoad(event: Event) {
 		const img = event.currentTarget as HTMLImageElement;
-		image = { width: img.naturalWidth, height: img.naturalHeight };
-		crop = initial ? cropFromRect(image, initial) : initialCrop(image);
+		const loaded = { width: img.naturalWidth, height: img.naturalHeight };
+		natural = loaded;
+		crop = initial ? cropFromRect(loaded, initial) : initialCrop(loaded);
 	}
 
 	// ── Pointers: one drags, two pinch ─────────────────────────────────────────
@@ -133,8 +150,14 @@
 		crop = zoomTo(image, crop, Number((event.currentTarget as HTMLInputElement).value));
 	}
 
+	function turn(direction: TurnDirection) {
+		if (!image || !crop) return;
+		crop = turnCrop(image, crop, direction);
+		turns = turned(turns, direction);
+	}
+
 	function confirm() {
-		if (image && crop) onconfirm(cropRect(image, crop));
+		if (image && crop) onconfirm(cropRect(image, crop), turns);
 	}
 </script>
 
@@ -178,6 +201,7 @@
 					style:top="{placement?.top ?? 0}px"
 					style:width="{placement?.width ?? 0}px"
 					style:height="{placement?.height ?? 0}px"
+					style:transform={placement?.transform}
 				/>
 			{/if}
 			<!-- The round avatar the square will be worn as; the corners stay visible but dimmed. -->
@@ -188,17 +212,39 @@
 
 		<p id="cropper-hint" class="text-xs text-fg-muted">{t('components.cropper.hint')}</p>
 
-		<input
-			type="range"
-			min="1"
-			max={image ? maxZoom(image) : 1}
-			step="0.01"
-			value={crop?.zoom ?? 1}
-			oninput={onSlide}
-			disabled={!crop}
-			aria-label={t('components.cropper.zoom')}
-			class="w-full accent-[var(--primary)]"
-		/>
+		<div class="flex items-center gap-2">
+			{#if turnable}
+				<Button
+					variant="ghost"
+					icon="turnLeft"
+					label={t('components.cropper.turnLeft')}
+					title={t('components.cropper.turnLeft')}
+					onclick={() => turn('left')}
+					disabled={!crop}
+				/>
+			{/if}
+			<input
+				type="range"
+				min="1"
+				max={image ? maxZoom(image) : 1}
+				step="0.01"
+				value={crop?.zoom ?? 1}
+				oninput={onSlide}
+				disabled={!crop}
+				aria-label={t('components.cropper.zoom')}
+				class="min-w-0 flex-1 accent-[var(--primary)]"
+			/>
+			{#if turnable}
+				<Button
+					variant="ghost"
+					icon="turnRight"
+					label={t('components.cropper.turnRight')}
+					title={t('components.cropper.turnRight')}
+					onclick={() => turn('right')}
+					disabled={!crop}
+				/>
+			{/if}
+		</div>
 
 		<div class="flex justify-end gap-2">
 			<Button variant="ghost" onclick={oncancel}>{t('common.cancel')}</Button>

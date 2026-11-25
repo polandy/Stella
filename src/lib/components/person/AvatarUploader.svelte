@@ -3,8 +3,10 @@
 	import { invalidateAll } from '$app/navigation';
 	import { avatarChoices } from '#lib/people/avatar-chooser.js';
 	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { LibraryPhoto } from '#lib/immich/library.js';
 	import type { GlimpsePhoto } from '#lib/immich/strip.js';
 	import type { CropRect } from '#lib/media/crop.js';
+	import type { QuarterTurns } from '#lib/media/turn.js';
 	import { processAvatar } from '#lib/media/process-avatar.js';
 	import { loadFullPicture, sendCut } from '#lib/media/send-cut.js';
 	import { sendImmichPhoto } from '#lib/media/send-immich-photo.js';
@@ -13,6 +15,7 @@
 	import AvatarChooser, { type GroupPhotoChoice } from './AvatarChooser.svelte';
 	import Avatar from '../ui/Avatar.svelte';
 	import ImmichFacePicker from './ImmichFacePicker.svelte';
+	import ImmichLibraryPicker from '../immich/ImmichLibraryPicker.svelte';
 	import PhotoCropper from '../ui/PhotoCropper.svelte';
 
 	interface Props {
@@ -57,12 +60,13 @@
 	/*
 	 * Where the picture comes from (`#lib/people/avatar-chooser.js`): a file at once when there is
 	 * nothing else, else the chooser — a file, their group photos (docs/dev/02 §2.14), their latest
-	 * Immich photos or *Find in Immich* (docs/dev/02 §2.24.6). Every source opens the same cropper;
-	 * only how the square is sent differs.
+	 * Immich photos or *Find in Immich*, and the whole library (docs/dev/02 §2.24.6). Every source opens
+	 * the same cropper; only how the square is sent differs.
 	 */
 	const choices = $derived(avatarChoices({ groupPhotos: groupPhotos.length, immich }));
 	let chooserOpen = $state(false);
 	let pickerOpen = $state(false);
+	let libraryOpen = $state(false);
 
 	/** The picture in the cropper, and where it came from; null when no cropper is open. */
 	type Source =
@@ -96,7 +100,7 @@
 			picture: await loadFullPicture(mediaUrl(photo.id))
 		}));
 
-	const chooseImmichPhoto = (photo: GlimpsePhoto) =>
+	const chooseImmichPhoto = (photo: GlimpsePhoto | LibraryPhoto) =>
 		load(async () => ({
 			kind: 'immich',
 			previewUrl: photo.previewUrl,
@@ -112,8 +116,13 @@
 	}
 
 	/** Post a picked file as the new avatar, with the capture date read out of it (docs/dev/02 §2.14). */
-	async function upload(file: File, crop: CropRect) {
-		const { image, thumb, width, height, takenAt } = await processAvatar(file, crop);
+	async function upload(file: File, crop: CropRect, turns: QuarterTurns) {
+		const { image, thumb, width, height, takenAt } = await processAvatar(
+			file,
+			crop,
+			undefined,
+			turns
+		);
 		const body = new FormData();
 		body.append('image', image, 'avatar.jpg');
 		body.append('thumb', thumb, 'thumb.jpg');
@@ -124,7 +133,7 @@
 		if (!res.ok) throw new Error();
 	}
 
-	async function confirm(crop: CropRect) {
+	async function confirm(crop: CropRect, turns: QuarterTurns) {
 		const chosen = source;
 		source = null;
 		if (!chosen) return;
@@ -133,7 +142,7 @@
 		const hadPreviousPhoto = avatarPhotoId !== null;
 		busy = true;
 		try {
-			if (chosen.kind === 'file') await upload(chosen.picture, crop);
+			if (chosen.kind === 'file') await upload(chosen.picture, crop, turns);
 			else if (chosen.kind === 'group')
 				await sendCut(
 					`/contacts/${contactId}?/cutFromGroupPhoto`,
@@ -141,7 +150,7 @@
 					chosen.picture,
 					crop
 				);
-			else await sendImmichPhoto(contactId, chosen.previewUrl, chosen.picture, crop);
+			else await sendImmichPhoto(contactId, chosen.previewUrl, chosen.picture, crop, turns);
 			await invalidateAll();
 			if (hadPreviousPhoto) removals.notify(t('components.photo.previousKept'));
 		} catch {
@@ -183,6 +192,7 @@
 	<PhotoCropper
 		file={source?.picture ?? null}
 		initial={source?.kind === 'group' ? source.photo.crop : null}
+		turnable={source?.kind !== 'group'}
 		onconfirm={confirm}
 		oncancel={() => (source = null)}
 	/>
@@ -197,7 +207,11 @@
 			ongroup={chooseGroupPhoto}
 			onimmich={chooseImmichPhoto}
 			onfind={() => (pickerOpen = true)}
+			onbrowse={() => (libraryOpen = true)}
 		/>
+	{/if}
+	{#if choices.immich !== null}
+		<ImmichLibraryPicker bind:open={libraryOpen} onpick={chooseImmichPhoto} />
 	{/if}
 	{#if choices.immich === 'find'}
 		<!-- Linked from here, the person's Immich photos are in the chooser when it opens again. -->

@@ -1,6 +1,7 @@
 import type { CropRect } from './crop';
 import { encodeJpeg } from './encode-jpeg';
 import { readCaptureDate } from './process-image';
+import { turnPlan, type QuarterTurns } from './turn';
 
 /*
  * Client-side avatar processing (docs/dev/02 §2.14). The browser applies EXIF orientation, cuts the
@@ -29,8 +30,23 @@ export interface ProcessedAvatar {
 	takenAt: string | null;
 }
 
+/** The picture turned as the cropper showed it; the bitmap itself when it was not turned. */
+function turnedSource(bitmap: ImageBitmap, turns: QuarterTurns): CanvasImageSource {
+	if (turns === 0) return bitmap;
+	const plan = turnPlan({ width: bitmap.width, height: bitmap.height }, turns);
+	const canvas = document.createElement('canvas');
+	canvas.width = plan.canvas.width;
+	canvas.height = plan.canvas.height;
+	const ctx = canvas.getContext('2d');
+	if (!ctx) throw new Error('Canvas is not available.');
+	ctx.translate(plan.dx, plan.dy);
+	ctx.rotate(plan.angle);
+	ctx.drawImage(bitmap, 0, 0);
+	return canvas;
+}
+
 function toSquareJpeg(
-	bitmap: ImageBitmap,
+	bitmap: CanvasImageSource,
 	size: number,
 	sx: number,
 	sy: number,
@@ -47,19 +63,21 @@ function toSquareJpeg(
 }
 
 /**
- * `crop` is in the picture's pixels *after* EXIF orientation — the same space the cropper's
- * `<img>` measures, since browsers orient an image element from its EXIF too.
+ * `crop` is in the picture's pixels *after* EXIF orientation and the cropper's `turns` — the same
+ * space the cropper measures, since browsers orient an image element from its EXIF too.
  */
 export async function processAvatar(
 	file: Blob,
 	crop: CropRect,
-	size = AVATAR_SIZE
+	size = AVATAR_SIZE,
+	turns: QuarterTurns = 0
 ): Promise<ProcessedAvatar> {
 	const takenAt = await readCaptureDate(file);
 	const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
 	try {
-		const image = toSquareJpeg(bitmap, size, crop.x, crop.y, crop.size);
-		const thumb = toSquareJpeg(bitmap, THUMB_SIZE, crop.x, crop.y, crop.size);
+		const source = turnedSource(bitmap, turns);
+		const image = toSquareJpeg(source, size, crop.x, crop.y, crop.size);
+		const thumb = toSquareJpeg(source, THUMB_SIZE, crop.x, crop.y, crop.size);
 		return { image, thumb, width: size, height: size, takenAt };
 	} finally {
 		bitmap.close();

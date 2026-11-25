@@ -56,6 +56,8 @@ import {
 	Route,
 	Search,
 	RefreshCw,
+	RotateCcwSquare,
+	RotateCwSquare,
 	Settings,
 	Shrink,
 	SkipForward,
@@ -196,7 +198,9 @@ export const ICONS = {
 	sync: RefreshCw,
 	// A person's brief, read before a visit, and printing it (docs/dev/02 §2.2.5).
 	brief: ClipboardList,
-	print: Printer
+	print: Printer,
+	turnLeft: RotateCcwSquare,
+	turnRight: RotateCwSquare
 };
 
 /** One of `ICONS`. */

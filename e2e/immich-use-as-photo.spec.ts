@@ -235,3 +235,31 @@ test('the chooser links an unlinked person in place and then shows their Immich 
 		chooser.getByText('Quiro Fotomann isn’t linked to a face in Immich yet.')
 	).toHaveCount(0);
 });
+
+test('the chooser browses the whole library: one tap picks a photo, dated by Immich', async ({
+	page
+}) => {
+	await addPerson(page, 'Quendolin', 'Fotomann');
+
+	await portrait(page).click();
+	const chooser = page.getByTestId('avatar-chooser');
+	await chooser.getByRole('button', { name: 'Browse the library…' }).click();
+	await expect(chooser).toBeHidden();
+
+	// The demo library's newest photos are from 1 September 2026; the sheet opens on today.
+	const sheet = page.getByTestId('immich-library');
+	await sheet.getByRole('button', { name: 'An earlier day with photos' }).click();
+	await expect(sheet.getByTestId('immich-library-day')).toContainText('Tuesday, 1 September 2026');
+	const tile = sheet.getByTestId('immich-library-photos').getByRole('button').first();
+	await expect(tile).toBeVisible();
+	// One picture to pick, not photos to tick: no ticks and no *Add* button.
+	await expect(tile).not.toHaveAttribute('aria-pressed');
+	await expect(sheet.getByRole('button', { name: /^Add \d+ photos?$/ })).toHaveCount(0);
+
+	await tile.click();
+	await expect(sheet).toBeHidden();
+	await cropper(page).getByRole('button', { name: 'Use photo' }).click();
+
+	await expect(worn(page)).toHaveAttribute('src', /\/media\//);
+	await expectOnlyGalleryPhotoTaken(page, '1 September 2026');
+});

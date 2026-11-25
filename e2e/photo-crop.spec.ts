@@ -13,6 +13,7 @@ import { addPerson, signIn } from './app';
 type Rgb = [number, number, number];
 const RED: Rgb = [238, 0, 0];
 const GREEN: Rgb = [0, 170, 0];
+const BLUE: Rgb = [0, 0, 238];
 
 async function testCard(page: Page): Promise<Buffer> {
 	const bytes = await page.evaluate(async () => {
@@ -97,6 +98,38 @@ test('keeps exactly the square chosen in the cropper', async ({ page }) => {
 	expectNear(await colourAt(avatar, 0.8, 0.5), GREEN);
 	expectNear(await colourAt(avatar, 0.95, 0.5), GREEN);
 });
+
+for (const { turn, top, bottom } of [
+	{ turn: 'Rotate right', top: RED, bottom: BLUE },
+	{ turn: 'Rotate left', top: BLUE, bottom: RED }
+]) {
+	test(`keeps the picture turned by ${turn.toLowerCase()}`, async ({ page }) => {
+		await addPerson(page, 'Nils', turn === 'Rotate right' ? 'Rechts' : 'Links');
+		const uploader = page.getByTestId('avatar-uploader');
+		const cropper = page.getByTestId('photo-cropper');
+
+		await uploader.locator('input[type=file]').setInputFiles({
+			name: 'card.png',
+			mimeType: 'image/png',
+			buffer: await testCard(page)
+		});
+		await expect(cropper.getByRole('button', { name: 'Use photo' })).toBeEnabled();
+		// A quarter turn stands the landscape card upright: its thirds now run top to bottom.
+		await cropper.getByRole('button', { name: turn }).click();
+		await cropper.getByRole('button', { name: 'Use photo' }).click();
+		await expect(cropper).toBeHidden();
+
+		const avatar = uploader.locator('img');
+		await expect(avatar).toHaveAttribute('src', /\/media\//);
+		expectNear(await colourAt(avatar, 0.5, 0.1), top);
+		expectNear(await colourAt(avatar, 0.5, 0.5), GREEN);
+		expectNear(await colourAt(avatar, 0.5, 0.9), bottom);
+		// Reloaded, the stored picture keeps the turn — it is not a style on the page.
+		await page.reload();
+		expectNear(await colourAt(avatar, 0.5, 0.1), top);
+		expectNear(await colourAt(avatar, 0.5, 0.9), bottom);
+	});
+}
 
 test('uploads nothing when the cropper is cancelled', async ({ page }) => {
 	await addPerson(page, 'Nico', 'Rahmen');

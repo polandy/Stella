@@ -5,6 +5,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { useTranslate } from '#lib/i18n/context.svelte.js';
 	import type { CropRect } from '#lib/media/crop.js';
+	import type { QuarterTurns } from '#lib/media/turn.js';
 	import { loadFullPicture } from '#lib/media/send-cut.js';
 	import { sendImmichPhoto } from '#lib/media/send-immich-photo.js';
 	import { useRemovals } from '#lib/undo/context.svelte.js';
@@ -46,14 +47,14 @@
 		}
 	}
 
-	async function keep(crop: CropRect) {
+	async function keep(crop: CropRect, turns: QuarterTurns) {
 		const source = picture;
 		picture = null;
 		if (!source) return;
 		const hadPhoto = hasPhoto;
 		busy = true;
 		try {
-			await sendImmichPhoto(contactId, previewUrl, source, crop);
+			await sendImmichPhoto(contactId, previewUrl, source, crop, turns);
 			await invalidateAll();
 			if (hadPhoto) removals.notify(t('components.photo.previousKept'));
 			ondone();
@@ -77,4 +78,10 @@
 	{t('immich.viewer.use')}
 </Button>
 <FormError message={error} variant="inline" size="xs" />
-<PhotoCropper file={picture} initial={null} onconfirm={keep} oncancel={() => (picture = null)} />
+<PhotoCropper
+	file={picture}
+	initial={null}
+	turnable
+	onconfirm={keep}
+	oncancel={() => (picture = null)}
+/>

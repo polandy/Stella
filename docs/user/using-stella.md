@@ -540,7 +540,9 @@ the person's photo in Stella, dated as Immich dates it — a copy, which stays e
 later goes from Immich. The photo they had before stays in their gallery. Tapping the person's
 picture at the top of their page offers the same: under **From Immich** pick one of their latest
 Immich photos — or, if they are not linked yet, **Find in Immich** first, and their photos
-appear.
+appear. **Browse the library…** opens your whole Immich library instead: tap any photo and it
+opens in the square cutter. Before **Use photo**, **Rotate left** and **Rotate right** turn a
+picture that came out sideways — also for a photo from your device.
 
 **Any photo from Immich.** Wherever you add a photo — a moment, a journal entry, a person's or a
 circle's photos — you can take it from Immich too. On a moment or an entry, the photo button

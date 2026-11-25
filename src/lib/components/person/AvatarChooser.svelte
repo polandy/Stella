@@ -24,6 +24,7 @@
 	 * one of their circles (docs/dev/02 §2.14), or — with Immich — one of their
 	 * latest Immich photos, the same signed list the Photos card shows. A person not
 	 * linked yet gets *Find in Immich* instead, the face picker; once linked, their photos are here.
+	 * Either way *Browse the library* opens the whole Immich library (docs/dev/02 §2.24.9).
 	 * Every pick hands back to `AvatarUploader`, which opens the cropper; this only lists.
 	 */
 
@@ -39,6 +40,7 @@
 		ongroup: (photo: GroupPhotoChoice) => void;
 		onimmich: (photo: GlimpsePhoto) => void;
 		onfind: () => void;
+		onbrowse: () => void;
 	}
 	let {
 		contactId,
@@ -49,7 +51,8 @@
 		onfile,
 		ongroup,
 		onimmich,
-		onfind
+		onfind,
+		onbrowse
 	}: Props = $props();
 
 	const i18n = useI18n();
@@ -171,6 +174,16 @@
 					{/each}
 				</ul>
 			{/if}
+			<Button
+				variant="secondary"
+				size="sm"
+				icon="photo"
+				onclick={() => then(onbrowse)}
+				class="self-start"
+				data-testid="avatar-browse-immich"
+			>
+				{t('components.photo.browseImmich')}
+			</Button>
 		{/if}
 	</div>
 </dialog>

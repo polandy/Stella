@@ -13,6 +13,7 @@
 	import PhotoCropper from '#lib/components/ui/PhotoCropper.svelte';
 	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import type { CropRect } from '#lib/media/crop.js';
+	import type { QuarterTurns } from '#lib/media/turn.js';
 	import { processAvatar } from '#lib/media/process-avatar.js';
 	import { processImage } from '#lib/media/process-image.js';
 	import { deviceDay, writersDay } from '#lib/dates/today.js';
@@ -198,14 +199,19 @@
 	}
 
 	/** The profile photo: cropped here, then posted as the person page's uploader does. */
-	async function setAvatar(crop: CropRect) {
+	async function setAvatar(crop: CropRect, turns: QuarterTurns) {
 		const picture = cropping;
 		cropping = null;
 		if (!picture || !person) return;
 		saving = true;
 		error = null;
 		try {
-			const { image, thumb, width, height, takenAt } = await processAvatar(picture, crop);
+			const { image, thumb, width, height, takenAt } = await processAvatar(
+				picture,
+				crop,
+				undefined,
+				turns
+			);
 			const body = new FormData();
 			body.append('image', image, 'avatar.jpg');
 			body.append('thumb', thumb, 'thumb.jpg');
@@ -307,4 +313,4 @@
 	{/if}
 </main>
 
-<PhotoCropper file={cropping} onconfirm={setAvatar} oncancel={() => (cropping = null)} />
+<PhotoCropper file={cropping} turnable onconfirm={setAvatar} oncancel={() => (cropping = null)} />
