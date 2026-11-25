@@ -9,6 +9,7 @@ import { createDrizzleCirclePhotoRepository } from '../db/circle-photo-repositor
 import { createDrizzleCircleRepository } from '../db/circle-repository';
 import { createDrizzleCircleTreeReads } from '../db/circle-tree-reads';
 import { createDrizzleCutRepository } from '../db/cut-repository';
+import { createDrizzlePersonFaceReads } from '../db/person-face-reads';
 import type * as schema from '../db/schema';
 import type { ArrangePeopleDeps } from '../domain/circles/arrange-people';
 import type { CirclePhotoDeps, CirclePhotoRepository } from '../domain/circles/circle-photos';
@@ -22,6 +23,7 @@ import type { CircleDeletionPreviewDeps, DeleteCircleDeps } from '../domain/circ
 import type { CircleDirectoryDeps } from '../domain/circles/directory';
 import type { CircleMembershipDeps } from '../domain/circles/memberships';
 import type { CircleNestingDeps } from '../domain/circles/nesting';
+import type { PeriodFaceDeps } from '../domain/circles/period-faces';
 import type { RenameRoleDeps } from '../domain/circles/rename-role';
 import type { CircleTreeDeps } from '../domain/circles/tree';
 import type { UpdateCircleDeps } from '../domain/circles/update-circle';
@@ -58,6 +60,8 @@ export interface CircleServices {
 	updateCircleDeps: UpdateCircleDeps;
 	/** Moving or copying people between a circle and its sub-circles, and the Undo of it (ADR-127). */
 	arrangePeopleDeps: ArrangePeopleDeps;
+	/** Each member's face at the time of the circle, for *Then · Now* (docs/dev/02 §2.4.2). */
+	periodFaceDeps: PeriodFaceDeps;
 	circleMembershipDeps: CircleMembershipDeps;
 	memberRoleDeps: MemberRoleDeps;
 	memberRemovalDeps: MemberRemovalDeps;
@@ -111,6 +115,7 @@ export function createCircleServices({
 			ids,
 			clock
 		},
+		periodFaceDeps: { faces: createDrizzlePersonFaceReads(db), clock },
 		circleNestingDeps: { circles, nesting, clock },
 		updateCircleDeps: { circles, nesting, clock },
 		circleMembershipDeps: { memberships },

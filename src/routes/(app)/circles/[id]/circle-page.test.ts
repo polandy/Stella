@@ -85,8 +85,10 @@ const listed = (id: string, lastName: string | null): SurnameListPerson => ({
  * The choir as the viewer sees it: Anna and Ben sing alto, Cleo tenor, Dora has no role; the
  * household also knows Emil, who is not in it. Markus Brunner's son Ben has no last name yet.
  */
+const ANNA_2019 = Date.parse('2019-05-01T12:00:00Z');
+
 const MEMBERS = [
-	membership('k1', 'anna', { role: 'Alto' }),
+	membership('k1', 'anna', { role: 'Alto', startDate: '2019-01-01', endDate: '2019-12-31' }),
 	membership('k1', 'ben', { role: 'Alto' }),
 	membership('k1', 'cleo', { role: 'Tenor' }),
 	membership('k1', 'dora')
@@ -148,6 +150,15 @@ function household({
 			memberRoleDeps: { circles, memberships, clock },
 			renameRoleDeps: { circles, memberships, circlePhotos, clock },
 			memberRemovalDeps: { circles, memberships },
+			periodFaceDeps: {
+				faces: {
+					listFacesOfVisibleTo: async (_viewer, ids) =>
+						ids.includes('anna')
+							? [{ contactId: 'anna', photoId: 'anna-2019', datedAt: ANNA_2019, circleId: null }]
+							: []
+				},
+				clock
+			},
 			random: () => 0
 		},
 		people: {
@@ -209,6 +220,17 @@ describe('load', () => {
 		expect(data.cuts).toEqual({ p1: { people: 2, wearers: [{ contactId: 'anna', crop: null }] } });
 		expect(data.passOn).toEqual({ markus: [{ id: 'ben', name: 'ben', declined: [] }] });
 		expect(data.canDelete).toBe(false);
+		// Anna's own year in the choir shows her as she was then; the circle has no dates.
+		expect(data.then).toEqual({
+			faces: {
+				'k1/anna': { photoId: 'anna-2019', fit: 'inside', datedAt: ANNA_2019 },
+				'k1/ben': { photoId: null, fit: 'none', datedAt: null },
+				'k1/cleo': { photoId: null, fit: 'none', datedAt: null },
+				'k1/dora': { photoId: null, fit: 'none', datedAt: null }
+			},
+			shown: true,
+			startsOnThen: false
+		});
 	});
 
 	it('offers *Delete circle…* to the circle’s creator', async () => {

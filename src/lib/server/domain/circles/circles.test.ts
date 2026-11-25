@@ -368,7 +368,9 @@ describe('groupMembersByRole', () => {
 		contactId: `c-${name}`,
 		displayName: name,
 		avatarPhotoId: null,
-		role
+		role,
+		startDate: null,
+		endDate: null
 	});
 	const shape = (members: MemberView[]) =>
 		groupMembersByRole(members).map((g) => [g.role, g.members.map((m) => m.displayName)]);

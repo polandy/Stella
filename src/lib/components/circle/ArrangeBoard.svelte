@@ -2,7 +2,8 @@
 	import { invalidateAll } from '$app/navigation';
 	import { tick } from 'svelte';
 	import { postArrange, postUndo } from '#lib/components/circle/arrange-post.js';
-	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import { periodFaceCaption, type PeriodFace } from '#lib/circles/period-face.js';
+	import PeriodAvatar from './PeriodAvatar.svelte';
 	import Button from '#lib/components/ui/Button.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';
 	import {
@@ -39,9 +40,19 @@
 		path: string[];
 		members: Member[];
 	}
-	let { pageId, zones }: { pageId: string; zones: Zone[] } = $props();
+	let {
+		pageId,
+		zones,
+		faces = null
+	}: {
+		pageId: string;
+		zones: Zone[];
+		/** In *Then*, each person's face by `circleId/contactId`; null in *Now* (§2.4.2). */
+		faces?: Record<string, PeriodFace> | null;
+	} = $props();
 
-	const { t } = useI18n();
+	const i18n = useI18n();
+	const { t } = i18n;
 	const removals = useRemovals();
 
 	let mode = $state<ArrangeMode>('move');
@@ -351,6 +362,8 @@
 							{@const pick = { circleId: zone.circleId, contactId: m.contactId }}
 							{@const selected = selectedKeys.has(pickKey(pick))}
 							{@const also = alsoIn(cards, m.contactId, zone.circleId)}
+							{@const face = faces?.[`${zone.circleId}/${m.contactId}`] ?? null}
+							{@const caption = face ? periodFaceCaption(i18n, face) : null}
 							<li
 								draggable="true"
 								ondragstart={(e) => dragStart(e, pick)}
@@ -366,14 +379,21 @@
 										: 'border-border-subtle bg-bg-sunken text-fg hover:border-border'}"
 									onclick={() => (selection = togglePick(selection, pick))}
 								>
-									<Avatar
+									<PeriodAvatar
 										id={m.contactId}
 										name={m.displayName}
 										avatarPhotoId={m.avatarPhotoId}
+										{face}
 										size={28}
 									/>
 									<span class="min-w-0 flex-1">
 										<span class="block truncate text-sm font-medium">{m.displayName}</span>
+										{#if caption}
+											<span
+												class="block truncate text-xs {selected ? 'opacity-80' : 'text-fg-subtle'}"
+												data-testid="member-face-caption">{caption}</span
+											>
+										{/if}
 										{#if also.length}
 											<span
 												class="block truncate text-xs {selected ? 'opacity-80' : 'text-fg-muted'}"

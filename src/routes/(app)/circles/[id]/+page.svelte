@@ -11,6 +11,7 @@
 	import MemberSelectionBar from '#lib/components/circle/MemberSelectionBar.svelte';
 	import PhotoStrip from '#lib/components/circle/PhotoStrip.svelte';
 	import SubCircles from '#lib/components/circle/SubCircles.svelte';
+	import ThenNowToggle from '#lib/components/circle/ThenNowToggle.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';
 	import { PhotoWalk } from '#lib/components/circle/photo-walk.svelte.js';
 	import Combobox from '#lib/components/ui/Combobox.svelte';
@@ -21,6 +22,8 @@
 	import { roleKey } from '#lib/circles/role-key.js';
 	import { dayLabel } from '#lib/dates/labels.js';
 	import { photoDay, type Dated } from '#lib/media/taken-at.js';
+	import { showsThen } from '#lib/circles/then-preference.js';
+	import { useThenChoice } from '#lib/circles/then-choice.svelte.js';
 	import { allChosen, toggleEveryone, toggleGroup, toggleMember } from '#lib/circles/selection.js';
 	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import { newPersonHref } from '#lib/people/new-person.js';
@@ -68,6 +71,10 @@
 		if (walk.current && !walked) walk.close();
 	});
 	const photoDate = (photo: Dated): string => dayLabel(i18n, photoDay(photo));
+
+	// *Then · Now* (docs/dev/02 §2.4.2): there only when it changes a face; an ended circle opens on Then.
+	const thenChoice = useThenChoice();
+	const then = $derived(data.then.shown && showsThen(thenChoice.choice, data.then.startsOnThen));
 
 	// A member on their way out of the circle is off the grid while the undo window is open;
 	// a role whose last member is leaving goes with them.
@@ -278,6 +285,9 @@
 		bind:open={addOpen}
 	>
 		{#snippet action()}
+			{#if data.then.shown && visibleCount}
+				<ThenNowToggle {then} onchoose={thenChoice.choose} />
+			{/if}
 			{#if data.nesting.children.length}
 				<Button size="sm" icon="arrange" href="/circles/{circle.id}/arrange">
 					{t('circles.arrange.open')}
@@ -295,6 +305,9 @@
 		{/snippet}
 		{#if visibleCount}
 			<div class="flex flex-col gap-4" data-testid="member-grid">
+				{#if then}
+					<p class="text-xs text-fg-muted">{t('circles.then.hint')}</p>
+				{/if}
 				{#each visibleGroups as group (group.role)}
 					<section class="flex flex-col gap-2" data-testid="role-group">
 						{#if showRoles}
@@ -351,6 +364,7 @@
 									member={m}
 									{selecting}
 									chosen={selectedIds.includes(m.contactId)}
+									face={then ? (data.then.faces[m.membershipId] ?? null) : null}
 									ontoggle={() => (selectedIds = toggleMember(selectedIds, m.contactId))}
 								/>
 							{/each}

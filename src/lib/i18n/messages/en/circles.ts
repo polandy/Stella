@@ -224,6 +224,14 @@ export const circles = {
 	'circles.picker.movesFrom': (p: { name: string }) => `now in ${p.name} – will be moved`,
 	'circles.picker.footer': 'A circle can’t sit inside itself or one of its sub-circles.',
 	// Arrange people: move or copy people between a circle and its sub-circles (docs/dev/02 §2.4.2).
+	'circles.then.label': 'Photos from',
+	'circles.then.then': 'Then',
+	'circles.then.now': 'Now',
+	'circles.then.hint':
+		'Photos from the time of the circle where Stella has one; a dashed ring marks the closest it has.',
+	'circles.then.circle': (p: { when: string }) => `Group photo · ${p.when}`,
+	'circles.then.nearest': (p: { year: string }) => `${p.year} · nearest`,
+	'circles.then.today': 'Today’s photo',
 	'circles.arrange.open': 'Arrange people',
 	'circles.arrange.title': (p: { name: string }) => `Arrange people · ${p.name}`,
 	'circles.arrange.heading': 'Arrange people',

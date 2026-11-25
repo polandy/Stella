@@ -9,6 +9,7 @@ import {
 	readArrangement,
 	undoArrangement
 } from '#lib/server/domain/circles/arrange-people.js';
+import { readThenView } from '#lib/server/domain/circles/period-faces.js';
 import { readCircleTree } from '#lib/server/domain/circles/tree.js';
 import { say, translator } from '#lib/server/i18n/say.js';
 import type { Actions, PageServerLoad } from './$types';
@@ -26,11 +27,28 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	const deps = locals.services.circles.arrangePeopleDeps;
 	const zones = await readArrangement(deps, viewer, params.id);
 	if (!zones) throw error(404, say(locals, 'errors.circle.notFound'));
-	const tree = circleTree(await readCircleTree(locals.services.circles.circleTreeDeps, viewer));
+	const [flat, then] = await Promise.all([
+		readCircleTree(locals.services.circles.circleTreeDeps, viewer),
+		// Each card's people as they were in that card's circle; the screen opens as its circle's page does.
+		readThenView(
+			locals.services.circles.periodFaceDeps,
+			viewer,
+			zones[0],
+			zones.flatMap((z) =>
+				z.members.map((m) => ({
+					...m,
+					key: `${z.circleId}/${m.contactId}`,
+					circle: { id: z.circleId, startDate: z.startDate, endDate: z.endDate }
+				}))
+			)
+		)
+	]);
+	const tree = circleTree(flat);
 	return {
 		circle: { id: params.id, name: zones[0].name },
 		nesting: { ancestors: tree.ancestors(params.id) },
-		zones
+		zones,
+		then
 	};
 };
 

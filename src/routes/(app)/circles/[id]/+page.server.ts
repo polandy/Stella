@@ -9,6 +9,7 @@ import {
 } from '#lib/server/domain/circles/circles.js';
 import { groupMembersByRole, suggestRoles } from '#lib/server/domain/circles/role-groups.js';
 import { listMembers } from '#lib/server/domain/circles/memberships.js';
+import { readThenView } from '#lib/server/domain/circles/period-faces.js';
 import { readCircleTree } from '#lib/server/domain/circles/tree.js';
 import { circleTree } from '#lib/circles/tree.js';
 import { todayFor } from '#lib/dates/today.js';
@@ -51,6 +52,12 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		readCircleTree(locals.services.circles.circleTreeDeps, viewer)
 	]);
 	const roles = suggestRoles(members.map((m) => m.role));
+	const then = await readThenView(
+		locals.services.circles.periodFaceDeps,
+		viewer,
+		circle,
+		members.map((m) => ({ ...m, key: m.membershipId, circle }))
+	);
 	const tree = circleTree(flat);
 	const siblings = tree.neighbours(circle.id);
 
@@ -85,6 +92,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		canDelete: circleDeletable(remover, circle),
 		// People are shown under their role, so a class reads as its teachers and its pupils.
 		memberGroups: groupMembersByRole(members),
+		// Each member's face at the time of the circle, and the *Then · Now* toggle (§2.4.2).
+		then,
 		// What this circle already calls its people, offered while adding the next one.
 		roleSuggestions: roles,
 		// The cover, the banner over each role group, and the Photos section (docs/dev/02 §2.4.2).

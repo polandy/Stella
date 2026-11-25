@@ -28,7 +28,9 @@ export function createDrizzleCircleMembershipReads(
 					contactId: contact.id,
 					displayName: contact.displayName,
 					avatarPhotoId: contact.avatarPhotoId,
-					role: circleMembership.role
+					role: circleMembership.role,
+					startDate: circleMembership.startDate,
+					endDate: circleMembership.endDate
 				})
 				.from(circleMembership)
 				.innerJoin(circle, eq(circleMembership.circleId, circle.id))
