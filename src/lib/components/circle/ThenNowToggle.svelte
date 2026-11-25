@@ -2,10 +2,7 @@
 	import { useTranslate } from '#lib/i18n/context.svelte.js';
 	import type { ThenOrNow } from '#lib/circles/then-preference.js';
 
-	/*
-	 * *Then · Now* in a members header (docs/dev/02 §2.4.2): two pressed-state buttons, so a
-	 * screen reader hears which one shows. The page decides whether it is there at all.
-	 */
+	// Then · Now as two pressed-state buttons, so a screen reader hears which shows (§2.4.2).
 	let { then, onchoose }: { then: boolean; onchoose: (choice: ThenOrNow) => void } = $props();
 
 	const t = useTranslate();

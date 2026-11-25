@@ -7,8 +7,7 @@
 	/*
 	 * One member on a circle's page (docs/dev/02 §2.4.2): a face and a name that open the person — or,
 	 * while selecting, a checkbox the whole card answers to. Removing goes through the selection
-	 * bar, so no row carries a × one mis-tap away (docs/dev/05 §5.5). In *Then* the face is the one
-	 * from the time of the circle, captioned, and ringed dashed where it is only the closest.
+	 * bar, so no row carries a × one mis-tap away (docs/dev/05 §5.5).
 	 */
 	let {
 		member: m,

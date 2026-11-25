@@ -6,11 +6,7 @@ import type { Viewer } from '../access/visibility';
 import { createDrizzlePersonFaceReads } from './person-face-reads';
 import * as schema from './schema';
 
-/*
- * Integration spec for a person's faces (docs/dev/02 §2.4.2 *Then · Now*): their square
- * pictures, framings dated by the photo framed, cuts carrying their circle — and nothing the
- * reader could not open in the gallery.
- */
+// A person's faces: square pictures, framings and cuts, dated, only what the reader may see (§2.4.2).
 
 const H = 'household-1';
 const U1 = 'user-1';

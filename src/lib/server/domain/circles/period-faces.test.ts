@@ -8,10 +8,7 @@ import {
 	type PersonFace
 } from './period-faces';
 
-/*
- * The batched read behind *Then · Now* (docs/dev/02 §2.4.2): one read of every member's faces,
- * the pick per membership, each in its own window and its own circle.
- */
+// One batched read of the members' faces, picked per membership in its own window (§2.4.2).
 
 const viewer: Viewer = { id: 'u1', householdId: 'h1' };
 const NOW = Date.parse('2026-11-25T10:00:00Z');

@@ -125,6 +125,23 @@ describe('membership lists', () => {
 		expect(await memberships.listMembersVisibleTo(viewerU1, id)).toHaveLength(3);
 	});
 
+	it('reads each membership’s own period, open ends as null (§2.4.2 Then · Now)', async () => {
+		const id = await createCircle(deps, creatorU1, { name: 'Choir' });
+		await addMember(deps, creatorU1, id, 'mara');
+		await addMember(deps, creatorU1, id, 'jonas');
+		db.update(schema.circleMembership)
+			.set({ startDate: '2019-02-01', endDate: '2019-06-30' })
+			.where(eq(schema.circleMembership.contactId, 'mara'))
+			.run();
+		const members = await memberships.listMembersVisibleTo(viewerU1, id);
+		expect(
+			members.map(({ contactId, startDate, endDate }) => ({ contactId, startDate, endDate }))
+		).toEqual([
+			{ contactId: 'jonas', startDate: null, endDate: null },
+			{ contactId: 'mara', startDate: '2019-02-01', endDate: '2019-06-30' }
+		]);
+	});
+
 	it('lists a contact’s circles', async () => {
 		const a = await createCircle(deps, creatorU1, { name: 'Ski Course' });
 		const b = await createCircle(deps, creatorU1, { name: 'Day School' });

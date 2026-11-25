@@ -1,10 +1,6 @@
 import type { DateLanguage } from '#lib/dates/labels.js';
 
-/*
- * Which picture shows a member as they were at the time of a circle (docs/dev/02 §2.4.2, *Then ·
- * Now*). Pure: the faces are the square pictures Stella already holds of the person — uploads,
- * Immich copies, framings and cuts — each dated by its capture, else the day it was added.
- */
+// Which square picture shows a member as they were at the time of a circle (docs/dev/02 §2.4.2).
 
 /** How well the picture fits the member's time in the circle; the page captions it by this. */
 export type FaceFit =
@@ -73,10 +69,7 @@ function momentAfter(value: string): number {
 	return Date.UTC(year, month - 1, day + 1);
 }
 
-/**
- * The window in epoch ms, both ends inclusive; an open end is the end of today. Null when the
- * member has no dated window at all.
- */
+/** The window in epoch ms, ends inclusive, an open end today's end; null when wholly undated. */
 export function windowBounds(
 	window: PeriodWindow,
 	today: string

@@ -1,10 +1,6 @@
 import type { PreferenceStorage } from '#lib/gifts/waiting-preference.js';
 
-/*
- * The adapter that remembers, on this browser, whether circles show members *Then* or *Now*
- * (docs/dev/02 §2.4.2). Only an explicit choice is stored; until then each circle opens on its
- * own default. It reads and writes only through the storage slice it is handed.
- */
+// Remembers on this browser an explicit Then · Now choice for circles (docs/dev/02 §2.4.2).
 
 export type ThenOrNow = 'then' | 'now';
 

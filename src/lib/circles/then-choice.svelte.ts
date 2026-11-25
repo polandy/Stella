@@ -1,10 +1,7 @@
 import { onMount } from 'svelte';
 import { thenPreference, type ThenOrNow } from './then-preference.js';
 
-/*
- * The reader's *Then · Now* choice on a page (docs/dev/02 §2.4.2), read from this browser once
- * the page is in it and remembered for every circle when they pick one. Call from a component.
- */
+// The reader's Then · Now choice, read once mounted and kept for every circle (docs/dev/02 §2.4.2).
 
 // Reached through calls, so a blocked `localStorage` throws inside the preference's own guard.
 const browserStorage = {

@@ -8,12 +8,7 @@ import { photoDatedAt } from './photo-dated-at';
 import type * as schema from './schema';
 import { circle, contact, photo } from './schema';
 
-/*
- * Drizzle adapter for a person's faces (docs/dev/02 §2.4.2 *Then · Now*, docs/dev/08 §8.3): the
- * square pictures of them, dated by their capture, else the day added; a framing, cut or former
- * cut by the photo it came from. Every row and every source is scoped through the access layer (§3.7), so a face
- * the reader could not open in the gallery is never a candidate.
- */
+// A person's square pictures, framings and cuts, dated by their source, scoped by §3.7 (§2.4.2).
 /** The photo a framing or cut was taken from. */
 const source = alias(photo, 'face_source');
 const sourceCircle = alias(circle, 'face_source_circle');

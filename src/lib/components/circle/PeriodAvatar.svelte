@@ -2,10 +2,7 @@
 	import Avatar from '#lib/components/ui/Avatar.svelte';
 	import { isApproximate, type PeriodFace } from '#lib/circles/period-face.js';
 
-	/*
-	 * A member's face, today's or — in *Then* — the one from the time of the circle, ringed dashed
-	 * where it is only the closest Stella has (docs/dev/02 §2.4.2).
-	 */
+	// A member's face, today's or the one from then, ringed dashed when only the closest (§2.4.2).
 	let {
 		id,
 		name,

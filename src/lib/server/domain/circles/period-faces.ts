@@ -9,11 +9,7 @@ import { todayFor } from '../../../dates/today';
 import type { Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 
-/*
- * Each member's face at the time of their circle (docs/dev/02 §2.4.2, *Then · Now*): one batched
- * read of the members' square pictures the reader may see, then the pure pick per member. Nothing
- * is stored for it; the faces are the photo rows Stella already holds (docs/dev/02 §2.14).
- */
+// Each member's face at the time of their circle: one batched read, then the pure pick (§2.4.2).
 
 /** One square picture of a person, dated as `datedAt` dates a photo. */
 export interface PersonFace {

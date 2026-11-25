@@ -1,13 +1,10 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, test, type Browser, type Locator, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { appReady, signIn } from './app';
 import { circleIdOf, personIdOf, seedHousehold } from './seed';
+import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-constants';
 
-/*
- * A circle's members as they were then (docs/dev/02 §2.4.2, *Then · Now*): a past circle opens on
- * the faces from its time, captioned, today's picture ringed dashed where nothing closer exists;
- * *Now* shows today's pictures, and the choice is remembered. Each case seeds circles of its own.
- */
+// A past circle's members as they were then, captioned and ringed, and Now (docs/dev/02 §2.4.2).
 
 /** Square, captured 2019-05-03 by its EXIF — inside the school year below. */
 const CAMERA = readFileSync('src/lib/media/fixtures/camera.jpg');
@@ -143,4 +140,71 @@ test('a circle without a period shows no toggle', async ({ page }) => {
 	await expect(memberCard(page, lena)).toBeVisible();
 	await expect(toggle(page)).toHaveCount(0);
 	await expect(caption(memberCard(page, lena))).toHaveCount(0);
+});
+
+/** Adds pictures to a person's Photos, shared or private, and waits for them in the grid. */
+async function addGalleryPhoto(
+	page: Page,
+	person: string,
+	picture: { name: string; mimeType: string; buffer: Buffer },
+	visibility: 'shared' | 'private'
+): Promise<void> {
+	await page.goto(`/contacts/${personIdOf(person)}`);
+	await appReady(page);
+	const grid = page.getByTestId('photo-grid').locator('img');
+	const before = await grid.count();
+	await page.getByRole('button', { name: 'Add photos' }).click();
+	const form = page.locator('#section-photos form');
+	await form.locator('input[name=files]').setInputFiles(picture);
+	if (visibility === 'private') await form.getByText('Private', { exact: true }).click();
+	await form.getByRole('button', { name: 'Add', exact: true }).click();
+	await expect(grid).toHaveCount(before + 1);
+}
+
+/** A second browser signed in as the household's other member, Nina. */
+async function signInAsNina(browser: Browser): Promise<Page> {
+	const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
+	const page = await context.newPage();
+	await page.goto('/login');
+	await page.getByLabel('Email').fill(DEMO_MEMBER_EMAIL);
+	await page.getByLabel('Password').fill(DEMO_ADMIN_PASSWORD);
+	await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+	await expect(page.getByRole('heading', { name: 'What happened?' })).toBeVisible();
+	await appReady(page);
+	return page;
+}
+
+test('a face from then counts only for readers who may see that photo', async ({
+	page,
+	browser
+}) => {
+	const lena = 'Lena Avocet';
+	const mia = 'Mia Avocet';
+	const circle = 'Avocet Year';
+	await seedHousehold(page, [lena, mia], [], {}, [
+		{
+			name: circle,
+			start: '2018-08-01',
+			end: '2019-07-31',
+			members: [
+				{ person: lena, role: 'Pupil' },
+				{ person: mia, role: 'Pupil' }
+			]
+		}
+	]);
+	const old = { name: 'then.jpg', mimeType: 'image/jpeg', buffer: CAMERA };
+	await addGalleryPhoto(page, lena, old, 'private');
+	await addGalleryPhoto(page, mia, old, 'shared');
+	for (const person of [lena, mia])
+		await setAvatar(page, person, { name: 'now.png', mimeType: 'image/png', buffer: PIXEL });
+
+	await openCircle(page, circle);
+	await expect(caption(memberCard(page, lena))).toHaveText('May 2019');
+	await expect(caption(memberCard(page, mia))).toHaveText('May 2019');
+
+	const nina = await signInAsNina(browser);
+	await openCircle(nina, circle);
+	await expect(caption(memberCard(nina, mia))).toHaveText('May 2019');
+	await expect(caption(memberCard(nina, lena))).toHaveText('Today’s photo');
+	await nina.context().close();
 });

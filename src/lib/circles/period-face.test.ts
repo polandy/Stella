@@ -15,11 +15,7 @@ import {
 	type FaceFit
 } from './period-face';
 
-/*
- * Which picture of a member shows a circle as it was (docs/dev/02 §2.4.2): the window is the
- * membership's own period, else the circle's; inside it the newest face, a cut from the circle's
- * own photos above all, then the nearest earlier, the nearest later within two years, today's.
- */
+// The pick of a member's face for a circle's time and its fallbacks (docs/dev/02 §2.4.2).
 
 const CIRCLE = 'class-1b';
 const TODAY = '2026-11-25';
