@@ -95,6 +95,8 @@ export interface FakeMembership {
 	displayName: string;
 	avatarPhotoId: string | null;
 	role: string | null;
+	startDate: string | null;
+	endDate: string | null;
 }
 
 /** `contactId` in `circleId` without a role, both named by their ids unless the test says. */
@@ -113,6 +115,8 @@ export function membership(
 		displayName: contactId,
 		avatarPhotoId: null,
 		role: null,
+		startDate: null,
+		endDate: null,
 		...fields
 	};
 }
@@ -130,13 +134,17 @@ export function inMemoryCircleMemberships(
 			memberships
 				.filter((m) => m.circleId === circleId)
 				.sort((a, b) => a.displayName.localeCompare(b.displayName))
-				.map(({ membershipId, contactId, displayName, avatarPhotoId, role }) => ({
-					membershipId,
-					contactId,
-					displayName,
-					avatarPhotoId,
-					role
-				})),
+				.map(
+					({ membershipId, contactId, displayName, avatarPhotoId, role, startDate, endDate }) => ({
+						membershipId,
+						contactId,
+						displayName,
+						avatarPhotoId,
+						role,
+						startDate,
+						endDate
+					})
+				),
 		listForContactVisibleTo: async (_viewer, contactId) =>
 			memberships
 				.filter((m) => m.contactId === contactId)

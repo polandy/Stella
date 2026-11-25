@@ -54,7 +54,9 @@ describe('membership', () => {
 			contactId: 'anna',
 			displayName: 'anna',
 			avatarPhotoId: null,
-			role: null
+			role: null,
+			startDate: null,
+			endDate: null
 		});
 	});
 });
@@ -73,14 +75,18 @@ describe('inMemoryCircleMemberships', () => {
 				contactId: 'anna',
 				displayName: 'Anna',
 				avatarPhotoId: null,
-				role: null
+				role: null,
+				startDate: null,
+				endDate: null
 			},
 			{
 				membershipId: 'choir/cleo',
 				contactId: 'cleo',
 				displayName: 'Cleo',
 				avatarPhotoId: null,
-				role: 'Alto'
+				role: 'Alto',
+				startDate: null,
+				endDate: null
 			}
 		]);
 	});

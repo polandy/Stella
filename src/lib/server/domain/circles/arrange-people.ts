@@ -192,12 +192,21 @@ export interface ArrangeZone {
 	name: string;
 	/** The names from the circle the screen is opened on down to this one; empty for that one. */
 	path: string[];
+	/** The circle's period, which a member's own fills in for *Then · Now* (§2.4.2). */
+	startDate: string | null;
+	endDate: string | null;
 	members: ArrangeMember[];
 }
 
 interface Scope {
 	/** The circle and its sub-circles at any depth, in display order. */
-	circles: { id: string; name: string; path: string[] }[];
+	circles: {
+		id: string;
+		name: string;
+		path: string[];
+		startDate: string | null;
+		endDate: string | null;
+	}[];
 }
 
 async function readScope(
@@ -214,6 +223,8 @@ async function readScope(
 		circles: inScope.map((c) => ({
 			id: c.id,
 			name: c.name,
+			startDate: c.startDate,
+			endDate: c.endDate,
 			path:
 				c.id === root.id ? [] : [...tree.ancestors(c.id).slice(rootDepth + 1), c].map((p) => p.name)
 		}))
@@ -239,6 +250,8 @@ export async function readArrangement(
 		circleId: c.id,
 		name: c.name,
 		path: c.path,
+		startDate: c.startDate,
+		endDate: c.endDate,
 		members: members.filter((m) => m.circleId === c.id)
 	}));
 }

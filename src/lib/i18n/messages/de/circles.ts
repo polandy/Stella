@@ -227,6 +227,14 @@ export const circles: CirclesMessages = {
 	'circles.picker.movesFrom': (p) => `jetzt in ${p.name} – wird verschoben`,
 	'circles.picker.footer':
 		'Ein Kreis kann nicht in sich selbst oder einem seiner Unterkreise liegen.',
+	'circles.then.label': 'Fotos von',
+	'circles.then.then': 'Damals',
+	'circles.then.now': 'Heute',
+	'circles.then.hint':
+		'Fotos aus der Zeit des Kreises, wo Stella eines hat; ein gestrichelter Ring zeigt das nächstliegende.',
+	'circles.then.circle': (p) => `Gruppenfoto · ${p.when}`,
+	'circles.then.nearest': (p) => `${p.year} · nächstliegend`,
+	'circles.then.today': 'Heutiges Foto',
 	'circles.arrange.open': 'Personen ordnen',
 	'circles.arrange.title': (p) => `Personen ordnen · ${p.name}`,
 	'circles.arrange.heading': 'Personen ordnen',

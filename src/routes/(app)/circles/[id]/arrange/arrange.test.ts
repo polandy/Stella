@@ -36,7 +36,9 @@ const member = (
 	note: null
 });
 
-/** The viewer sees `school` and `class` (inside it); `hidden` is not theirs. */
+const LENA_2018 = Date.parse('2018-09-01T12:00:00Z');
+
+/** The viewer sees `school` and `class` (inside it, 2018–19); `hidden` is not theirs. */
 function household() {
 	const plans: ArrangementPlan[] = [];
 	const reverts: RevertPlan[] = [];
@@ -46,13 +48,21 @@ function household() {
 			circleTreeDeps: {
 				tree: inMemoryCircleTree([
 					treeNode('school', null, { name: 'School' }),
-					treeNode('class', 'school', { name: 'Class' })
+					treeNode('class', 'school', {
+						name: 'Class',
+						startDate: '2018-08-01',
+						endDate: '2019-07-31'
+					})
 				])
 			},
 			arrangePeopleDeps: {
 				tree: inMemoryCircleTree([
 					treeNode('school', null, { name: 'School' }),
-					treeNode('class', 'school', { name: 'Class' })
+					treeNode('class', 'school', {
+						name: 'Class',
+						startDate: '2018-08-01',
+						endDate: '2019-07-31'
+					})
 				]),
 				arrangement: {
 					listMembersOfVisibleTo: async (_v, ids) =>
@@ -71,6 +81,15 @@ function household() {
 				},
 				ids: sequentialIds(),
 				clock: fixedClock(1)
+			},
+			periodFaceDeps: {
+				faces: {
+					listFacesOfVisibleTo: async (_v, ids) =>
+						ids.includes('lena')
+							? [{ contactId: 'lena', photoId: 'lena-2018', datedAt: LENA_2018, circleId: null }]
+							: []
+				},
+				clock: fixedClock(Date.parse('2026-11-25T10:00:00Z'))
 			}
 		}
 	};
@@ -110,6 +129,24 @@ describe('load', () => {
 		expect((answer.data as { zones: { circleId: string }[] }).zones.map((z) => z.circleId)).toEqual(
 			['school', 'class']
 		);
+	});
+
+	it('hands each card’s people as they were in that card’s circle, opening as the circle does', async () => {
+		const { services } = household();
+		const answer = await answerOf(
+			load(routeEvent<Parameters<typeof load>[0]>({ services, params: { id: 'school' } }))
+		);
+		if (answer.kind !== 'data') throw new Error(`answered ${answer.kind}`);
+		expect(answer.data).toMatchObject({
+			then: {
+				faces: {
+					'class/lena': { photoId: 'lena-2018', fit: 'inside', datedAt: LENA_2018 },
+					'school/keller': { photoId: null, fit: 'none', datedAt: null }
+				},
+				shown: true,
+				startsOnThen: false
+			}
+		});
 	});
 
 	it('is a 404 for a circle the viewer does not see', async () => {

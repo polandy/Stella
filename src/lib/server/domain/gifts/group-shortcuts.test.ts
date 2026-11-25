@@ -54,7 +54,9 @@ const deps: GroupShortcutDeps = {
 				contactId,
 				displayName: contactId,
 				avatarPhotoId: null,
-				role: null
+				role: null,
+				startDate: null,
+				endDate: null
 			}));
 		}
 	}

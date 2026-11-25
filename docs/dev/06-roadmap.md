@@ -269,6 +269,14 @@ the screen file in the same PR that builds it, and leaves a one-line *built* not
    - **Decided.** One page, scaled to fit, with A3 offered when A4 makes the names small; the
      tree only, not the other arrangements; a dialog with a live preview beside the choices.
 
+6. **Circle photos as they were then** — slice 1 *built*; see docs/dev/02 §2.4.2 (*Then · Now*):
+   members shown with a face from their time in the circle, on the circle page and *Arrange
+   people*. Decided by the owner on 2026-11-25. Still open:
+   - **Add photo from then.** On a member card in *Then* showing today's picture or a nearest
+     one, a quick way to add a picture of the person from that time, dated into the window.
+   - **Set date.** In a person's photo lightbox, set a photo's capture date by hand, for a scan
+     or a picture without EXIF (§2.14), so it lands in the right circle's window.
+
 ## Cross-cutting (every milestone)
 
 - Accessibility (AA contrast, keyboard, reduced motion) is not deferred; it's part of

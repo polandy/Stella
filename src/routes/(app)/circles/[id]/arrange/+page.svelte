@@ -1,5 +1,8 @@
 <script lang="ts">
 	import ArrangeBoard from '#lib/components/circle/ArrangeBoard.svelte';
+	import ThenNowToggle from '#lib/components/circle/ThenNowToggle.svelte';
+	import { useThenChoice } from '#lib/circles/then-choice.svelte.js';
+	import { showsThen } from '#lib/circles/then-preference.js';
 	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import type { PageData } from './$types';
 
@@ -10,6 +13,10 @@
 	let { data }: { data: PageData } = $props();
 	const { t } = useI18n();
 
+	// *Then · Now*, as on the circle's page (docs/dev/02 §2.4.2), one choice for both.
+	const thenChoice = useThenChoice();
+	const then = $derived(data.then.shown && showsThen(thenChoice.choice, data.then.startsOnThen));
+
 	const people = $derived(
 		new Set(data.zones.flatMap((z) => z.members.map((m) => m.contactId))).size
 	);
@@ -19,7 +26,12 @@
 
 <main class="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 md:px-6">
 	<header class="flex flex-col gap-1">
-		<h1 class="text-2xl font-semibold text-fg">{t('circles.arrange.heading')}</h1>
+		<div class="flex flex-wrap items-center justify-between gap-2">
+			<h1 class="text-2xl font-semibold text-fg">{t('circles.arrange.heading')}</h1>
+			{#if data.then.shown}
+				<ThenNowToggle {then} onchoose={thenChoice.choose} />
+			{/if}
+		</div>
 		<p class="text-sm text-fg-muted">
 			{t('circles.arrange.summary', {
 				name: data.circle.name,
@@ -28,5 +40,8 @@
 			})}
 		</p>
 	</header>
-	<ArrangeBoard pageId={data.circle.id} zones={data.zones} />
+	{#if then}
+		<p class="text-xs text-fg-muted">{t('circles.then.hint')}</p>
+	{/if}
+	<ArrangeBoard pageId={data.circle.id} zones={data.zones} faces={then ? data.then.faces : null} />
 </main>

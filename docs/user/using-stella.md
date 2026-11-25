@@ -1127,6 +1127,16 @@ to name a family whose circle you already have.
 A circle's page shows its people grouped by role — all the players together, the coaches
 together — with anyone who has no role at the end.
 
+For a circle from years ago — last decade's school class, an old team — **Then · Now** at the
+top of the members shows everyone as they looked back then: Stella picks, for each person, a
+profile picture taken during their time in the circle (a cut from one of the circle's own group
+photos comes first). Under each name a small line says where the face comes from — the month it
+was taken, or *2017 · nearest* when Stella only had one from before or shortly after, or
+*Today's photo* when there is nothing older. A dashed ring around a face means it is only the
+closest Stella has. A circle that has ended opens on *Then*, a running one on *Now*; once you
+choose, Stella remembers it in this browser for every circle. The switch is only there when it
+would change a face, and *Arrange people* has it too.
+
 To rename a role, tap its heading (the name with the pencil), type the new name and press
 *Save*. Everyone in this circle with that role gets the new name, and so do the circle's photos
 of that role; other circles keep theirs. Fixing only the spelling ("teacher" → "Teacher") works

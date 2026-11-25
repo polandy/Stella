@@ -79,6 +79,12 @@ its photos, and lets the household manage members in bulk.
 - The members stand in **grids** of avatar cards, one per role under a small uppercase heading
   with its count; no headings when nobody has a role. A card is the face and the name, which
   opens the person; it carries no × — removing goes through *Select*.
+- **Then · Now** (docs/dev/02 §2.4.2) sits at the right of the Members header, a pill of two
+  `aria-pressed` buttons (*Then* · *Now*), only when *Then* changes someone's face. A past circle
+  opens on *Then*, a running one on *Now*; a reader's choice is kept per browser for all circles.
+  In *Then* a muted line above the grid says what it shows, each card carries a small caption
+  under the name (*Oct 2018*, *Group photo · Oct 2018*, *2017 · nearest*, *Today's photo*), and
+  a face that is only the closest Stella has wears a dashed `--fg-subtle` ring.
 - *Add member* is the card's one disclosure.
 - *Select* in the card header turns each card into a checkbox target, with an *all* box beside
   every role heading, and raises a **selection bar** fixed to the bottom of the screen: the
@@ -123,6 +129,8 @@ its photos, and lets the household manage members in bulk.
   depth, newest first, with its path under the name (*Class 5b › Choir*) — none for a direct
   sub-circle, whose path would only repeat its name. The header carries a count pill
   (*3 people*); an empty card is a dashed box, *Nobody yet. Drag people here.*
+- **Then · Now** sits beside the heading as on the circle page, defaulting by the outer circle;
+  in *Then* each person shows their face from that card's circle, with the same caption and ring.
 - A person is a chip: avatar, name, and *also in …* naming the other cards that hold them. A
   selected chip is filled with the primary colour and a check mark. A chip is a button
   (`aria-pressed`), so Space and Enter select it; its row can also be dragged.
@@ -185,6 +193,10 @@ it*, so a second Enter never deletes; the counts are read only when the step ope
 page's load does not count photos for a step most visits never open. Strips have a fixed height on a wide screen so the members stay in view. A member card has no × of its
 own because a row of them is a row of destructive buttons one mis-tap away; *Select* already
 removes, with the same undo, so one extra tap buys one way into changing the members.
+*Then · Now* exists because a class from twenty years ago is not recognisable by today's faces;
+it hides when it would change nothing, so a running circle with fresh pictures carries no extra
+control. The dashed ring and caption are there so an old face never passes for the face of that
+time when it is only the closest one; one choice for every circle keeps it from being a setting.
 
 The list shows families rather than levels because a school with eight classes would otherwise
 bury everything else under nine equal cards; a row is enough to find a class, and its page has

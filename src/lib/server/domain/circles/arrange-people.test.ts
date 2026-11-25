@@ -82,7 +82,11 @@ function household(members: ArrangeMember[], visibleContacts?: string[]) {
 	const deps = {
 		tree: inMemoryCircleTree([
 			treeNode('school', null, { name: 'School' }),
-			treeNode('class', 'school', { name: 'Class 1b' }),
+			treeNode('class', 'school', {
+				name: 'Class 1b',
+				startDate: '2018-08-01',
+				endDate: '2019-07-31'
+			}),
 			treeNode('football', 'class', { name: 'Football' }),
 			treeNode('other', null, { name: 'Other' })
 		]),
@@ -136,6 +140,16 @@ describe('readArrangement', () => {
 		expect(zones?.map((z) => [z.circleId, z.path])).toEqual([
 			['class', []],
 			['football', ['Football']]
+		]);
+	});
+
+	it('carries each circle’s period, for the faces of *Then*', async () => {
+		const { deps } = household(people);
+		const zones = await readArrangement(deps, viewer, 'school');
+		expect(zones?.map((z) => [z.circleId, z.startDate, z.endDate])).toEqual([
+			['school', null, null],
+			['class', '2018-08-01', '2019-07-31'],
+			['football', null, null]
 		]);
 	});
 

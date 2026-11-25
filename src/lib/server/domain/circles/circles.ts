@@ -102,6 +102,9 @@ export interface MemberView {
 	displayName: string;
 	avatarPhotoId: string | null;
 	role: string | null;
+	/** The membership's own period; null ends follow the circle's. */
+	startDate: string | null;
+	endDate: string | null;
 }
 
 /** A circle a contact belongs to, as shown on the contact profile. */
