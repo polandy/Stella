@@ -4,8 +4,8 @@ import { addPerson, appReady, signIn } from './app';
 
 /*
  * A photo from Immich as the person's own photo (docs/dev/02 §2.24.6):
- * *Use as photo* in the lightbox on an Immich photo, and *From Immich* in the picture's chooser. Written after
- * the owner tried #245 in the preview (docs/dev/08 §8.4.1).
+ * *Use as photo* in the lightbox on an Immich photo, *From Immich* and *Browse the library…* in
+ * the picture's chooser. Written after the owner tried #245 in the preview (docs/dev/08 §8.4.1).
  *
  * The e2e server runs with `IMMICH_DEMO=true`: Immich is the in-memory demo library, whose
  * photos are solid tiles dated a day apart, newest first. One Immich face links to one person
@@ -125,6 +125,8 @@ test('Use as photo in the lightbox keeps the crop as their picture, dated by Imm
 	// The same photo used now is stored, so the checks above were not locators that could never
 	// find a picture — and a cancelled crop does not block the next one.
 	await cropFromViewer(page);
+	// An Immich preview is re-encoded whole, so it can be turned (docs/dev/02 §2.14).
+	await cropper(page).getByRole('button', { name: 'Rotate right' }).click();
 	await cropper(page).getByRole('button', { name: 'Use photo' }).click();
 
 	await expect(viewer(page)).toBeHidden();

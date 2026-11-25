@@ -1,10 +1,6 @@
 import type { Crop, ImageSize, Placement } from './crop';
 
-/*
- * Turning a picture a quarter at a time before its square is cut (docs/dev/02 §2.14). Pure: the
- * cropper works in the turned picture's pixels (`turnedSize`, `turnCrop`) and shows the turn with
- * `turnStyle`; the canvas draws it with `turnPlan`, so the two cannot disagree.
- */
+// Quarter turns before the square is cut (docs/dev/02 §2.14): one geometry for the cropper and the canvas.
 
 /** Quarter turns clockwise. */
 export type QuarterTurns = 0 | 1 | 2 | 3;

@@ -171,6 +171,8 @@ test('frames a gallery photo, keeps it one photo, and starts from the remembered
 	await lightbox.getByRole('button', { name: 'Use as photo' }).click();
 	const cropper = lightbox.getByTestId('photo-cropper');
 	await expect(cropper.getByRole('button', { name: 'Use photo' })).toBeEnabled();
+	// A framing is a square on the stored original, which a turn would not match.
+	await expect(cropper.getByRole('button', { name: /^Rotate (left|right)$/ })).toHaveCount(0);
 
 	// The same square as for a new photo: 1.5× and dragged to the picture's left edge.
 	await cropper.getByRole('slider', { name: 'Zoom' }).fill('1.5');

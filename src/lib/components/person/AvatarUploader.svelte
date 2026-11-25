@@ -210,7 +210,8 @@
 			onbrowse={() => (libraryOpen = true)}
 		/>
 	{/if}
-	{#if choices.immich !== null}
+	<!-- Mounted only while open: a person's page already holds the gallery's own library sheet. -->
+	{#if choices.immich !== null && libraryOpen}
 		<ImmichLibraryPicker bind:open={libraryOpen} onpick={chooseImmichPhoto} />
 	{/if}
 	{#if choices.immich === 'find'}
